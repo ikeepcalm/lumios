@@ -36,8 +36,6 @@ import dev.ua.ikeepcalm.merged.telegram.servicing.TelegramService;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.AlterMessage;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.MultiMessage;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.PurgeMessage;
-import java.io.File;
-import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -52,11 +50,7 @@ import org.telegram.telegrambots.meta.api.methods.pinnedmessages.UnpinChatMessag
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.*;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -65,6 +59,9 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.io.File;
+import java.util.ArrayList;
 
 @Service
 @PropertySource(value={"classpath:thirdparty.properties"})
@@ -232,6 +229,7 @@ implements TelegramService {
                 sendPhoto.setCaption(multiMessage.getText());
                 sendPhoto.setChatId(Long.valueOf(multiMessage.getChatId()));
                 sendPhoto.setPhoto(new InputFile(multiMessage.getFilePath()));
+                sendPhoto.setParseMode("Markdown");
                 sendPhoto.setReplyMarkup(multiMessage.getReplyKeyboard());
                 return this.execute(sendPhoto);
             }
@@ -247,6 +245,7 @@ implements TelegramService {
             sendMessage.setText(multiMessage.getText());
             sendMessage.setChatId(Long.valueOf(multiMessage.getChatId()));
             sendMessage.setReplyMarkup(multiMessage.getReplyKeyboard());
+            sendMessage.setParseMode("Markdown");
             return (Message)this.execute((BotApiMethod)sendMessage);
         }
         catch (TelegramApiException e) {

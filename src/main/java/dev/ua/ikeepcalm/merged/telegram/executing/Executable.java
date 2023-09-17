@@ -14,9 +14,11 @@ package dev.ua.ikeepcalm.merged.telegram.executing;
 
 import dev.ua.ikeepcalm.merged.dal.impls.ChatServiceImpl;
 import dev.ua.ikeepcalm.merged.dal.impls.RaiseServiceImpl;
+import dev.ua.ikeepcalm.merged.dal.impls.TaskServiceImpl;
 import dev.ua.ikeepcalm.merged.dal.impls.UserServiceImpl;
 import dev.ua.ikeepcalm.merged.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.merged.dal.interfaces.RaiseService;
+import dev.ua.ikeepcalm.merged.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.merged.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.telegram.servicing.TelegramService;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.AlterMessage;
@@ -35,14 +37,16 @@ public abstract class Executable {
     protected UserService userService;
     protected RaiseService raiseService;
     protected ChatService chatService;
+    protected TaskService taskService;
     protected Logger logger;
 
     @Autowired
-    private void init(TelegramService telegramService, UserServiceImpl userService, RaiseServiceImpl increasingService, ChatServiceImpl chatService) {
+    private void init(TaskServiceImpl taskService, TelegramService telegramService, UserServiceImpl userService, RaiseServiceImpl increasingService, ChatServiceImpl chatService) {
         this.telegramService = telegramService;
         this.userService = userService;
         this.raiseService = increasingService;
         this.chatService = chatService;
+        this.taskService = taskService;
         this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 

@@ -10,11 +10,12 @@ package dev.ua.ikeepcalm.merged.telegram.executing.commands.reverence.statistics
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.executing.Executable;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 public class StatsCommand
@@ -29,7 +30,7 @@ extends Executable {
             builder.append("\u25bb ").append(reverenceUser.getUsername()).append(": ").append(reverenceUser.getReverence()).append("\n");
         }
         String allResults = builder.toString();
-        this.sendMessage(origin, "\u21a3 \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u0447\u0430\u0442\u0443 \u21a2\n\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n\n" + allResults + "\n\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n\u21a3 \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u0447\u0430\u0442\u0443 \u21a2");
+        reply(origin, "↣ Статистика чату ↢\n――――――――――\n\n" + allResults + "\n――――――――――\n↣ Статистика чату ↢");
     }
 }
 

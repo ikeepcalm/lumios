@@ -41,7 +41,7 @@ extends Executable {
                             this.userService.save(foundRepliedUser);
                             this.reply(origin, "\u0412\u0438 \u0443\u0441\u043f\u0456\u0448\u043d\u043e \u0434\u043e\u0434\u0430\u043b\u0438 \u0432\u043a\u0430\u0437\u0430\u043d\u0443 \u043a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c \u0432\u0438\u0442\u0440\u0430\u0442\u043d\u0438\u0445 \u043a\u0440\u0435\u0434\u0438\u0442\u0456\u0432 \u0434\u043e \u0440\u0435\u0439\u0442\u0438\u043d\u0433\u0443 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430!");
                         } else {
-                            foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
+                            foundRepliedUser.setReverence(foundRepliedUser.getReverence() + eventValue);
                             foundUser.setCredits(0);
                             this.userService.save(foundUser);
                             this.userService.save(foundRepliedUser);

@@ -23,8 +23,8 @@ import java.util.List;
 @PropertySource(value={"classpath:thirdparty.properties"})
 public class BotInstance
 extends TelegramLongPollingBot {
-    @Value(value="${telegram.bot.username}")
-    public static String botUsername;
+
+    public String botUsername;
     private final List<Handleable> handleableList;
 
     public void onUpdateReceived(Update update) {
@@ -34,13 +34,14 @@ extends TelegramLongPollingBot {
         }
     }
 
-    public BotInstance(@Value(value="${telegram.bot.token}") String botToken, List<Handleable> handleableList) {
-        super("6633653487:AAHarE9iDC7VIhQDGhNGiZXK2tuanYgg7oY");
+    public BotInstance(@Value(value="${telegram.bot.token}") String botToken, @Value(value="${telegram.bot.username}") String botUsername, List<Handleable> handleableList) {
+        super(botToken);
         this.handleableList = handleableList;
+        this.botUsername = botUsername;
     }
 
     public String getBotUsername() {
-        return "queueupnow_bot";
+        return botUsername;
     }
 }
 

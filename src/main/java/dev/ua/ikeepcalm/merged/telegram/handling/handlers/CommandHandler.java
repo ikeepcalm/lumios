@@ -21,6 +21,8 @@ import dev.ua.ikeepcalm.merged.telegram.executing.commands.reverence.system.Serv
 import dev.ua.ikeepcalm.merged.telegram.executing.commands.reverence.system.Serverside.ForceUpdateCommand;
 import dev.ua.ikeepcalm.merged.telegram.executing.commands.reverence.system.Userside.RegisterCommand;
 import dev.ua.ikeepcalm.merged.telegram.executing.commands.reverence.system.Userside.StartCommand;
+import dev.ua.ikeepcalm.merged.telegram.executing.commands.tasks.CreateCommand;
+import dev.ua.ikeepcalm.merged.telegram.executing.commands.tasks.ShowCommand;
 import dev.ua.ikeepcalm.merged.telegram.handling.Handleable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,13 +40,15 @@ implements Handleable {
     private MeCommand meCommand;
     private StatsCommand statsCommand;
     private StartCommand startCommand;
+    private final CreateCommand createCommand;
+    private final ShowCommand showCommand;
     private ForceJoinCommand forceJoinCommand;
     private ForceUpdateCommand forceUpdateCommand;
     private ForceSaveQueues forceSaveQueues;
     private RegisterCommand registerCommand;
 
     @Autowired
-    public CommandHandler(StartCommand startCommand, ForceSaveQueues forceSaveQueues, QueueCommand queueCommand, AllCommand allCommand, RaiseCommand raiseCommand, AddCommand addCommand, DecreaseCommand decreaseCommand, MeCommand meCommand, StatsCommand statsCommand, ForceJoinCommand forceJoinCommand, ForceUpdateCommand forceUpdateCommand, RegisterCommand registerCommand) {
+    public CommandHandler(StartCommand startCommand, ForceSaveQueues forceSaveQueues, QueueCommand queueCommand, AllCommand allCommand, RaiseCommand raiseCommand, AddCommand addCommand, DecreaseCommand decreaseCommand, MeCommand meCommand, StatsCommand statsCommand, ForceJoinCommand forceJoinCommand, ForceUpdateCommand forceUpdateCommand, RegisterCommand registerCommand, CreateCommand createCommand, ShowCommand showCommand) {
         this.queueCommand = queueCommand;
         this.forceSaveQueues = forceSaveQueues;
         this.allCommand = allCommand;
@@ -57,6 +61,8 @@ implements Handleable {
         this.forceJoinCommand = forceJoinCommand;
         this.forceUpdateCommand = forceUpdateCommand;
         this.registerCommand = registerCommand;
+        this.createCommand = createCommand;
+        this.showCommand = showCommand;
     }
 
     @Override
@@ -85,8 +91,12 @@ implements Handleable {
                 this.forceSaveQueues.execute(origin);
             } else if (origin.getText().startsWith("/register")) {
                 this.registerCommand.execute(origin);
-            } else if (origin.getText().startsWith("@all") || origin.getText().startsWith("/all")) {
+            } else if (origin.getText().startsWith("/all")) {
                 this.allCommand.execute(origin);
+            } else if (origin.getText().startsWith("/task")){
+                this.createCommand.execute(origin);
+            } else if (origin.getText().startsWith("/whatisduetoday")){
+                this.showCommand.execute(origin);
             }
         }
     }

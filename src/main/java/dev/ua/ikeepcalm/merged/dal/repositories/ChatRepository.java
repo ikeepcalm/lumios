@@ -1,10 +1,4 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.data.repository.CrudRepository
- *  org.springframework.stereotype.Repository
- */
+
 package dev.ua.ikeepcalm.merged.dal.repositories;
 
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceChat;
