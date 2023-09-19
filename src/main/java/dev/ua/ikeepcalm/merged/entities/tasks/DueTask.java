@@ -22,6 +22,8 @@ public class DueTask {
     private LocalTime dueTime;
     @Column
     private String taskName;
+    @Column
+    private String url;
     @ManyToOne
     private ReverenceChat chat;
 

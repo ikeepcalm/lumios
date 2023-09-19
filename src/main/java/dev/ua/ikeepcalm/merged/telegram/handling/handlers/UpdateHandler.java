@@ -36,7 +36,7 @@ implements Handleable {
 
     @Override
     public boolean supports(Update update) {
-        if (!update.hasCallbackQuery() && update.getMessage() != null) {
+        if (!update.hasCallbackQuery() && update.getMessage() != null && update.getMessage().getText() != null) {
             return update.getMessage().isReply();
         }
         return false;

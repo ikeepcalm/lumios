@@ -9,7 +9,6 @@
 package dev.ua.ikeepcalm.merged.scheduler;
 
 import dev.ua.ikeepcalm.merged.dal.interfaces.UserService;
-import dev.ua.ikeepcalm.merged.telegram.servicing.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,10 +17,8 @@ import org.springframework.stereotype.Component;
 public class DailyUpdate {
     @Autowired
     private UserService userService;
-    @Autowired
-    private TelegramService telegramService;
 
-    @Scheduled(cron="0 0 21 * * *")
+    @Scheduled(cron="0 0 22 * * *")
     public void executeDailyTask() {
         this.userService.updateAll();
     }

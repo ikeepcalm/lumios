@@ -8,10 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,21 +20,27 @@ public class ShowCommand extends Executable {
         if (!tasks.isEmpty()) {
             LocalDate today = LocalDate.now();
             LocalDate maxDueDate = today.plusDays(14);
-            LocalDate tomorrow = today.plusDays(1);
-            LocalTime currentTime = LocalTime.now();
-
             List<DueTask> filteredTasks = tasks.stream()
-                    .filter(task -> !task.getDueDate().isBefore(today)
-                            && !task.getDueDate().isAfter(maxDueDate)
-                            && !(task.getDueDate().isEqual(today) && task.getDueTime().isBefore(currentTime)))
+
+                    .filter(task -> !task.getDueDate().isBefore(today) && !task.getDueDate().isAfter(maxDueDate)
+                            && !(task.getDueDate().isEqual(today) && task.getDueTime().isBefore(LocalTime.now())))
                     .collect(Collectors.toList());
 
-            Collections.sort(filteredTasks, Comparator.comparing(DueTask::getDueDate));
+            Map<LocalDate, List<DueTask>> groupedTasks = filteredTasks.stream()
+                    .collect(Collectors.groupingBy(DueTask::getDueDate));
+
+            Map<LocalDate, List<DueTask>> sortedTasks = groupedTasks.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+
             DateTimeFormatter dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEEE", new Locale("uk"));
             StringBuilder messageBuilder = new StringBuilder();
 
-            for (DueTask task : filteredTasks) {
-                LocalDate dueDate = task.getDueDate();
+            for (LocalDate dueDate : sortedTasks.keySet()) {
+                List<DueTask> tasksForDate = groupedTasks.get(dueDate);
+                LocalDate tomorrow = today.plusDays(1);
+
                 if (dueDate.isEqual(today)) {
                     messageBuilder.append("\n*СЬОГОДНІ*\n");
                 } else if (dueDate.isEqual(tomorrow)) {
@@ -46,10 +49,13 @@ public class ShowCommand extends Executable {
                     messageBuilder.append("\n*").append(dayOfWeekFormatter.format(dueDate.getDayOfWeek()).toUpperCase()).append("*\n");
                 }
 
-                messageBuilder.append("▻|").append(task.getDueTime()).append(" - ").append(task.getTaskName()).append("\n");
+                for (DueTask task : tasksForDate) {
+                    messageBuilder.append("▻|").append(task.getDueTime()).append(" - ").append("[" + task.getTaskName() + "]("+task.getUrl()+")\n");
+                }
             }
 
             sendMessage(origin, messageBuilder.toString());
+            System.out.println(messageBuilder.toString());
         } else {
             sendMessage(origin, "Нічого немає, можна відпочивати!");
         }
