@@ -10,8 +10,11 @@ package dev.ua.ikeepcalm.merged.telegram.executing.updates;
 
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.merged.patterns.UpdatePatterns.IncreasingUpdate;
 import dev.ua.ikeepcalm.merged.telegram.executing.Executable;
+import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.PurgeMessage;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -22,7 +25,7 @@ extends Executable {
         User user = origin.getMessage().getFrom();
         User repliedUser = origin.getMessage().getReplyToMessage().getFrom();
         ReverenceChat linkedChatId = this.chatService.find(origin.getMessage().getChatId());
-        if (dev.ua.ikeepcalm.merged.patterns.UpdatePatterns.AdditionUpdate.isAdditionUpdate(origin) && !user.equals((Object)repliedUser) && !repliedUser.getIsBot().booleanValue()) {
+        if (IncreasingUpdate.isAdditionUpdate(origin) && !user.equals((Object)repliedUser) && !repliedUser.getIsBot().booleanValue()) {
             if (this.userService.checkIfUserExists(user.getId(), linkedChatId)) {
                 if (this.userService.checkIfUserExists(repliedUser.getId(), linkedChatId)) {
                     ReverenceUser foundUser = this.userService.findById(user.getId(), linkedChatId);
@@ -35,13 +38,33 @@ extends Executable {
                         foundUser.setCredits(foundUser.getCredits() - eventValue);
                         this.userService.save(foundUser);
                         this.userService.save(foundRepliedUser);
-                        this.reply(origin.getMessage(), "\u2714\u2800");
+                        Message reply = this.reply(origin.getMessage(), "\u2714\u2800");
+                        new java.util.Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        PurgeMessage purgeAction = new PurgeMessage(origin.getMessage().getMessageId(), origin.getMessage().getChatId());
+                                        PurgeMessage purgeResponse = new PurgeMessage(reply.getMessageId(), reply.getChatId());
+                                        telegramService.sendPurgeMessage(purgeResponse);
+                                        telegramService.sendPurgeMessage(purgeAction);
+                                    }
+                                }, 300000 );
                     } else {
                         foundRepliedUser.setReverence(foundRepliedUser.getReverence() + eventValue);
                         foundUser.setCredits(0);
                         this.userService.save(foundUser);
                         this.userService.save(foundRepliedUser);
-                        this.reply(origin.getMessage(), "\u2714\u2800");
+                        Message reply = reply(origin.getMessage(), "\u2714\u2800");
+                        new java.util.Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        PurgeMessage purgeAction = new PurgeMessage(origin.getMessage().getMessageId(), origin.getMessage().getChatId());
+                                        PurgeMessage purgeResponse = new PurgeMessage(reply.getMessageId(), reply.getChatId());
+                                        telegramService.sendPurgeMessage(purgeResponse);
+                                        telegramService.sendPurgeMessage(purgeAction);
+                                    }
+                                }, 300000 );
                     }
                 } else {
                     this.reply(origin.getMessage(), "\u0422\u043e\u0439, \u043a\u043e\u043c\u0443 \u0432\u0438 \u0437\u0434\u0456\u0439\u0441\u043d\u0438\u043b\u0438 \u0441\u043f\u0440\u043e\u0431\u0443 \u0437\u043c\u0456\u043d\u0438\u0442\u0438 \u043f\u043e\u043a\u0430\u0437\u043d\u0438\u043a \u043f\u043e\u0432\u0430\u0433\u0438, \u0449\u0435 \u043d\u0435 \u0431\u0435\u0440\u0435 \u0443\u0447\u0430\u0441\u0442\u044c \u0443 \u0441\u0438\u0441\u0442\u0435\u043c\u0456 \u0431\u043e\u0442\u0443. \u041d\u0435\u0445\u0430\u0439 \u0441\u043f\u0440\u043e\u0431\u0443\u0454 /register@queueupnow_bot!");

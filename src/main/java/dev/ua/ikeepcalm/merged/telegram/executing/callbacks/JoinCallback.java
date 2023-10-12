@@ -16,16 +16,17 @@ import dev.ua.ikeepcalm.merged.telegram.executing.Executable;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.AlterMessage;
 import dev.ua.ikeepcalm.merged.utils.DublicateUtil;
 import dev.ua.ikeepcalm.merged.utils.QueueUtil;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+
+import java.util.UUID;
 
 @Component
 public class JoinCallback
 extends Executable {
+
     @Autowired
     private QueueUtil queueUtil;
 
@@ -41,13 +42,13 @@ extends Executable {
             ++id;
         }
         generalMessage.setText(stringBuilder.toString());
-        generalMessage.setReplyKeyboard((ReplyKeyboard)DublicateUtil.createMarkup(queueItself));
+        generalMessage.setReplyKeyboard(DublicateUtil.createMarkup(queueItself));
         queueItself.setMessageId(this.telegramService.sendAlterMessage(generalMessage).getMessageId().intValue());
         this.queueUtil.updateQueue(queueItself);
     }
 
     public void manage(String receivedCallback, CallbackQuery origin) {
-        QueueItself queueItself = this.queueUtil.getQueue(UUID.fromString(receivedCallback));
+        QueueItself queueItself = queueUtil.getQueue(UUID.fromString(receivedCallback));
         QueueUser queueUser = new QueueUser();
         queueUser.setName(origin.getFrom().getFirstName());
         queueUser.setAccountId(origin.getFrom().getId());
@@ -55,9 +56,9 @@ extends Executable {
         if (!queueItself.getContents().contains(queueUser)) {
             queueItself.addUser(queueUser);
             this.updateMessage(origin.getMessage(), queueItself);
-            this.telegramService.sendAnswerCallbackQuery("\u0423\u0441\u043f\u0456\u0448\u043d\u043e \u0437\u0430\u0431\u0440\u043e\u043d\u044c\u043e\u0432\u0430\u043d\u043e \u043c\u0456\u0441\u0446\u0435 \u0443 \u0447\u0435\u0440\u0437\u0456!", origin.getId());
+            this.telegramService.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", origin.getId());
         } else {
-            this.telegramService.sendAnswerCallbackQuery("\u0412\u0438 \u0432\u0436\u0435 \u0437\u043d\u0430\u0445\u043e\u0434\u0438\u0442\u0435\u0441\u044c \u0443 \u0446\u0456\u0439 \u0447\u0435\u0440\u0437\u0456!", origin.getId());
+            this.telegramService.sendAnswerCallbackQuery("Ви вже знаходитесь у цій черзі!", origin.getId());
         }
     }
 }

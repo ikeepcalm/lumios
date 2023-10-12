@@ -30,9 +30,9 @@ extends Executable {
         QueueItself queueItself;
         if (!origin.getText().equals("/queue")) {
             String alias = origin.getText().replace("/queue ", "").toUpperCase();
-            queueItself = this.queueUtil.createQueue(origin.getChatId(), alias);
+            queueItself = this.queueUtil.createQueue(alias);
         } else {
-            queueItself = this.queueUtil.createQueue(origin.getChatId());
+            queueItself = this.queueUtil.createQueue();
         }
         QueueUser queueUser = new QueueUser();
         queueUser.setName(origin.getFrom().getFirstName());

@@ -8,7 +8,7 @@
  */
 package dev.ua.ikeepcalm.merged.telegram.handling.handlers;
 
-import dev.ua.ikeepcalm.merged.patterns.UpdatePatterns.AdditionUpdate;
+import dev.ua.ikeepcalm.merged.patterns.UpdatePatterns.IncreasingUpdate;
 import dev.ua.ikeepcalm.merged.telegram.executing.updates.DecreasingUpdate;
 import dev.ua.ikeepcalm.merged.telegram.handling.Handleable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ implements Handleable {
         if (!update.hasCallbackQuery()) {
             if (dev.ua.ikeepcalm.merged.patterns.UpdatePatterns.DecreasingUpdate.isDecreasingUpdate(update)) {
                 this.decreasingUpdate.execute(update);
-            } else if (AdditionUpdate.isAdditionUpdate(update)) {
+            } else if (IncreasingUpdate.isAdditionUpdate(update)) {
                 this.additionUpdate.execute(update);
             }
         }

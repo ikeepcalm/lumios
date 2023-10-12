@@ -11,7 +11,9 @@ package dev.ua.ikeepcalm.merged.telegram.executing.updates;
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.executing.Executable;
+import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.PurgeMessage;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -29,19 +31,39 @@ extends Executable {
                     ReverenceUser foundRepliedUser = this.userService.findById(repliedUser.getId(), linkedChatId);
                     int eventValue = Integer.parseInt(origin.getMessage().getText().replace("-", ""));
                     if (foundUser.getCredits() < eventValue) {
-                        this.reply(origin.getMessage(), "\u041d\u0435\u0434\u043e\u0441\u0442\u0430\u0442\u043d\u044c\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u0456\u0432! \u041d\u0430\u044f\u0432\u043d\u043e: " + foundUser.getCredits() + "\n\u0414\u043e\u0447\u0435\u043a\u0430\u0439\u0442\u0435\u0441\u044f \u0449\u043e\u0434\u0435\u043d\u043d\u043e\u0433\u043e \u043e\u043d\u043e\u0432\u043b\u0435\u043d\u043d\u044f.\n\u0414\u0456\u0437\u043d\u0430\u0442\u0438\u0441\u044f \u0431\u0456\u043b\u044c\u0448\u0435: /help@queueupnow_bot.");
+                        this.reply(origin.getMessage(), "Н\u0435\u0434\u043e\u0441\u0442\u0430\u0442\u043d\u044c\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u0456\u0432! \u041d\u0430\u044f\u0432\u043d\u043e: " + foundUser.getCredits() + "\n\u0414\u043e\u0447\u0435\u043a\u0430\u0439\u0442\u0435\u0441\u044f \u0449\u043e\u0434\u0435\u043d\u043d\u043e\u0433\u043e \u043e\u043d\u043e\u0432\u043b\u0435\u043d\u043d\u044f.\n\u0414\u0456\u0437\u043d\u0430\u0442\u0438\u0441\u044f \u0431\u0456\u043b\u044c\u0448\u0435: /help@queueupnow_bot.");
                     } else if (foundUser.getCredits() > eventValue) {
                         foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
                         foundUser.setCredits(foundUser.getCredits() - eventValue);
                         this.userService.save(foundUser);
                         this.userService.save(foundRepliedUser);
-                        this.reply(origin.getMessage(), "\u2714\u2800");
+                        Message reply = this.reply(origin.getMessage(), "✔⠀");
+                        new java.util.Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        PurgeMessage purgeAction = new PurgeMessage(origin.getMessage().getMessageId(), origin.getMessage().getChatId());
+                                        PurgeMessage purgeResponse = new PurgeMessage(reply.getMessageId(), reply.getChatId());
+                                        telegramService.sendPurgeMessage(purgeResponse);
+                                        telegramService.sendPurgeMessage(purgeAction);
+                                    }
+                                }, 300000 );
                     } else {
                         foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
                         foundUser.setCredits(0);
                         this.userService.save(foundUser);
                         this.userService.save(foundRepliedUser);
-                        this.reply(origin.getMessage(), "\u2714\u2800");
+                        Message reply = this.reply(origin.getMessage(), "✔⠀");
+                        new java.util.Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        PurgeMessage purgeAction = new PurgeMessage(origin.getMessage().getMessageId(), origin.getMessage().getChatId());
+                                        PurgeMessage purgeResponse = new PurgeMessage(reply.getMessageId(), reply.getChatId());
+                                        telegramService.sendPurgeMessage(purgeResponse);
+                                        telegramService.sendPurgeMessage(purgeAction);
+                                    }
+                                }, 300000 );
                     }
                 } else {
                     this.reply(origin.getMessage(), "\u0422\u043e\u0439, \u043a\u043e\u043c\u0443 \u0432\u0438 \u0437\u0434\u0456\u0439\u0441\u043d\u0438\u043b\u0438 \u0441\u043f\u0440\u043e\u0431\u0443 \u0437\u043c\u0456\u043d\u0438\u0442\u0438 \u043f\u043e\u043a\u0430\u0437\u043d\u0438\u043a \u043f\u043e\u0432\u0430\u0433\u0438, \u0449\u0435 \u043d\u0435 \u0431\u0435\u0440\u0435 \u0443\u0447\u0430\u0441\u0442\u044c \u0443 \u0441\u0438\u0441\u0442\u0435\u043c\u0456 \u0431\u043e\u0442\u0443. \u041d\u0435\u0445\u0430\u0439 \u0441\u043f\u0440\u043e\u0431\u0443\u0454 /register@queueupnow_bot!");

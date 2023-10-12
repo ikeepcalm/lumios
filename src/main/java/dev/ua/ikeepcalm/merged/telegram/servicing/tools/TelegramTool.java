@@ -249,7 +249,7 @@ implements TelegramService {
             return (Message)this.execute((BotApiMethod)sendMessage);
         }
         catch (TelegramApiException e) {
-            LoggerFactory.getLogger(this.getClass()).warn("Failed to send MultiMessage: " + multiMessage.getText() + " / " + multiMessage.getChatId());
+            LoggerFactory.getLogger(this.getClass()).warn("Failed to send MultiMessage: " + multiMessage.getText() + " / " + multiMessage.getChatId() + e.getStackTrace());
             return null;
         }
     }

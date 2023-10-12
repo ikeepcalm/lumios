@@ -14,5 +14,6 @@ public interface TaskService {
 
     public List<DueTask> getTasksForCurrentChat(ReverenceChat chat);
 
+    DueTask findTaskById(Long id);
 }
 

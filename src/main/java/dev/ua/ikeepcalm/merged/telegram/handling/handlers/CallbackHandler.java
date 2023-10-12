@@ -37,15 +37,15 @@ implements Handleable {
         CallbackQuery origin = update.getCallbackQuery();
         if (callback.endsWith("-join")) {
             callback = callback.replace("-join", "");
-            this.joinCallback.manage(callback, origin);
+            joinCallback.manage(callback, origin);
         } else if (callback.endsWith("-flush")) {
             callback = callback.replace("-flush", "");
-            this.flushCallback.manage(callback, origin);
+            flushCallback.manage(callback, origin);
         } else if (callback.endsWith("-exit")) {
             callback = callback.replace("-exit", "");
-            this.exitCallback.manage(callback, origin);
+            exitCallback.manage(callback, origin);
         } else if (callback.startsWith("increase_")) {
-            this.increaseCallback.manage(callback, origin);
+            increaseCallback.manage(callback, origin);
         }
     }
 

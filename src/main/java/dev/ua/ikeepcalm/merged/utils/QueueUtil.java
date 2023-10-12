@@ -15,30 +15,22 @@ import java.util.UUID;
 
 @Component
 public class QueueUtil {
-    private final HashMap<UUID, QueueItself> allQueues = this.loadHashMapFromFile();
+    private final HashMap<UUID, QueueItself> allQueues;
 
     public QueueUtil() {
+        this.allQueues = loadHashMapFromFile();
     }
 
     public void saveHashMapToFile() {
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("queueData.ser"));
-
             try {
                 outputStream.writeObject(this.allQueues);
-            } catch (Throwable var5) {
-                try {
-                    outputStream.close();
-                } catch (Throwable var4) {
-                    var5.addSuppressed(var4);
-                }
-
-                throw var5;
-            }
-
-            outputStream.close();
-        } catch (IOException var6) {
-            var6.printStackTrace();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } outputStream.close();
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
 
     }
@@ -47,9 +39,7 @@ public class QueueUtil {
         File file = new File("queueData.ser");
         if (!file.exists()) {
             return new HashMap<>();
-        }
-
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
+        } try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
             return (HashMap<UUID, QueueItself>) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -57,28 +47,27 @@ public class QueueUtil {
         }
     }
 
-    public QueueItself createQueue(long chatId) {
+    public QueueItself createQueue() {
         QueueItself queueItself = new QueueItself();
-        this.allQueues.put(queueItself.getId(), queueItself);
+        allQueues.put(queueItself.getId(), queueItself);
         return queueItself;
     }
 
-    public QueueItself createQueue(long chatId, String alias) {
+    public QueueItself createQueue(String alias) {
         QueueItself queueItself = new QueueItself(alias);
-        this.allQueues.put(queueItself.getId(), queueItself);
+        allQueues.put(queueItself.getId(), queueItself);
         return queueItself;
     }
 
     public void updateQueue(QueueItself queueItself) {
-        UUID givenUUID = queueItself.getId();
-        this.allQueues.put(givenUUID, queueItself);
+        this.allQueues.put(queueItself.getId(), queueItself);
     }
 
     public QueueItself getQueue(UUID uuid) {
-        return (QueueItself)this.allQueues.get(uuid);
+        return allQueues.get(uuid);
     }
 
     public void deleteQueue(QueueItself queueItself) {
-        this.allQueues.remove(queueItself);
+        allQueues.remove(queueItself);
     }
 }

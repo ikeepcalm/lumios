@@ -15,7 +15,6 @@ package dev.ua.ikeepcalm.merged.telegram.executing;
 import dev.ua.ikeepcalm.merged.dal.impls.ChatServiceImpl;
 import dev.ua.ikeepcalm.merged.dal.impls.RaiseServiceImpl;
 import dev.ua.ikeepcalm.merged.dal.impls.TaskServiceImpl;
-import dev.ua.ikeepcalm.merged.dal.impls.UserServiceImpl;
 import dev.ua.ikeepcalm.merged.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.merged.dal.interfaces.RaiseService;
 import dev.ua.ikeepcalm.merged.dal.interfaces.TaskService;
@@ -41,7 +40,7 @@ public abstract class Executable {
     protected Logger logger;
 
     @Autowired
-    private void init(TaskServiceImpl taskService, TelegramService telegramService, UserServiceImpl userService, RaiseServiceImpl increasingService, ChatServiceImpl chatService) {
+    private void init(TaskServiceImpl taskService, TelegramService telegramService, UserService userService, RaiseServiceImpl increasingService, ChatServiceImpl chatService) {
         this.telegramService = telegramService;
         this.userService = userService;
         this.raiseService = increasingService;
@@ -50,19 +49,19 @@ public abstract class Executable {
         this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 
-    protected void reply(Message origin, String text) {
+    protected Message reply(Message origin, String text) {
         MultiMessage message = new MultiMessage();
         message.setMessageId(origin.getMessageId());
         message.setChatId(origin.getChatId());
         message.setText(text);
-        this.telegramService.sendMultiMessage(message);
+        return telegramService.sendMultiMessage(message);
     }
 
-    protected void sendMessage(Message origin, String text) {
+    protected Message sendMessage(Message origin, String text) {
         MultiMessage message = new MultiMessage();
         message.setChatId(origin.getChatId());
         message.setText(text);
-        this.telegramService.sendMultiMessage(message);
+        return telegramService.sendMultiMessage(message);
     }
 
     protected void sendAndEditMessage(long linkedChatId, String sendText, String editText, int timeout) {

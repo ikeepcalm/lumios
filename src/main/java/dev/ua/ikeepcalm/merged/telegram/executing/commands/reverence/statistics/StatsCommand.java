@@ -18,8 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Component
-public class StatsCommand
-extends Executable {
+public class StatsCommand extends Executable {
     public void execute(Message origin) {
         ReverenceChat linkedChatId = this.chatService.find(origin.getChatId());
         List<ReverenceUser> userEntities = this.userService.findAll(linkedChatId);

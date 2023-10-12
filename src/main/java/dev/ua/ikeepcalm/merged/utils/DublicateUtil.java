@@ -13,11 +13,12 @@ import dev.ua.ikeepcalm.merged.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.entities.queue.QueueUser;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.AlterMessage;
 import dev.ua.ikeepcalm.merged.telegram.servicing.proxies.MultiMessage;
-import java.util.ArrayList;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
+import java.util.ArrayList;
 
 public class DublicateUtil {
     public static InlineKeyboardMarkup createMarkup(QueueItself queueItself) {
@@ -30,7 +31,7 @@ public class DublicateUtil {
         queueUp.setText("\u041f\u0440\u0438\u0454\u0434\u043d\u0430\u0442\u0438\u0441\u044f \ud83d\udd3c");
         queueUp.setCallbackData(queueItself.getId() + "-join");
         InlineKeyboardButton flush = new InlineKeyboardButton();
-        flush.setText("\u042f \u0432\u0436\u0435 \u0432\u0441\u0435 \u2705");
+        flush.setText("\u042f \u0432\u0436\u0435 \u0432\u0441\u0435 ✅");
         flush.setCallbackData(queueItself.getId() + "-flush");
         InlineKeyboardButton exit = new InlineKeyboardButton();
         exit.setText("\u0412\u0438\u0439\u0442\u0438 \ud83d\udd04");
