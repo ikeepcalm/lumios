@@ -8,15 +8,19 @@
  */
 package dev.ua.ikeepcalm.merged.scheduler;
 
-import dev.ua.ikeepcalm.merged.dal.interfaces.UserService;
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DailyUpdate {
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public DailyUpdate(UserService userService) {
+        this.userService = userService;
+    }
 
     @Scheduled(cron="0 0 22 * * *")
     public void executeDailyTask() {

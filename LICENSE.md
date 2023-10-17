@@ -140,9 +140,9 @@ making the Licensed Material available under these terms and conditions.
             where Exceptions and Limitations apply to Your use, this
             Public License does not apply, and You do not need to comply
             with its terms and conditions.
-        1. Term. The term of this Public License is specified in
+        2. Term. The term of this Public License is specified in
             Section 6(a).
-        1. Media and formats; technical modifications allowed. The
+        3. Media and formats; technical modifications allowed. The
             Licensor authorizes You to exercise the Licensed Rights in
             all media and formats whether now known or hereafter
             created, and to make technical modifications necessary to do
@@ -153,7 +153,7 @@ making the Licensed Material available under these terms and conditions.
             Effective Technological Measures. For purposes of this
             Public License, simply making modifications authorized by
             this Section 2(a)(4) never produces Adapted Material.
-        1. Downstream recipients.
+        4. Downstream recipients.
             -   A. Offer from the Licensor – Licensed Material. Every
                 recipient of the Licensed Material automatically
                 receives an offer from the Licensor to exercise the
@@ -165,7 +165,7 @@ making the Licensed Material available under these terms and conditions.
                 the Licensed Material if doing so restricts exercise of
                 the Licensed Rights by any recipient of the Licensed
                 Material.
-        1. No endorsement. Nothing in this Public License
+        5. No endorsement. Nothing in this Public License
             constitutes or may be construed as permission to assert or
             imply that You are, or that Your use of the Licensed
             Material is, connected with, or sponsored, endorsed, or
@@ -182,7 +182,7 @@ making the Licensed Material available under these terms and conditions.
             Licensed Rights, but not otherwise.
         1. Patent and trademark rights are not licensed under this
             Public License.
-        1. To the extent possible, the Licensor waives any right to
+        2. To the extent possible, the Licensor waives any right to
             collect royalties from You for the exercise of the Licensed
             Rights, whether directly or through a collecting society
             under any voluntary or waivable statutory or compulsory
@@ -222,10 +222,10 @@ making the Licensed Material available under these terms and conditions.
             be reasonable to satisfy the conditions by providing a URI
             or hyperlink to a resource that includes the required
             information.
-        1. If requested by the Licensor, You must remove any of the
+        2. If requested by the Licensor, You must remove any of the
             information required by Section 3(a)(1)(A) to the extent
             reasonably practicable.
-        1. If You Share Adapted Material You produce, the Adapter's
+        3. If You Share Adapted Material You produce, the Adapter's
             License You apply must not prevent recipients of the Adapted
             Material from complying with this Public License.
 

@@ -5,26 +5,26 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.3</version>
+        <version>3.1.4</version>
         <relativePath/>
     </parent>
     <groupId>dev.ua.ikeepcalm</groupId>
     <artifactId>QueueUpNow</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <name>QueueUpNow</name>
     <properties>
         <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>8.1.0</version>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>3.1.3</version>
+            <version>3.1.4</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>org.telegram</groupId>
-            <artifactId>telegrambots-spring-boot-starter</artifactId>
+            <artifactId>telegrambots</artifactId>
             <version>6.8.0</version>
         </dependency>
         <dependency>
@@ -50,6 +50,11 @@
             <groupId>org.springframework.boot.experimental</groupId>
             <artifactId>spring-boot-thin-layout</artifactId>
             <version>1.0.30.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.0</version>
         </dependency>
     </dependencies>
 
