@@ -36,6 +36,7 @@ public class Application implements CommandLineRunner {
             if (command.equals("stop")) {
                 System.out.println("Shutting down the application...");
                 SpringApplication.exit(applicationContext);
+                System.exit(0);
                 break;
             }else {
                 System.out.println("Unknown command. Please, try again.");

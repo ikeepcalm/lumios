@@ -30,14 +30,14 @@ extends Executable {
                         userService.save(foundUser);
                         userService.save(foundRepliedUser);
                         Message reply = reply(origin.getMessage(), "✔⠀");
-                        replyAndSchedule(origin, reply);
+                        scheduleRemove(origin, reply);
                     } else {
                         foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
                         foundUser.setCredits(0);
                         userService.save(foundUser);
                         userService.save(foundRepliedUser);
                         Message reply = reply(origin.getMessage(), "✔⠀");
-                        replyAndSchedule(origin, reply);
+                        scheduleRemove(origin, reply);
                     }
                 } else {
                     this.reply(origin.getMessage(), "Той, кому ви здійснили спробу змінити показник поваги, ще не бере участь у системі боту. Нехай спробує /register@queueupnow_bot!");
@@ -48,7 +48,7 @@ extends Executable {
         }
     }
 
-    private void replyAndSchedule(Update origin, Message reply) {
+    private void scheduleRemove(Update origin, Message reply) {
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override

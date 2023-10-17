@@ -38,9 +38,9 @@ public class AbsSender extends DefaultAbsSender{
         super(new DefaultBotOptions(), botToken);
     }
 
-    private Message executeCommand(BotApiMethod<?> command, String errorMessage) {
+    private Object executeCommand(BotApiMethod<?> command, String errorMessage) {
         try {
-            return (Message) execute(command);
+            return execute(command);
         } catch (TelegramApiException e) {
             LOGGER.error(errorMessage, e);
             throw new RuntimeException(e);
@@ -152,7 +152,7 @@ public class AbsSender extends DefaultAbsSender{
         sendMessage.setReplyMarkup(textMessage.getReplyKeyboard());
         if (textMessage.getMessageId() != 0) {
             sendMessage.setReplyToMessageId(textMessage.getMessageId());
-        } return executeCommand(sendMessage, "Failed to send multi-message");
+        } return (Message) executeCommand(sendMessage, "Failed to send multi-message");
     }
 
     public void sendRemoveMessage(RemoveMessage removeMessage) {
