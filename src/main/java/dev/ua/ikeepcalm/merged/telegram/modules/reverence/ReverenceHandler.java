@@ -108,7 +108,7 @@ public class ReverenceHandler implements ModuleHandler {
     public void dispatchUpdate(Update update) {
         if (update.hasCallbackQuery()){
             manageCallbacks(update);
-        } else if (update.hasMessage()){
+        } else if (update.hasMessage() && update.getMessage().getText().startsWith("/")){
             manageCommands(update);
         } else {
             manageUpdates(update);
@@ -119,7 +119,7 @@ public class ReverenceHandler implements ModuleHandler {
     public boolean supports(Update update) {
         if (update.hasMessage()) {
             if (update.getMessage().hasText()){
-                if (IncreasingUpdate.isIncreasingUpdate(update) || DecreasingUpdate.isDecreasingUpdate(update)){
+                if (update.getMessage().isReply() && (IncreasingUpdate.isIncreasingUpdate(update) || DecreasingUpdate.isDecreasingUpdate(update))){
                     return true;
                 } else {
                     return update.getMessage().getText().startsWith("/");
