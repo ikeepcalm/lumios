@@ -42,7 +42,7 @@ public class QueueLifecycleUtil {
         } try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
             return (HashMap<UUID, QueueItself>) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            return new HashMap<>();
+            throw new RuntimeException(e);
         }
     }
 

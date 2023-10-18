@@ -13,12 +13,12 @@ public interface ModuleHandler {
     default boolean supports(Update update){
         if (update.hasMessage()) {
             if (update.getMessage().hasText()){
-                return update.getMessage().getText().startsWith("/");
+                return !update.getMessage().getText().startsWith("/");
             } else {
-                return false;
+                return true;
             }
         } else {
-            return update.hasCallbackQuery();
+            return !update.hasCallbackQuery();
         }
     }
 }

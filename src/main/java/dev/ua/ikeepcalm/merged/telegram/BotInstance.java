@@ -17,7 +17,7 @@ public class BotInstance  extends TelegramLongPollingBot implements LongPollingB
 
     public void onUpdateReceived(Update update) {
         for (ModuleHandler moduleHandler : this.moduleHandlerList) {
-            if (!moduleHandler.supports(update)) continue;
+            if (moduleHandler.supports(update)) continue;
             moduleHandler.dispatchUpdate(update);
         }
     }

@@ -2,9 +2,9 @@
 package dev.ua.ikeepcalm.merged;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import dev.ua.ikeepcalm.merged.telegram.utils.InteractiveRunnerUtil;
+import dev.ua.ikeepcalm.merged.telegram.utils.QueueLifecycleUtil;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -18,8 +18,17 @@ import java.util.Scanner;
 @ComponentScan(basePackages={"dev.ua.ikeepcalm.merged", "org.telegram.telegrambots"})
 public class Application implements CommandLineRunner {
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
+    private final QueueLifecycleUtil queueLifecycleUtil;
+    private final InteractiveRunnerUtil interactiveRunnerUtil;
+
+    public Application(ApplicationContext applicationContext,
+                       QueueLifecycleUtil queueLifecycleUtil,
+                       InteractiveRunnerUtil interactiveRunnerUtil) {
+        this.applicationContext = applicationContext;
+        this.queueLifecycleUtil = queueLifecycleUtil;
+        this.interactiveRunnerUtil = interactiveRunnerUtil;
+    }
 
     @Override
     public void run(String... args) {
@@ -35,10 +44,18 @@ public class Application implements CommandLineRunner {
 
             if (command.equals("stop")) {
                 System.out.println("Shutting down the application...");
+                queueLifecycleUtil.saveHashMapToFile();
                 SpringApplication.exit(applicationContext);
                 System.exit(0);
                 break;
-            }else {
+            } else if (command.equals("say")){
+                if (arguments != null){
+                System.out.println("Executing TextMessage...");
+                interactiveRunnerUtil.sayCommand(arguments);
+                }else {
+                    System.out.println("You should also set desired text to be sent!");
+                }
+            } else {
                 System.out.println("Unknown command. Please, try again.");
             }
         } scanner.close();

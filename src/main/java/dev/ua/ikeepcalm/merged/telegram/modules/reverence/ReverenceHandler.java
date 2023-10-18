@@ -120,15 +120,15 @@ public class ReverenceHandler implements ModuleHandler {
         if (update.hasMessage()) {
             if (update.getMessage().hasText()){
                 if (update.getMessage().isReply() && (IncreasingUpdate.isIncreasingUpdate(update) || DecreasingUpdate.isDecreasingUpdate(update))){
-                    return true;
+                    return false;
                 } else {
-                    return update.getMessage().getText().startsWith("/");
+                    return !update.getMessage().getText().startsWith("/");
                 }
             } else {
-                return false;
+                return true;
             }
         } else {
-            return update.hasCallbackQuery();
+            return !update.hasCallbackQuery();
         }
     }
 }

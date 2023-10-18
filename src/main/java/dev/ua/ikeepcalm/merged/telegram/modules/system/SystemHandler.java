@@ -44,6 +44,5 @@ public class SystemHandler implements ModuleHandler {
     public void dispatchUpdate(Update update) {
         manageCommands(update);
     }
-
 }
 
