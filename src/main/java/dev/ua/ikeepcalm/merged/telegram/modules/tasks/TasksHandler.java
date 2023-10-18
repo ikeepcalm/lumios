@@ -30,7 +30,6 @@ public class TasksHandler implements ModuleHandler {
     public TasksHandler(TaskCreationCommand taskCreationCommand,
                         TaskEditingCommand taskEditingCommand,
                         WhatIsDueCommand whatIsDueCommand){
-
         this.taskCreationCommand = taskCreationCommand;
         this.taskEditingCommand = taskEditingCommand;
         this.whatIsDueCommand = whatIsDueCommand;
@@ -40,7 +39,7 @@ public class TasksHandler implements ModuleHandler {
         Message origin = update.getMessage();
         String commandText = origin.getText();
         if (commandText != null && commandText.startsWith("/")) {
-            String[] parts = commandText.split("\\s+", 10);
+            String[] parts = commandText.split("\\s+", 20);
             String command = parts[0];
             command = command.replace("@queueupnow_bot", "");
             switch (command){

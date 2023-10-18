@@ -22,7 +22,7 @@ public class BotInstance  extends TelegramLongPollingBot implements LongPollingB
         }
     }
 
-    public BotInstance(TelegramBotConfig config, List<ModuleHandler> moduleHandlerList) {
+                public BotInstance(TelegramBotConfig config, List<ModuleHandler> moduleHandlerList) {
         super(config.getToken());
         this.moduleHandlerList = moduleHandlerList;
         this.botUsername = config.getUsername();

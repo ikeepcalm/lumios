@@ -11,10 +11,9 @@ package dev.ua.ikeepcalm.merged.telegram.modules.queues.callbacks;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
-import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
-import dev.ua.ikeepcalm.merged.telegram.utils.QueueMarkupUtil;
 import dev.ua.ikeepcalm.merged.telegram.utils.QueueLifecycleUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import dev.ua.ikeepcalm.merged.telegram.utils.QueueMarkupUtil;
+import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
@@ -47,6 +46,10 @@ public class ExitCallback
                     this.absSender.sendTextMessage(QueueMarkupUtil.createNotification(origin.getMessage().getChatId(), queueItself));
                 }
             }
+        } else {
+            queueItself.setMessageId(this.absSender.sendEditMessage(QueueMarkupUtil.updateMessage(origin.getMessage(), queueItself)).getMessageId());
+            this.queueLifecycleUtil.updateQueue(queueItself);
+            this.absSender.sendAnswerCallbackQuery("Хочеш вийти? Ну добре, виходь, ніхто ж тебе тут насильно не тримає...", origin.getId());
         }
     }
 }

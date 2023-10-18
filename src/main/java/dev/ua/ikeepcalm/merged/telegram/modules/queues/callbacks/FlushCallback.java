@@ -37,7 +37,7 @@ extends Executable {
         if (queueItself.flushUser(queueUser)) {
             queueItself.setMessageId(this.absSender.sendEditMessage(QueueMarkupUtil.updateMessage(origin.getMessage(), queueItself)).getMessageId());
             this.queueLifecycleUtil.updateQueue(queueItself);
-            this.absSender.sendAnswerCallbackQuery("Гарна робота! Тепер можещ трохи відпочити, і подивитися на те, як страждають інші...", origin.getId());
+            this.absSender.sendAnswerCallbackQuery("Гарна робота! Тепер можеш трохи відпочити, і подивитися на те, як страждають інші...", origin.getId());
             if (queueItself.getContents().isEmpty()) {
                 RemoveMessage removeMessage = new RemoveMessage((int)queueItself.getMessageId(), origin.getMessage().getChatId());
                 this.absSender.sendRemoveMessage(removeMessage);

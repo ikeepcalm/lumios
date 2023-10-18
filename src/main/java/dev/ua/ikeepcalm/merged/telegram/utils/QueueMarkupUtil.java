@@ -51,6 +51,7 @@ public class QueueMarkupUtil {
         QueueUser queueUser = queueItself.getContents().peek();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
+        textMessage.setMessageId((int) queueItself.getMessageId());
         if (queueUser != null) {
             textMessage.setText(queueUser.getName() + " (@" + queueUser.getUsername() + "), твоя черга відповідати у " + queueItself.getAlias() + "!");
         }

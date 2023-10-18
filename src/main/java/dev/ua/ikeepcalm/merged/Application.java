@@ -49,7 +49,7 @@ public class Application implements CommandLineRunner {
                 System.exit(0);
                 break;
             } else if (command.equals("say")){
-                if (arguments != null){
+                if (arguments != null && !arguments.isEmpty()){
                 System.out.println("Executing TextMessage...");
                 interactiveRunnerUtil.sayCommand(arguments);
                 }else {
