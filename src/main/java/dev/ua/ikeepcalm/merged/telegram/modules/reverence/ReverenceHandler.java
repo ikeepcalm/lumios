@@ -118,17 +118,17 @@ public class ReverenceHandler implements ModuleHandler {
     @Override
     public boolean supports(Update update) {
         if (update.hasMessage()) {
-            if (update.getMessage().hasText()){
+            if (update.getMessage().hasText() && !update.getMessage().getText().isEmpty()){
                 if (update.getMessage().isReply() && (IncreasingUpdate.isIncreasingUpdate(update) || DecreasingUpdate.isDecreasingUpdate(update))){
-                    return false;
+                    return true;
                 } else {
-                    return !update.getMessage().getText().startsWith("/");
+                    return update.getMessage().getText().startsWith("/");
                 }
             } else {
                 return true;
             }
         } else {
-            return !update.hasCallbackQuery();
+            return update.hasCallbackQuery();
         }
     }
 }

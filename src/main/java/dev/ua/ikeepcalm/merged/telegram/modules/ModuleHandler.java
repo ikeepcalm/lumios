@@ -14,7 +14,7 @@ public interface ModuleHandler {
     default boolean supports(Update update) {
         if (update != null) {
             if (update.hasMessage()) {
-                if (update.getMessage().hasText()) {
+                if (update.getMessage().hasText() && !update.getMessage().getText().isEmpty()) {
                     return update.getMessage().getText().startsWith("/");
                 } else {
                     return false;

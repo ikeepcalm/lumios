@@ -21,7 +21,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class TasksHandler implements ModuleHandler {
 
-
     private final TaskCreationCommand taskCreationCommand;
     private final TaskEditingCommand taskEditingCommand;
     private final WhatIsDueCommand whatIsDueCommand;
@@ -39,7 +38,7 @@ public class TasksHandler implements ModuleHandler {
         Message origin = update.getMessage();
         String commandText = origin.getText();
         if (commandText != null && commandText.startsWith("/")) {
-            String[] parts = commandText.split("\\s+", 20);
+            String[] parts = commandText.split("\\s+", 2);
             String command = parts[0];
             command = command.replace("@queueupnow_bot", "");
             switch (command){
