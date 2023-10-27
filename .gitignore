@@ -2,3 +2,5 @@
 /.idea
 README.md
 /.mvn
+/src/main/resources/application.properties
+/src/main/resources/thirdparty.properties
