@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands;
 
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.InputMismatchException;
 
 @Component
-public class TaskEditingCommand extends Executable {
+public class TaskEditingCommand extends CommandParent {
     public void execute(Message origin) {
         String taskInfo = origin.getText().replace("/edit", "").trim();
         String[] parts = taskInfo.split("\\s+");

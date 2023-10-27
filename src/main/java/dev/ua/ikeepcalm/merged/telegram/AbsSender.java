@@ -119,8 +119,7 @@ public class AbsSender extends DefaultAbsSender{
             String callbackOfButton = prefix + name;
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setCallbackData(callbackOfButton);
-            button.setText(name);
-
+            button.setText(name + " кредитів / " + name + "0 ✧");
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(button);
             keyboard.add(row);
@@ -137,18 +136,20 @@ public class AbsSender extends DefaultAbsSender{
         executeCommand(deleteMessage, "Failed to delete callback message");
     }
 
-    public void sendCallbackMessage(CallbackQuery origin, String messageText) {
+    public Message sendCallbackMessage(CallbackQuery origin, String messageText) {
         SendMessage message = new SendMessage();
         message.setText(messageText);
         message.setChatId(origin.getMessage().getChatId());
-        executeCommand(message, "Failed to send callback message");
+        return (Message) executeCommand(message, "Failed to send callback message");
     }
 
     public Message sendTextMessage(TextMessage textMessage) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText(textMessage.getText());
         sendMessage.setChatId(textMessage.getChatId());
-        sendMessage.setParseMode(MARKDOWN_PARSE_MODE);
+        if (textMessage.isEnableParseMode()){
+            sendMessage.setParseMode(MARKDOWN_PARSE_MODE);
+        }
         sendMessage.setReplyMarkup(textMessage.getReplyKeyboard());
         if (textMessage.getMessageId() != 0) {
             sendMessage.setReplyToMessageId(textMessage.getMessageId());

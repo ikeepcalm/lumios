@@ -1,9 +1,7 @@
-/*
- * Decompiled with CFR 0.150.
- */
 package dev.ua.ikeepcalm.merged.database.entities.queue;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -11,11 +9,12 @@ import java.util.Queue;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class QueueItself
 implements Serializable {
     private UUID id;
     private String alias;
-    private long messageId;
+    private int messageId;
     private Queue<QueueUser> contents = new LinkedList<>();
 
     public QueueItself() {
@@ -42,18 +41,6 @@ implements Serializable {
             return true;
         }
         return false;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }
-
-    public void setMessageId(long messageId) {
-        this.messageId = messageId;
     }
 
     public void setContents(Queue<QueueUser> contents) {

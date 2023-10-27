@@ -1,9 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.telegram.telegrambots.meta.api.objects.Message
- */
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.commands;
 
 import org.telegram.telegrambots.meta.api.objects.Message;

@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- */
 package dev.ua.ikeepcalm.merged.database.entities.queue;
 
 import lombok.Getter;
@@ -10,7 +7,7 @@ import java.util.Objects;
 
 @Getter
 public class QueueUser
-implements Serializable {
+        implements Serializable {
     private String username;
     private String name;
     private Long accountId;
@@ -22,7 +19,7 @@ implements Serializable {
         if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
-        QueueUser queueUser = (QueueUser)o;
+        QueueUser queueUser = (QueueUser) o;
         return Objects.equals(this.username, queueUser.username) && Objects.equals(this.name, queueUser.name) && Objects.equals(this.accountId, queueUser.accountId);
     }
 

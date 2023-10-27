@@ -1,16 +1,7 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.stereotype.Component
- *  org.telegram.telegrambots.meta.api.objects.Message
- *  org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
- *  org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
- */
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.commands;
 
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ShoppingUser;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -18,12 +9,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 @Component
 public class ShopCommand
-extends Executable {
+        extends CommandParent {
     public void execute(Message origin) {
         TextMessage message = new TextMessage();
         message.setChatId(origin.getChatId());
         message.setMessageId(origin.getMessageId());
-        message.setText("Оберіть варіант збільшення оновлюванної поваги!");
+        message.setText("Оберіть варіант збільшення постійних кредитів!");
         if (this.shopService.find(origin.getFrom().getId(), this.chatService.find(origin.getChatId())) == null) {
             ShoppingUser shoppingUser = new ShoppingUser();
             shoppingUser.setUserId(origin.getFrom().getId());
@@ -31,10 +22,10 @@ extends Executable {
             this.shopService.save(shoppingUser);
         }
         String[] values = new String[]{"10", "50", "100"};
-        String prefix = "increase_";
-        InlineKeyboardMarkup inlineKeyboardMarkup = this.absSender.createMarkup(values, prefix);
+        String prefix = "shop_";
+        InlineKeyboardMarkup inlineKeyboardMarkup = absSender.createMarkup(values, prefix);
         message.setReplyKeyboard(inlineKeyboardMarkup);
-        this.absSender.sendTextMessage(message);
+        sendMessage(origin, message);
     }
 }
 

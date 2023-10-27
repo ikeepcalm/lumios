@@ -1,15 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  jakarta.persistence.Column
- *  jakarta.persistence.Entity
- *  jakarta.persistence.GeneratedValue
- *  jakarta.persistence.GenerationType
- *  jakarta.persistence.Id
- *  jakarta.persistence.ManyToOne
- *  jakarta.persistence.Table
- */
 package dev.ua.ikeepcalm.merged.database.entities.reverence;
 
 import jakarta.persistence.Column;
@@ -23,22 +11,22 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name="users")
+@Table(name = "users")
 public class ReverenceUser {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userEntityId;
     @Column
     private Long userId;
     @Column
     private String username;
-    @Column(columnDefinition="integer default 0")
+    @Column(columnDefinition = "integer default 0")
     private int reverence;
-    @Column(columnDefinition="integer default 100")
+    @Column(columnDefinition = "integer default 100")
     private int credits;
-    @Column(columnDefinition="integer default 100")
+    @Column(columnDefinition = "integer default 100")
     private int sustainable;
-    @Column(columnDefinition="integer default 0")
+    @Column(columnDefinition = "integer default 0")
     private int balance;
     @ManyToOne
     private ReverenceChat channel;

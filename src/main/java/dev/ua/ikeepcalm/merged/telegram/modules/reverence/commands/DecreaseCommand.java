@@ -3,14 +3,14 @@ package dev.ua.ikeepcalm.merged.telegram.modules.reverence.commands;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.commands.DecreasingCommand;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 @Component
 public class DecreaseCommand
-extends Executable {
+extends CommandParent {
     public void execute(Message origin) {
         if (DecreasingCommand.isDecreaseCommand(origin)) {
             String string = origin.getText();

@@ -1,16 +1,8 @@
-/*
- * Decompiled with CFR 0.150.
- *
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.stereotype.Component
- *  org.telegram.telegrambots.meta.api.objects.CallbackQuery
- */
 package dev.ua.ikeepcalm.merged.telegram.modules.queues.callbacks;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueUser;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.merged.telegram.utils.QueueLifecycleUtil;
 import dev.ua.ikeepcalm.merged.telegram.utils.QueueMarkupUtil;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
@@ -21,7 +13,7 @@ import java.util.UUID;
 
 @Component
 public class ExitCallback
-        extends Executable {
+        extends CommandParent {
     private final QueueLifecycleUtil queueLifecycleUtil;
 
     public ExitCallback(QueueLifecycleUtil queueLifecycleUtil) {
@@ -47,9 +39,12 @@ public class ExitCallback
                 }
             }
         } else {
-            queueItself.setMessageId(this.absSender.sendEditMessage(QueueMarkupUtil.updateMessage(origin.getMessage(), queueItself)).getMessageId());
-            this.queueLifecycleUtil.updateQueue(queueItself);
-            this.absSender.sendAnswerCallbackQuery("Хочеш вийти? Ну добре, виходь, ніхто ж тебе тут насильно не тримає...", origin.getId());
+            if (queueItself.getContents().contains(queueUser)) {
+                queueItself.removeUser(queueUser);
+                queueItself.setMessageId(absSender.sendEditMessage(QueueMarkupUtil.updateMessage(origin.getMessage(), queueItself)).getMessageId());
+                queueLifecycleUtil.updateQueue(queueItself);
+                absSender.sendAnswerCallbackQuery("Хочеш вийти? Ну добре, виходь, ніхто ж тебе тут насильно не тримає...", origin.getId());
+            }
         }
     }
 }

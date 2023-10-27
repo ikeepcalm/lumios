@@ -2,16 +2,14 @@ package dev.ua.ikeepcalm.merged.telegram.modules.reverence.updates;
 
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
-import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 @Component
 public class DecreasingUpdate
-extends Executable {
+extends CommandParent {
     public void execute(Update origin) {
         User user = origin.getMessage().getFrom();
         User repliedUser = origin.getMessage().getReplyToMessage().getFrom();
@@ -29,15 +27,13 @@ extends Executable {
                         foundUser.setCredits(foundUser.getCredits() - eventValue);
                         userService.save(foundUser);
                         userService.save(foundRepliedUser);
-                        Message reply = reply(origin.getMessage(), "✔⠀");
-                        scheduleRemove(origin, reply);
+                        reply(origin.getMessage(), "✔⠀");
                     } else {
                         foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
                         foundUser.setCredits(0);
                         userService.save(foundUser);
                         userService.save(foundRepliedUser);
-                        Message reply = reply(origin.getMessage(), "✔⠀");
-                        scheduleRemove(origin, reply);
+                        reply(origin.getMessage(), "✔⠀");
                     }
                 } else {
                     this.reply(origin.getMessage(), "Той, кому ви здійснили спробу змінити показник поваги, ще не бере участь у системі боту. Нехай спробує /register@queueupnow_bot!");
@@ -46,19 +42,6 @@ extends Executable {
                 this.reply(origin.getMessage(), "Ви не берете участь у системі боту.\nСпробуйте /register@queueupnow_bot!");
             }
         }
-    }
-
-    private void scheduleRemove(Update origin, Message reply) {
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        RemoveMessage purgeAction = new RemoveMessage(origin.getMessage().getMessageId(), origin.getMessage().getChatId());
-                        RemoveMessage purgeResponse = new RemoveMessage(reply.getMessageId(), reply.getChatId());
-                        absSender.sendRemoveMessage(purgeResponse);
-                        absSender.sendRemoveMessage(purgeAction);
-                    }
-                }, 300000 );
     }
 }
 

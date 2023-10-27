@@ -1,17 +1,9 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.stereotype.Service
- */
 package dev.ua.ikeepcalm.merged.database.dal.impls;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.ShopService;
 import dev.ua.ikeepcalm.merged.database.dal.repositories.ShopRepository;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ShoppingUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

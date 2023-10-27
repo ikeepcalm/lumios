@@ -1,21 +1,14 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.stereotype.Component
- *  org.telegram.telegrambots.meta.api.objects.CallbackQuery
- */
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.callbacks;
 
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ShoppingUser;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
 @Component
 public class ShopCallback
-extends Executable {
+        extends CommandParent {
 
     public void manage(String receivedCallback, CallbackQuery origin) {
         ShoppingUser whoCalled = this.shopService.find(origin.getFrom().getId(), this.chatService.find(origin.getMessage().getChatId()));
@@ -26,42 +19,41 @@ extends Executable {
         try {
             ReverenceUser user = this.userService.findById(origin.getFrom().getId(), whoCalled.getChannel());
             switch (receivedCallback) {
-                case "increase_10" -> {
+                case "shop_10" -> {
                     this.shopService.delete(whoCalled);
                     if (user.getBalance() >= 100) {
                         user.setBalance(user.getBalance() - 100);
                         user.setSustainable(user.getSustainable() + 10);
                         this.userService.save(user);
-                        this.sendCallbackMessage(origin, "@" + user.getUsername() + " витратив 100✧ і збільшив своє щоденне оновлення на 10!");
+                        sendCallbackMessage(origin, "@" + user.getUsername() + " витратив 100✧ і збільшив своє щоденне оновлення на 10!");
                         return;
                     }
-                    this.sendCallbackMessage(origin, "@" + user.getUsername() + ", у вас недостатньо грошей у гаманці ✧!\nНаявно на балансі: " + user.getBalance() + "✧\nНеобхідно для цієї дії: 100✧");
+                    sendCallbackMessage(origin, "@" + user.getUsername() + ", у вас недостатньо грошей у гаманці ✧!\nНаявно на балансі: " + user.getBalance() + "✧\nНеобхідно для цієї дії: 100✧");
                 }
-                case "increase_50" -> {
+                case "shop_50" -> {
                     this.shopService.delete(whoCalled);
                     if (user.getBalance() >= 500) {
                         user.setBalance(user.getBalance() - 500);
                         user.setSustainable(user.getSustainable() + 50);
                         this.userService.save(user);
-                        this.sendCallbackMessage(origin, "@" + user.getUsername() + " витратив 500✧ і збільшив своє щоденне оновлення на 50!");
+                        sendCallbackMessage(origin, "@" + user.getUsername() + " витратив 500✧ і збільшив своє щоденне оновлення на 50!");
                         return;
                     }
                     this.sendCallbackMessage(origin, "@" + user.getUsername() + ", у вас недостатньо грошей у гаманці ✧!\nНаявно на балансі: " + user.getBalance() + "✧\nНеобхідно для цієї дії: 500✧");
                 }
-                case "increase_100" -> {
+                case "shop_100" -> {
                     this.shopService.delete(whoCalled);
                     if (user.getBalance() >= 1000) {
                         user.setBalance(user.getBalance() - 1000);
                         user.setSustainable(user.getSustainable() + 100);
                         this.userService.save(user);
-                        this.sendCallbackMessage(origin, "@" + user.getUsername() + " витратив 1000✧ і збільшив своє щоденне оновлення на 100!");
+                        sendCallbackMessage(origin, "@" + user.getUsername() + " витратив 1000✧ і збільшив своє щоденне оновлення на 100!");
                         return;
                     }
-                    this.sendCallbackMessage(origin, "@" + user.getUsername() + ", у вас недостатньо грошей у гаманці ✧!\nНаявно на балансі: " + user.getBalance() + "✧\nНеобхідно для цієї дії: 1000✧");
+                    sendCallbackMessage(origin, "@" + user.getUsername() + ", у вас недостатньо грошей у гаманці ✧!\nНаявно на балансі: " + user.getBalance() + "✧\nНеобхідно для цієї дії: 1000✧");
                 }
             }
-        }
-        finally {
+        } finally {
             this.removeCallbackMessage(origin);
         }
     }

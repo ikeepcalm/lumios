@@ -1,12 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.telegram.telegrambots.meta.api.objects.Message
- *  org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
- *  org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
- *  org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
- */
 package dev.ua.ikeepcalm.merged.telegram.utils;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
@@ -27,22 +18,35 @@ public class QueueMarkupUtil {
         ArrayList<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         ArrayList<InlineKeyboardButton> firstRow = new ArrayList<>();
         ArrayList<InlineKeyboardButton> secondRow = new ArrayList<>();
-        ArrayList<InlineKeyboardButton> thirdRow = new ArrayList<>();
+
         InlineKeyboardButton queueUp = new InlineKeyboardButton();
-        queueUp.setText("Приєднатися \ud83d\udd3c");
+        queueUp.setText("Join \uD83D\uDD30");
         queueUp.setCallbackData(queueItself.getId() + "-join");
+
         InlineKeyboardButton flush = new InlineKeyboardButton();
-        flush.setText("Я вже все ✅");
+        flush.setText("I'm done ✅");
         flush.setCallbackData(queueItself.getId() + "-flush");
+
         InlineKeyboardButton exit = new InlineKeyboardButton();
-        exit.setText("Вийти \ud83d\udd04");
+        exit.setText("Leave \ud83d\udd04");
         exit.setCallbackData(queueItself.getId() + "-exit");
+
+        InlineKeyboardButton delete = new InlineKeyboardButton();
+        delete.setText("Delete ❌");
+        delete.setCallbackData(queueItself.getId() + "-delete");
+
+        InlineKeyboardButton notify = new InlineKeyboardButton();
+        notify.setText("Notify ⚠");
+        notify.setCallbackData(queueItself.getId() + "-notify");
         firstRow.add(queueUp);
-        secondRow.add(flush);
-        thirdRow.add(exit);
+        firstRow.add(flush);
+        firstRow.add(exit);
+
+        secondRow.add(delete);
+        secondRow.add(notify);
+
         keyboard.add(firstRow);
         keyboard.add(secondRow);
-        keyboard.add(thirdRow);
         inlineKeyboardMarkup.setKeyboard(keyboard);
         return inlineKeyboardMarkup;
     }
@@ -51,17 +55,35 @@ public class QueueMarkupUtil {
         QueueUser queueUser = queueItself.getContents().peek();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
-        textMessage.setMessageId((int) queueItself.getMessageId());
+        textMessage.setMessageId(queueItself.getMessageId());
+
         if (queueUser != null) {
             textMessage.setText(queueUser.getName() + " (@" + queueUser.getUsername() + "), твоя черга відповідати у " + queueItself.getAlias() + "!");
         }
+
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        ArrayList<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        ArrayList<InlineKeyboardButton> row = new ArrayList<>();
+
+        InlineKeyboardButton flush = new InlineKeyboardButton();
+        flush.setText("I'm done ✅");
+        flush.setCallbackData(queueItself.getId() + "-flush");
+
+        row.add(flush);
+
+        keyboard.add(row);
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+
+        textMessage.setReplyKeyboard(inlineKeyboardMarkup);
+
         return textMessage;
     }
 
+
     public static EditMessage updateMessage(Message origin, QueueItself queueItself) {
-        EditMessage generalMessage = new EditMessage();
-        generalMessage.setChatId(origin.getChatId());
-        generalMessage.setMessageId((int)queueItself.getMessageId());
+        EditMessage editMessage = new EditMessage();
+        editMessage.setChatId(origin.getChatId());
+        editMessage.setMessageId(queueItself.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(queueItself.getAlias()).append(" <<<\n\n");
         int id = 1;
@@ -69,9 +91,9 @@ public class QueueMarkupUtil {
             stringBuilder.append("ID: ").append(id).append(" - ").append(iteQueueUser.getName()).append(" (@").append(iteQueueUser.getUsername()).append(")\n");
             ++id;
         }
-        generalMessage.setText(stringBuilder.toString());
-        generalMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queueItself));
-        return generalMessage;
+        editMessage.setText(stringBuilder.toString());
+        editMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queueItself));
+        return editMessage;
     }
 }
 

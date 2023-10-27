@@ -1,16 +1,8 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.stereotype.Service
- */
 package dev.ua.ikeepcalm.merged.database.dal.impls;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.merged.database.dal.repositories.ChatRepository;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,6 +27,11 @@ implements ChatService {
     @Override
     public void delete(ReverenceChat chat) {
         this.chatRepository.save(chat);
+    }
+
+    @Override
+    public Iterable<ReverenceChat> findAll() {
+        return chatRepository.findAll();
     }
 }
 

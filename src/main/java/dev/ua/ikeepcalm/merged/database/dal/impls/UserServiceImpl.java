@@ -1,17 +1,9 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.stereotype.Service
- */
 package dev.ua.ikeepcalm.merged.database.dal.impls;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.database.dal.repositories.UserRepository;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +11,7 @@ import java.util.List;
 @Service
 public class UserServiceImpl
 implements UserService {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -78,11 +70,6 @@ implements UserService {
     public boolean checkIfMentionedUserExists(String username, ReverenceChat reverenceChat) {
         ReverenceUser reverenceUser = userRepository.findReverenceUserByUsernameAndChannel(username, reverenceChat);
         return reverenceUser != null;
-    }
-
-    @Autowired
-    private void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
     }
 }
 

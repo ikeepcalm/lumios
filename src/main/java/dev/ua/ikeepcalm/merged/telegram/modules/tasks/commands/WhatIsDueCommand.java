@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands;
 
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class WhatIsDueCommand extends Executable {
+public class WhatIsDueCommand extends CommandParent {
     public void execute(Message origin) {
         Long chatId = origin.getChatId();
         List<DueTask> tasks = taskService.getTasksForCurrentChat(chatService.find(chatId));
@@ -54,7 +54,7 @@ public class WhatIsDueCommand extends Executable {
                 }
             }
 
-            sendMessage(origin, messageBuilder.toString());
+            sendMessage(origin, messageBuilder.toString(), true);
         } else {
             sendMessage(origin, "Нічого немає, можна відпочивати!");
         }

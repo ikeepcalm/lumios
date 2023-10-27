@@ -1,12 +1,4 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.scheduling.annotation.Scheduled
- *  org.springframework.stereotype.Component
- */
-package dev.ua.ikeepcalm.merged.scheduler;
+package dev.ua.ikeepcalm.merged.telegram.modules.reverence.schedules;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +14,7 @@ public class DailyUpdate {
         this.userService = userService;
     }
 
-    @Scheduled(cron="0 0 22 * * *")
+    @Scheduled(cron = "0 0 22 * * *")
     public void executeDailyTask() {
         this.userService.updateAll();
     }

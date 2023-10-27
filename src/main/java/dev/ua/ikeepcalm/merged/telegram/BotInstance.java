@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.merged.telegram;
 
 import dev.ua.ikeepcalm.merged.telegram.config.TelegramBotConfig;
-import dev.ua.ikeepcalm.merged.telegram.modules.ModuleHandler;
+import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -13,19 +13,19 @@ import java.util.List;
 public class BotInstance  extends TelegramLongPollingBot implements LongPollingBot {
 
     public final String botUsername;
-    private final List<ModuleHandler> moduleHandlerList;
+    private final List<HandlerParent> handlerParentList;
 
     public void onUpdateReceived(Update update) {
-        for (ModuleHandler moduleHandler : this.moduleHandlerList) {
-            if (moduleHandler.supports(update)){
-                moduleHandler.dispatchUpdate(update);
+        for (HandlerParent handlerParent : this.handlerParentList) {
+            if (handlerParent.supports(update)){
+                handlerParent.dispatchUpdate(update);
             };
         }
     }
 
-                public BotInstance(TelegramBotConfig config, List<ModuleHandler> moduleHandlerList) {
+                public BotInstance(TelegramBotConfig config, List<HandlerParent> handlerParentList) {
         super(config.getToken());
-        this.moduleHandlerList = moduleHandlerList;
+        this.handlerParentList = handlerParentList;
         this.botUsername = config.getUsername();
     }
 

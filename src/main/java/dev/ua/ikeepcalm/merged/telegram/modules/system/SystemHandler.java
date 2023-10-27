@@ -1,27 +1,16 @@
-/*
- * Decompiled with CFR 0.150.
- *
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.stereotype.Component
- *  org.telegram.telegrambots.meta.api.objects.Message
- *  org.telegram.telegrambots.meta.api.objects.Update
- */
 package dev.ua.ikeepcalm.merged.telegram.modules.system;
 
-import dev.ua.ikeepcalm.merged.telegram.modules.ModuleHandler;
+import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
 import dev.ua.ikeepcalm.merged.telegram.modules.system.commands.HelpCommand;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class SystemHandler implements ModuleHandler {
+public class SystemHandler implements HandlerParent {
 
     private final HelpCommand helpCommand;
 
-    @Autowired
     public SystemHandler(HelpCommand helpCommand) {
         this.helpCommand = helpCommand;
     }

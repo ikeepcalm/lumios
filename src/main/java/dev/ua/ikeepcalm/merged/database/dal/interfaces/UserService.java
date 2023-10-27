@@ -1,10 +1,8 @@
-/*
- * Decompiled with CFR 0.150.
- */
 package dev.ua.ikeepcalm.merged.database.dal.interfaces;
 
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
+
 import java.util.List;
 
 public interface UserService {

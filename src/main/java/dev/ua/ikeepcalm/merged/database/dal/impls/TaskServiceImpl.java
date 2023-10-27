@@ -1,10 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.beans.factory.annotation.Autowired
- *  org.springframework.stereotype.Service
- */
 package dev.ua.ikeepcalm.merged.database.dal.impls;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;

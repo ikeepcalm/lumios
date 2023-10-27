@@ -1,15 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  jakarta.persistence.Column
- *  jakarta.persistence.Entity
- *  jakarta.persistence.GeneratedValue
- *  jakarta.persistence.GenerationType
- *  jakarta.persistence.Id
- *  jakarta.persistence.ManyToOne
- *  jakarta.persistence.Table
- */
 package dev.ua.ikeepcalm.merged.database.entities.reverence;
 
 import jakarta.persistence.Column;
@@ -23,10 +11,10 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name="shopping")
+@Table(name = "shopping")
 public class ShoppingUser {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userEntityId;
     @Column
     private Long userId;

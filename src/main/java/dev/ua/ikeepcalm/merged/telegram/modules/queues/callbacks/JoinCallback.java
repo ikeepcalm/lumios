@@ -2,7 +2,7 @@ package dev.ua.ikeepcalm.merged.telegram.modules.queues.callbacks;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueUser;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.merged.telegram.utils.QueueMarkupUtil;
 import dev.ua.ikeepcalm.merged.telegram.utils.QueueLifecycleUtil;
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Component
 public class JoinCallback
-extends Executable {
+extends CommandParent {
 
     private final QueueLifecycleUtil queueLifecycleUtil;
 
@@ -25,7 +25,7 @@ extends Executable {
     private void updateMessage(Message origin, QueueItself queueItself) {
         EditMessage generalMessage = new EditMessage();
         generalMessage.setChatId(origin.getChatId());
-        generalMessage.setMessageId((int)queueItself.getMessageId());
+        generalMessage.setMessageId(queueItself.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(queueItself.getAlias()).append(" <<<\n\n");
         int id = 1;

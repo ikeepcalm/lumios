@@ -1,9 +1,3 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.stereotype.Component
- */
 package dev.ua.ikeepcalm.merged.telegram.utils;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;

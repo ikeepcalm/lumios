@@ -1,17 +1,9 @@
-/*
- * Decompiled with CFR 0.150.
- * 
- * Could not load the following classes:
- *  org.springframework.stereotype.Component
- *  org.telegram.telegrambots.meta.api.objects.Message
- *  org.telegram.telegrambots.meta.api.objects.User
- */
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.commands;
 
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.commands.IncreasingCommand;
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -19,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 @SuppressWarnings("ALL")
 @Component
 public class IncreaseCommand
-extends Executable {
+        extends CommandParent {
     public void execute(Message origin) {
         if (IncreasingCommand.isIncreasingCommand(origin)) {
             String string = origin.getText();

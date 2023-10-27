@@ -1,13 +1,13 @@
 
 package dev.ua.ikeepcalm.merged.telegram.modules.system.commands;
 
-import dev.ua.ikeepcalm.merged.telegram.modules.Executable;
+import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 public class HelpCommand
-extends Executable {
+extends CommandParent {
     public void execute(Message origin) {
         String stringBuilder = """
                 *ВСЕ ВІДНОСНО ЧЕРГ*
@@ -31,7 +31,7 @@ extends Executable {
                 """
                         \n*ВСЕ ВІДНОСНО ЗАВДАНЬ*
                         /task \\[dd.mm.year] \\[HH:mm] \\[Назва] <Посилання> - Створити
-                        /edit \\[ID] dd.mm.year HH:mm \\[Назва] <Посилання> - Редагувати
+                        /edit \\[ID] [dd.mm.year] [HH:mm] \\[Назва] <Посилання> - Редагувати
                          /whatisduetoday - Список усіх завдань
                         """ +
                 """
