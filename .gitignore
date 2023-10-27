@@ -2,5 +2,5 @@
 /.idea
 README.md
 /.mvn
-/src/main/resources/application.properties
-/src/main/resources/thirdparty.properties
+/src/main/resources
+bfg.jar
