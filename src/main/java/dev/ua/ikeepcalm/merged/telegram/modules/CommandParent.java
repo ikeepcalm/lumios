@@ -27,7 +27,6 @@ public abstract class CommandParent {
     protected ShopService shopService;
     protected ChatService chatService;
     protected TaskService taskService;
-    protected Timer timer;
     protected Logger logger;
 
     @Autowired
@@ -37,7 +36,6 @@ public abstract class CommandParent {
         this.chatService = chatService;
         this.taskService = taskService;
         this.absSender = absSender;
-        this.timer = new Timer();
         this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 
@@ -84,7 +82,7 @@ public abstract class CommandParent {
 
 
     protected void scheduleMessageToDelete(Message origin, Message sent) {
-        timer.schedule(
+        new Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
