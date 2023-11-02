@@ -1,5 +1,7 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands;
 
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,16 @@ import java.util.Arrays;
 
 @Component
 public class TaskCreationCommand extends CommandParent {
+
+    private final TaskService taskService;
+    private final ChatService chatService;
+
+    public TaskCreationCommand(TaskService taskService, ChatService chatService) {
+        this.taskService = taskService;
+        this.chatService = chatService;
+    }
+
+
     public void execute(Message origin) {
         String taskInfo = origin.getText().replace("/task", "").trim();
         String[] parts = taskInfo.split("\\s+");

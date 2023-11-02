@@ -21,6 +21,7 @@ public class NotifyCallback extends CommandParent {
         QueueItself queueItself = this.queueLifecycleUtil.getQueue(UUID.fromString(receivedCallback));
         absSender.sendTextMessage(QueueMarkupUtil.createNotification(origin.getMessage().getChatId(), queueItself));
         absSender.sendAnswerCallbackQuery("Сповіщення успішно надіслане!", origin.getId());
+        logger.info("Notification sent to queue: " + queueItself.getId() + " by user: " + origin.getFrom().getUserName() + " with id: " + origin.getFrom().getId());
     }
 }
 

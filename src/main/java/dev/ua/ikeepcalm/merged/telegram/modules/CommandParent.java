@@ -1,12 +1,5 @@
 package dev.ua.ikeepcalm.merged.telegram.modules;
 
-import dev.ua.ikeepcalm.merged.database.dal.impls.ChatServiceImpl;
-import dev.ua.ikeepcalm.merged.database.dal.impls.ShopServiceImpl;
-import dev.ua.ikeepcalm.merged.database.dal.impls.TaskServiceImpl;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.ShopService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.telegram.AbsSender;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
@@ -15,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.spi.SLF4JServiceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -23,73 +17,80 @@ import java.util.Timer;
 @Component
 public abstract class CommandParent {
     protected AbsSender absSender;
-    protected UserService userService;
-    protected ShopService shopService;
-    protected ChatService chatService;
-    protected TaskService taskService;
     protected Logger logger;
 
     @Autowired
-    private void init(TaskServiceImpl taskService, AbsSender absSender, UserService userService, ShopServiceImpl increasingService, ChatServiceImpl chatService) {
-        this.userService = userService;
-        this.shopService = increasingService;
-        this.chatService = chatService;
-        this.taskService = taskService;
+    private void init(AbsSender absSender) {
         this.absSender = absSender;
         this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 
+    protected void sendMessage(Message origin, String text){
+        TextMessage message = new TextMessage();
+        message.setChatId(origin.getChatId());
+        message.setMessageId(origin.getMessageId());
+        message.setText(text);
+        Message sent = absSender.sendTextMessage(message);
+        scheduleMessageToDelete(origin);
+        scheduleMessageToDelete(sent);
+    }
+
+
+    protected void sendMessage(CallbackQuery origin, String text){
+        TextMessage message = new TextMessage();
+        message.setChatId(origin.getMessage().getChatId());
+        message.setMessageId(origin.getMessage().getMessageId());
+        message.setText(text);
+        Message sent = absSender.sendTextMessage(message);
+        scheduleMessageToDelete(origin.getMessage());
+        scheduleMessageToDelete(sent);
+    }
+
+    protected void sendMessage(Message origin, TextMessage message){
+        Message sent = absSender.sendTextMessage(message);
+        scheduleMessageToDelete(origin);
+        scheduleMessageToDelete(sent);
+    }
+
     protected void reply(Message origin, String text) {
         TextMessage message = new TextMessage();
+        message.setChatId(origin.getChatId());
         message.setMessageId(origin.getMessageId());
-        message.setChatId(origin.getChatId());
-        message.setText(text);
+        message.setMessageId(origin.getMessageId());message.setText(text);
         Message sent = absSender.sendTextMessage(message);
-        scheduleMessageToDelete(origin, sent);
+        scheduleMessageToDelete(origin);
+        scheduleMessageToDelete(sent);
     }
 
-    protected Message sendMessage(Message origin, String text) {
+    protected void reply(Message origin, String parseMode, String text) {
         TextMessage message = new TextMessage();
         message.setChatId(origin.getChatId());
+        message.setParseMode(parseMode);
+        message.setMessageId(origin.getMessageId());
         message.setText(text);
         Message sent = absSender.sendTextMessage(message);
-        scheduleMessageToDelete(origin, sent);
-        return sent;
+        scheduleMessageToDelete(origin);
+        scheduleMessageToDelete(sent);
     }
 
-    protected void sendMessage(Message origin, String text, boolean enableParseMarkup) {
+    protected void sendMessage(Message origin, String parseMode, String text){
         TextMessage message = new TextMessage();
         message.setChatId(origin.getChatId());
+        message.setMessageId(origin.getMessageId());
         message.setText(text);
-        message.setEnableParseMode(enableParseMarkup);
+        message.setParseMode(parseMode);
         Message sent = absSender.sendTextMessage(message);
-        scheduleMessageToDelete(origin, sent);
+        scheduleMessageToDelete(origin);
+        scheduleMessageToDelete(sent);
     }
 
-    protected void sendMessage(Message origin, TextMessage message) {
-        Message sent = absSender.sendTextMessage(message);
-        scheduleMessageToDelete(origin, sent);
-    }
-
-    protected void sendCallbackMessage(CallbackQuery origin, String text) {
-        Message sent = absSender.sendCallbackMessage(origin, text);
-        scheduleMessageToDelete(origin.getMessage(), sent);
-    }
-
-    protected void removeCallbackMessage(CallbackQuery origin) {
-        absSender.removeCallbackMessage(origin);
-    }
-
-
-    protected void scheduleMessageToDelete(Message origin, Message sent) {
+    protected void scheduleMessageToDelete(Message origin) {
         new Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        RemoveMessage purgeAction = new RemoveMessage(origin.getMessageId(), origin.getChatId());
-                        RemoveMessage purgeResponse = new RemoveMessage(sent.getMessageId(), sent.getChatId());
-                        absSender.sendRemoveMessage(purgeResponse);
-                        absSender.sendRemoveMessage(purgeAction);
+                        RemoveMessage removeMessage = new RemoveMessage(origin.getMessageId(), origin.getChatId());
+                        absSender.sendRemoveMessage(removeMessage);
                     }
                 }, 300000);
     }

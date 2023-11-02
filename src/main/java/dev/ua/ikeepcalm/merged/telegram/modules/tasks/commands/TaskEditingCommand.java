@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands;
 
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,13 @@ import java.util.InputMismatchException;
 
 @Component
 public class TaskEditingCommand extends CommandParent {
+
+    private final TaskService taskService;
+
+    public TaskEditingCommand(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
     public void execute(Message origin) {
         String taskInfo = origin.getText().replace("/edit", "").trim();
         String[] parts = taskInfo.split("\\s+");

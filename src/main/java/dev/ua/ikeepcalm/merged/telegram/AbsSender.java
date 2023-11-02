@@ -147,8 +147,8 @@ public class AbsSender extends DefaultAbsSender{
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText(textMessage.getText());
         sendMessage.setChatId(textMessage.getChatId());
-        if (textMessage.isEnableParseMode()){
-            sendMessage.setParseMode(MARKDOWN_PARSE_MODE);
+        if (textMessage.getParseMode() != null){
+            sendMessage.setParseMode(textMessage.getParseMode());
         }
         sendMessage.setReplyMarkup(textMessage.getReplyKeyboard());
         if (textMessage.getMessageId() != 0) {

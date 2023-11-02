@@ -1,8 +1,11 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands;
 
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.time.LocalDate;
@@ -13,19 +16,26 @@ import java.util.stream.Collectors;
 
 @Component
 public class WhatIsDueCommand extends CommandParent {
+
+    private final TaskService taskService;
+    private final ChatService chatService;
+
+    public WhatIsDueCommand(TaskService taskService, ChatService chatService) {
+        this.taskService = taskService;
+        this.chatService = chatService;
+    }
+
     public void execute(Message origin) {
         Long chatId = origin.getChatId();
         List<DueTask> tasks = taskService.getTasksForCurrentChat(chatService.find(chatId));
+        LocalDate today = LocalDate.now();
+        LocalDate maxDueDate = today.plusDays(14);
+        List<DueTask> filteredTasks = tasks.stream()
+                .filter(task -> !task.getDueDate().isBefore(today) && !task.getDueDate().isAfter(maxDueDate)
+                        && !(task.getDueDate().isEqual(today) && task.getDueTime().isBefore(LocalTime.now())))
+                .toList();
 
-        if (!tasks.isEmpty()) {
-            LocalDate today = LocalDate.now();
-            LocalDate maxDueDate = today.plusDays(14);
-            List<DueTask> filteredTasks = tasks.stream()
-
-                    .filter(task -> !task.getDueDate().isBefore(today) && !task.getDueDate().isAfter(maxDueDate)
-                            && !(task.getDueDate().isEqual(today) && task.getDueTime().isBefore(LocalTime.now())))
-                    .toList();
-
+        if (!filteredTasks.isEmpty()) {
             Map<LocalDate, List<DueTask>> groupedTasks = filteredTasks.stream()
                     .collect(Collectors.groupingBy(DueTask::getDueDate));
 
@@ -54,7 +64,7 @@ public class WhatIsDueCommand extends CommandParent {
                 }
             }
 
-            sendMessage(origin, messageBuilder.toString(), true);
+            sendMessage(origin, ParseMode.MARKDOWN, messageBuilder.toString());
         } else {
             sendMessage(origin, "Нічого немає, можна відпочивати!");
         }

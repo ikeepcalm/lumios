@@ -1,47 +1,55 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.updates;
 
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.ReverencePatterns;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 @Component
-public class DecreasingUpdate
-extends CommandParent {
+public class DecreasingUpdate extends CommandParent {
+
+    private final ChatService chatService;
+    private final UserService userService;
+
+    @Autowired
+    public DecreasingUpdate(ChatService chatService, UserService userService) {
+        this.chatService = chatService;
+        this.userService = userService;
+    }
+
     public void execute(Update origin) {
         User user = origin.getMessage().getFrom();
         User repliedUser = origin.getMessage().getReplyToMessage().getFrom();
-        ReverenceChat linkedChatId = this.chatService.find(origin.getMessage().getChatId());
-        if (dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.updates.DecreasingUpdate.isDecreasingUpdate(origin) && !user.equals(repliedUser) && !repliedUser.getIsBot()) {
-            if (this.userService.checkIfUserExists(user.getId(), linkedChatId)) {
-                if (this.userService.checkIfUserExists(repliedUser.getId(), linkedChatId)) {
-                    ReverenceUser foundUser = this.userService.findById(user.getId(), linkedChatId);
-                    ReverenceUser foundRepliedUser = this.userService.findById(repliedUser.getId(), linkedChatId);
-                    int eventValue = Integer.parseInt(origin.getMessage().getText().replace("-", ""));
-                    if (foundUser.getCredits() < eventValue) {
-                        reply(origin.getMessage(), "Недостатньо кредитів! Наявно: " + foundUser.getCredits() + "\nДочекайтеся щоденного оновлення.\nДізнатися більше: /help@queueupnow_bot.");
-                    } else if (foundUser.getCredits() > eventValue) {
-                        foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
-                        foundUser.setCredits(foundUser.getCredits() - eventValue);
-                        userService.save(foundUser);
-                        userService.save(foundRepliedUser);
-                        reply(origin.getMessage(), "✔⠀");
-                    } else {
-                        foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
-                        foundUser.setCredits(0);
-                        userService.save(foundUser);
-                        userService.save(foundRepliedUser);
-                        reply(origin.getMessage(), "✔⠀");
-                    }
-                } else {
-                    this.reply(origin.getMessage(), "Той, кому ви здійснили спробу змінити показник поваги, ще не бере участь у системі боту. Нехай спробує /register@queueupnow_bot!");
-                }
+        ReverenceChat linkedChatId = chatService.find(origin.getMessage().getChatId());
+
+        if (ReverencePatterns.isDecreasingUpdate(origin) && isValidUsers(user, repliedUser, linkedChatId)) {
+            ReverenceUser foundUser = userService.findById(user.getId(), linkedChatId);
+            ReverenceUser foundRepliedUser = userService.findById(repliedUser.getId(), linkedChatId);
+            int eventValue = Math.abs(Integer.parseInt(origin.getMessage().getText()));
+            if (foundUser.getCredits() >= eventValue) {
+                foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
+                foundUser.setCredits(foundUser.getCredits() - eventValue);
             } else {
-                this.reply(origin.getMessage(), "Ви не берете участь у системі боту.\nСпробуйте /register@queueupnow_bot!");
+                foundRepliedUser.setReverence(foundRepliedUser.getReverence() - foundUser.getCredits());
+                foundUser.setCredits(0);
             }
+            userService.save(foundUser);
+            userService.save(foundRepliedUser);
+            reply(origin.getMessage(), "✔");
+        } else {
+            reply(origin.getMessage(), "✖\uFE0F");
         }
     }
-}
 
+    private boolean isValidUsers(User user, User repliedUser, ReverenceChat linkedChatId) {
+        return !user.equals(repliedUser) && !repliedUser.getIsBot() &&
+                userService.checkIfUserExists(user.getId(), linkedChatId) &&
+                userService.checkIfUserExists(repliedUser.getId(), linkedChatId);
+    }
+}
