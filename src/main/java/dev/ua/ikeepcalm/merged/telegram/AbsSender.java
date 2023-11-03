@@ -119,7 +119,7 @@ public class AbsSender extends DefaultAbsSender{
             String callbackOfButton = prefix + name;
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setCallbackData(callbackOfButton);
-            button.setText(name + " кредитів / " + name + "0 ✧");
+            button.setText(name + " кредитів / " + name + "0 (✧)");
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(button);
             keyboard.add(row);

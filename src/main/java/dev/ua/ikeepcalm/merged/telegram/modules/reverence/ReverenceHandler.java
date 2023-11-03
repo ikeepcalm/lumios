@@ -3,7 +3,6 @@ package dev.ua.ikeepcalm.merged.telegram.modules.reverence;
 import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.callbacks.ShopCallback;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.commands.*;
-
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.ReverencePatterns;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.updates.DecreasingUpdate;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.updates.IncreasingUpdate;
@@ -51,7 +50,7 @@ public class ReverenceHandler implements HandlerParent {
     public void dispatchUpdate(Update update) {
         if (update.hasCallbackQuery()) {
             manageCallbacks(update.getCallbackQuery());
-        } else if (update.hasMessage() && update.getMessage().hasText()) {
+        } else if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) {
             manageCommands(update.getMessage());
         } else {
             manageUpdates(update);
@@ -60,19 +59,17 @@ public class ReverenceHandler implements HandlerParent {
 
     private void manageCommands(org.telegram.telegrambots.meta.api.objects.Message message) {
         String commandText = message.getText();
-        if (commandText != null && commandText.startsWith("/")) {
-            String[] parts = commandText.split("\\s+", 2);
-            String command = parts[0].toLowerCase();
-            command = command.replace("@queueupnow_bot", "");
-            switch (command) {
-                case "/start" -> startCommand.execute(message);
-                case "/shop" -> shopCommand.execute(message);
-                case "/increase" -> increaseCommand.execute(message);
-                case "/decrease" -> decreaseCommand.execute(message);
-                case "/me" -> meCommand.execute(message);
-                case "/stats" -> statsCommand.execute(message);
-                case "/register" -> registerCommand.execute(message);
-            }
+        String[] parts = commandText.split("\\s+", 2);
+        String command = parts[0].toLowerCase();
+        command = command.replace("@queueupnow_bot", "");
+        switch (command) {
+            case "/start" -> startCommand.execute(message);
+            case "/shop" -> shopCommand.execute(message);
+            case "/increase" -> increaseCommand.execute(message);
+            case "/decrease" -> decreaseCommand.execute(message);
+            case "/me" -> meCommand.execute(message);
+            case "/stats" -> statsCommand.execute(message);
+            case "/register" -> registerCommand.execute(message);
         }
     }
 

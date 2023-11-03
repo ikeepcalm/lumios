@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.merged.telegram.modules;
 
 import dev.ua.ikeepcalm.merged.telegram.AbsSender;
+import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
@@ -52,6 +53,10 @@ public abstract class CommandParent {
         scheduleMessageToDelete(sent);
     }
 
+    protected void editMessage(EditMessage message){
+        absSender.sendEditMessage(message);
+    }
+
     protected void reply(Message origin, String text) {
         TextMessage message = new TextMessage();
         message.setChatId(origin.getChatId());
@@ -84,7 +89,7 @@ public abstract class CommandParent {
         scheduleMessageToDelete(sent);
     }
 
-    protected void scheduleMessageToDelete(Message origin) {
+    private void scheduleMessageToDelete(Message origin) {
         new Timer().schedule(
                 new java.util.TimerTask() {
                     @Override

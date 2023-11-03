@@ -25,9 +25,9 @@ public class RegisterCommand extends CommandParent {
         ReverenceChat linkedChat = chatService.find(origin.getChatId());
 
         if (userService.checkIfUserExists(user.getId(), linkedChat)) {
-            reply(origin, "Ваш аккаунт вже зареєстровано у цьому чаті!\nНемає необхідності робити це ще раз");
+            reply(origin, "Немає необхідності робити це ще раз!");
         } else {
-            reply(origin, "Ваш аккаунт зареєстровано у цьому чаті!\nПриємної експлуатації, шкіряний мішок!");
+            reply(origin, "Ваш аккаунт зареєстровано у цьому чаті!");
 
             if (linkedChat == null) {
                 ReverenceChat reverenceChat = new ReverenceChat();

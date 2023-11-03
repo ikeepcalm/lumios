@@ -6,9 +6,11 @@ import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ShoppingUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 public class ShopCallback extends CommandParent {
@@ -48,10 +50,21 @@ public class ShopCallback extends CommandParent {
             default -> 0;
         };
 
+
+
+
         if (processPurchase(user, whoCalled, cost, increment)) {
-            sendMessage(origin, "@" + user.getUsername() + " витратив " + cost + "✧ і збільшив своє щоденне оновлення на " + increment + "!");
+            EditMessage editMessage = new EditMessage();
+            editMessage.setChatId(origin.getMessage().getChatId());
+            editMessage.setMessageId(origin.getMessage().getMessageId());
+            editMessage.setText("@" + user.getUsername() + " витратив " + cost + " (✧) і збільшив своє щоденне оновлення на " + increment + "!");
+            editMessage(editMessage);
         } else {
-            sendMessage(origin, "@" + user.getUsername() + ", у вас недостатньо грошей у гаманці ✧!\nНаявно на балансі: " + user.getBalance() + "✧\nНеобхідно для цієї дії: " + cost + "✧");
+            EditMessage editMessage = new EditMessage();
+            editMessage.setChatId(origin.getMessage().getChatId());
+            editMessage.setMessageId(origin.getMessage().getMessageId());
+            editMessage.setText("@" + user.getUsername() + ", у вас недостатньо грошей (✧) у гаманці!\n\nНаявно на балансі: " + user.getBalance() + " (✧)\n\nНеобхідно для цієї дії: " + cost + " (✧)");
+            editMessage(editMessage);
         }
     }
 
