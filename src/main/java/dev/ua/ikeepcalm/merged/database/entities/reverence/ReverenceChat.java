@@ -15,6 +15,7 @@ public class ReverenceChat {
     private Long id;
     @Column
     private Long chatId;
+
     @OneToMany(mappedBy = "channel")
     private Set<ReverenceUser> users = new HashSet<>();
 

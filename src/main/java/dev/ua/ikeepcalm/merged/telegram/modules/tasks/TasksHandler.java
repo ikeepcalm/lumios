@@ -1,25 +1,24 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks;
 
 import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands.TaskCreationCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands.TaskEditingCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands.WhatIsDueCommand;
-import org.springframework.beans.factory.annotation.Autowired;
+import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.WeekCreationCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class TasksHandlerParent implements HandlerParent {
+public class TasksHandler implements HandlerParent {
 
-    private final TaskCreationCommand taskCreationCommand;
+    private final WeekCreationCommand weekCreationCommand;
     private final TaskEditingCommand taskEditingCommand;
     private final WhatIsDueCommand whatIsDueCommand;
 
-    public TasksHandlerParent(TaskCreationCommand taskCreationCommand,
-                              TaskEditingCommand taskEditingCommand,
-                              WhatIsDueCommand whatIsDueCommand) {
-        this.taskCreationCommand = taskCreationCommand;
+    public TasksHandler(WeekCreationCommand weekCreationCommand,
+                        TaskEditingCommand taskEditingCommand,
+                        WhatIsDueCommand whatIsDueCommand) {
+        this.weekCreationCommand = weekCreationCommand;
         this.taskEditingCommand = taskEditingCommand;
         this.whatIsDueCommand = whatIsDueCommand;
     }
@@ -32,7 +31,7 @@ public class TasksHandlerParent implements HandlerParent {
             String command = parts[0];
             command = command.replace("@queueupnow_bot", "");
             switch (command) {
-                case "/task" -> taskCreationCommand.execute(origin);
+                case "/task" -> weekCreationCommand.execute(origin);
                 case "/edit" -> taskEditingCommand.execute(origin);
                 case "/whatisduetoday" -> whatIsDueCommand.execute(origin);
             }

@@ -15,7 +15,6 @@ public class DueTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column
     private LocalDate dueDate;
     @Column
