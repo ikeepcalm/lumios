@@ -1,8 +1,5 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.commands;
 
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
-import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
@@ -10,25 +7,16 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class StatsCommand extends CommandParent {
 
-    private final UserService userService;
-    private final ChatService chatService;
-
-    public StatsCommand(UserService userService, ChatService chatService) {
-        this.chatService = chatService;
-        this.userService = userService;
-    }
-
-    public void execute(Message origin) {
-        ReverenceChat linkedChat = chatService.find(origin.getChatId());
-        List<ReverenceUser> users = userService.findAll(linkedChat);
-
+    @Override
+    public void processUpdate(Message message) {
+        instantiateUpdate(message);
+        List<ReverenceUser> users = userService.findAll(reverenceChat);
         String statsMessage = buildStatsMessage(users);
-        reply(origin, ParseMode.MARKDOWN, statsMessage);
+        sendMessage(statsMessage, ParseMode.MARKDOWN);
     }
 
     private String buildStatsMessage(List<ReverenceUser> users) {
@@ -46,4 +34,6 @@ public class StatsCommand extends CommandParent {
 
         return builder.toString();
     }
+
+
 }

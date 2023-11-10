@@ -2,10 +2,10 @@ package dev.ua.ikeepcalm.merged.telegram.modules.queues.callbacks;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueUser;
+import dev.ua.ikeepcalm.merged.telegram.modules.CallbackParent;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
-import dev.ua.ikeepcalm.merged.telegram.utils.QueueMarkupUtil;
-import dev.ua.ikeepcalm.merged.telegram.utils.QueueLifecycleUtil;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueMarkupUtil;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -13,18 +13,31 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.util.UUID;
 
 @Component
-public class JoinCallback
-extends CommandParent {
+public class JoinCallback extends CallbackParent {
 
-    private final QueueLifecycleUtil queueLifecycleUtil;
-
-    public JoinCallback(QueueLifecycleUtil queueLifecycleUtil) {
-        this.queueLifecycleUtil = queueLifecycleUtil;
+    @Override
+    public void processUpdate(CallbackQuery message) {
+        String receivedCallback = message.getData().replace("-join", "");
+        String callbackQueryId = message.getId();
+        instantiateUpdate(message);
+        QueueItself queueItself = queueLifecycleUtil.getQueue(UUID.fromString(receivedCallback));
+        QueueUser queueUser = new QueueUser();
+        queueUser.setName(message.getFrom().getFirstName());
+        queueUser.setAccountId(message.getFrom().getId());
+        queueUser.setUsername(message.getFrom().getUserName());
+        if (!queueItself.getContents().contains(queueUser)) {
+            queueItself.addUser(queueUser);
+            this.updateMessage(super.message, queueItself);
+            this.absSender.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", callbackQueryId);
+        } else {
+            this.absSender.sendAnswerCallbackQuery("Ви вже знаходитесь у цій черзі!", callbackQueryId);
+        }
     }
 
-    private void updateMessage(Message origin, QueueItself queueItself) {
+
+    private void updateMessage(Message message, QueueItself queueItself) {
         EditMessage generalMessage = new EditMessage();
-        generalMessage.setChatId(origin.getChatId());
+        generalMessage.setChatId(message.getChatId());
         generalMessage.setMessageId(queueItself.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(queueItself.getAlias()).append(" <<<\n\n");
@@ -39,19 +52,6 @@ extends CommandParent {
         this.queueLifecycleUtil.updateQueue(queueItself);
     }
 
-    public void manage(String receivedCallback, CallbackQuery origin) {
-        QueueItself queueItself = queueLifecycleUtil.getQueue(UUID.fromString(receivedCallback));
-        QueueUser queueUser = new QueueUser();
-        queueUser.setName(origin.getFrom().getFirstName());
-        queueUser.setAccountId(origin.getFrom().getId());
-        queueUser.setUsername(origin.getFrom().getUserName());
-        if (!queueItself.getContents().contains(queueUser)) {
-            queueItself.addUser(queueUser);
-            this.updateMessage(origin.getMessage(), queueItself);
-            this.absSender.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", origin.getId());
-        } else {
-            this.absSender.sendAnswerCallbackQuery("Ви вже знаходитесь у цій черзі!", origin.getId());
-        }
-    }
+
 }
 

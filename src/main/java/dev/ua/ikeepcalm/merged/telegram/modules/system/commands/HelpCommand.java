@@ -1,15 +1,23 @@
 
 package dev.ua.ikeepcalm.merged.telegram.modules.system.commands;
 
+import dev.ua.ikeepcalm.merged.database.dal.interfaces.*;
+import dev.ua.ikeepcalm.merged.telegram.AbsSender;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+
 @Component
-public class HelpCommand
-extends CommandParent {
-    public void execute(Message origin) {
-        String stringBuilder = """
+public class HelpCommand extends CommandParent{
+
+    @Override
+    public void processUpdate(Message message) {
+        instantiateUpdate(message);
+        String helpText = """
                 *ВСЕ ВІДНОСНО ЧЕРГ*
                 /queue <Назва> - Створити чергу із заданою назвою
                                         
@@ -38,8 +46,7 @@ extends CommandParent {
                         \n*ВІДНОСНО АРГУМЕНТІВ*
                         <Аргумент> і \\[Аргумент] відрізняються. В чому різниця? \\[Аргумент] є обов'язковим, <Аргумент>  - ні
                         """;
-
-        sendMessage(origin, stringBuilder);
+        sendMessage(helpText);
     }
 }
 

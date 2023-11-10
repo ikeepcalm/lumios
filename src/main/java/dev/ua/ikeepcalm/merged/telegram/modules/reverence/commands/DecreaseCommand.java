@@ -1,72 +1,55 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.commands;
 
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
-import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns.ReverencePatterns;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.User;
 
 @Component
 public class DecreaseCommand extends CommandParent {
 
-    private final UserService userService;
-    private final ChatService chatService;
-
-    public DecreaseCommand(UserService userService, ChatService chatService) {
-        this.chatService = chatService;
-        this.userService = userService;
-    }
-
-    public void execute(Message origin) {
-        if (ReverencePatterns.isDecreaseCommand(origin)) {
-            processDecreaseCommand(origin);
+    @Override
+    public void processUpdate(Message message) {
+        instantiateUpdate(message);
+        if (ReverencePatterns.isDecreaseCommand(message)) {
+            processDecreaseCommand(message);
         } else {
-            reply(origin, "Неправильний формат команди. Використовуйте: /decrease@queueupnow_bot [@юзернейм] [кількість поваги]");
+            sendMessage("Неправильний формат команди. Використовуйте: /decrease@queueupnow_bot [@юзернейм] [кількість поваги]");
         }
     }
 
-    private void processDecreaseCommand(Message origin) {
-        String[] parts = origin.getText().split(" ");
+    private void processDecreaseCommand(Message message) {
+        String[] parts = message.getText().split(" ");
         String username = parts[1].replace("@", "");
         int eventValue = Integer.parseInt(parts[2]);
-        ReverenceChat linkedChat = chatService.find(origin.getChatId());
-        User user = origin.getFrom();
-
-        if (!userService.checkIfUserExists(user.getId(), linkedChat)) {
-            reply(origin, "Ви не берете участь у системі боту.\nСпробуйте /register@queueupnow_bot!");
-            return;
-        }
-
-        ReverenceUser currentUser = userService.findById(user.getId(), linkedChat);
-        ReverenceUser mentionedUser = userService.findByUsername(username, linkedChat);
+        ReverenceUser mentionedUser = userService.findByUsername(username, reverenceChat);
 
         if (mentionedUser == null) {
-            reply(origin, "Учасника системи із заданим юзернеймом не знайдено. Подивіться уважно, і спробуйте ще раз!");
+            sendMessage("Учасника системи із заданим юзернеймом не знайдено. Подивіться уважно, і спробуйте ще раз!");
             return;
         }
 
-        if (currentUser.getUserId().equals(mentionedUser.getUserId())) {
-            reply(origin, "Ви не можете зменшувати повагу самому собі.");
+        if (reverenceUser.getUserId().equals(mentionedUser.getUserId())) {
+            sendMessage("Ви не можете зменшувати повагу самому собі.");
             return;
         }
 
-        if (currentUser.getCredits() < eventValue) {
-            reply(origin, "Недостатньо кредитів! Наявно: " + currentUser.getCredits() +
+        if (reverenceUser.getCredits() < eventValue) {
+            sendMessage("Недостатньо кредитів! Наявно: " + reverenceUser.getCredits() +
                     "\nДочекайтеся щоденного оновлення.\nДізнатися більше: /help@queueupnow_bot.");
         } else {
-            decreaseReverence(origin, currentUser, mentionedUser, eventValue);
+            decreaseReverence(reverenceUser, mentionedUser, eventValue);
         }
     }
 
-    private void decreaseReverence(Message origin, ReverenceUser currentUser, ReverenceUser mentionedUser, int eventValue) {
+    private void decreaseReverence(ReverenceUser currentUser, ReverenceUser mentionedUser, int eventValue) {
         currentUser.setCredits(currentUser.getCredits() - eventValue);
         mentionedUser.setReverence(mentionedUser.getReverence() - eventValue);
         userService.save(currentUser);
         userService.save(mentionedUser);
-        reply(origin, "Ви успішно відняли " + eventValue + " витратних кредитів з рейтингу користувача!");
+        sendMessage("Ви успішно відняли " + eventValue + " витратних кредитів з рейтингу користувача!");
     }
+
+
 }

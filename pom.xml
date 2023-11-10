@@ -10,7 +10,7 @@
     </parent>
     <groupId>dev.ua.ikeepcalm</groupId>
     <artifactId>QueueUpNow</artifactId>
-    <version>1.1.7-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <name>QueueUpNow</name>
     <properties>
         <java.version>17</java.version>
@@ -24,7 +24,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>3.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -54,7 +61,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.12.5</version>
+            <version>2.12.7.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

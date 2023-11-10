@@ -1,6 +1,5 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands;
 
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
@@ -16,14 +15,10 @@ import java.util.InputMismatchException;
 @Component
 public class TaskEditingCommand extends CommandParent {
 
-    private final TaskService taskService;
-
-    public TaskEditingCommand(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
-    public void execute(Message origin) {
-        String taskInfo = origin.getText().replace("/edit", "").trim();
+    @Override
+    public void processUpdate(Message message) {
+        instantiateUpdate(message);
+        String taskInfo = message.getText().replace("/edit", "").trim();
         String[] parts = taskInfo.split("\\s+");
         if (parts.length >= 5) {
             String taskIdentifier = parts[0];
@@ -40,15 +35,17 @@ public class TaskEditingCommand extends CommandParent {
                     existingTask.setTaskName(taskName);
                     existingTask.setUrl(url);
                     taskService.save(existingTask);
-                    reply(origin, "✔ ");
+                    sendMessage("✔ ");
             } catch (DateTimeParseException e) {
-                reply(origin, "Неправильний формат дати або часу. Будь ласка, використовуйте формат HH:mm для часу, та dd.MM.yyyy");
+                sendMessage("Неправильний формат дати або часу. Будь ласка, використовуйте формат HH:mm для часу, та dd.MM.yyyy");
             } catch (InputMismatchException e){
-                reply(origin, "Не вдалося знайти завдання із наданим айді!");
+                sendMessage("Не вдалося знайти завдання із наданим айді!");
             }
         } else {
-            sendMessage(origin, "Неповна команда. Будь ласка, використовуйте /edit [ID] dd.MM.yyyy  HH:mm [Завдання] [Посилання]");
+            sendMessage("Неповна команда. Будь ласка, використовуйте /edit [ID] dd.MM.yyyy HH:mm [Завдання] [Посилання]");
         }
     }
+
+
 }
 

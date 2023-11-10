@@ -1,12 +1,10 @@
-package dev.ua.ikeepcalm.merged.telegram.utils;
+package dev.ua.ikeepcalm.merged.telegram.modules.system.utils;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.telegram.AbsSender;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class InteractiveRunnerUtil {

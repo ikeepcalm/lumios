@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.merged.telegram.utils;
+package dev.ua.ikeepcalm.merged.telegram.modules.queues.utils;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueUser;
@@ -80,9 +80,9 @@ public class QueueMarkupUtil {
     }
 
 
-    public static EditMessage updateMessage(Message origin, QueueItself queueItself) {
+    public static EditMessage updateMessage(Message message, QueueItself queueItself) {
         EditMessage editMessage = new EditMessage();
-        editMessage.setChatId(origin.getChatId());
+        editMessage.setChatId(message.getChatId());
         editMessage.setMessageId(queueItself.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(queueItself.getAlias()).append(" <<<\n\n");

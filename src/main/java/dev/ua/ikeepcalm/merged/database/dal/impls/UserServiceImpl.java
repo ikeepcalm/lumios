@@ -4,9 +4,11 @@ import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.database.dal.repositories.UserRepository;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl
@@ -18,8 +20,13 @@ implements UserService {
     }
 
     @Override
-    public ReverenceUser findById(long userId, ReverenceChat reverenceChat) {
-        return this.userRepository.findReverenceUserByUserIdAndChannel(userId, reverenceChat);
+    public ReverenceUser findById(long userId, ReverenceChat reverenceChat) throws NoSuchEntityException {
+        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChannel(userId, reverenceChat);
+        if (reverenceUser.isPresent()) {
+            return reverenceUser.get();
+        } else {
+            throw new NoSuchEntityException("No such user with id: " + userId);
+        }
     }
 
     @Override
@@ -62,8 +69,8 @@ implements UserService {
 
     @Override
     public boolean checkIfUserExists(long userId, ReverenceChat reverenceChat) {
-        ReverenceUser reverenceUser = this.userRepository.findReverenceUserByUserIdAndChannel(userId, reverenceChat);
-        return reverenceUser != null;
+        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChannel(userId, reverenceChat);
+        return reverenceUser.isPresent();
     }
 
     @Override

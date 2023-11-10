@@ -2,11 +2,12 @@ package dev.ua.ikeepcalm.merged.database.dal.interfaces;
 
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
 
 import java.util.List;
 
 public interface UserService {
-    ReverenceUser findById(long var1, ReverenceChat var3);
+    ReverenceUser findById(long userId, ReverenceChat chat) throws NoSuchEntityException;
 
     void updateAll();
 

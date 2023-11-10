@@ -5,10 +5,6 @@ public enum ClassType {
     LECTURE,
     PRACTICE,
     LAB,
-    SEMINAR,
-    CONSULTATION,
-    EXAM,
-    TEST,
-    UNKNOWN;
+    UNKNOWN
 
 }

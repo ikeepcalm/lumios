@@ -2,8 +2,8 @@
 package dev.ua.ikeepcalm.merged;
 
 
-import dev.ua.ikeepcalm.merged.telegram.utils.InteractiveRunnerUtil;
-import dev.ua.ikeepcalm.merged.telegram.utils.QueueLifecycleUtil;
+import dev.ua.ikeepcalm.merged.telegram.modules.system.utils.InteractiveRunnerUtil;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.SLF4JServiceProvider;

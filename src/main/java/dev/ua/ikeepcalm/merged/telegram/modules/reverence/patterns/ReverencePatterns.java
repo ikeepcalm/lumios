@@ -1,38 +1,37 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.patterns;
 
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface ReverencePatterns {
 
-    static boolean isIncreasingUpdate(Update update) {
+    static boolean isIncreasingUpdate(Message message) {
         Pattern pattern = Pattern.compile("^\\+[1-9]\\d*");
-        Matcher matcher = pattern.matcher(update.getMessage().getText());
+        Matcher matcher = pattern.matcher(message.getText());
         return matcher.matches();
     }
 
-    static boolean isDecreasingUpdate(Update update) {
+    static boolean isDecreasingUpdate(Message message) {
         Pattern pattern = Pattern.compile("^\\-[1-9]\\d*");
-        Matcher matcher = pattern.matcher(update.getMessage().getText());
+        Matcher matcher = pattern.matcher(message.getText());
         return matcher.matches();
     }
 
-    static boolean isIncreasingCommand(Message origin) {
+    static boolean isIncreasingCommand(Message message) {
         Pattern commandPattern = Pattern.compile("/increase@queueupnow_bot @[a-zA-Z0-9]+ \\d+");
         Pattern aliasPattern = Pattern.compile("/increase @[a-zA-Z0-9]+ \\d+");
-        Matcher commandMatcher = commandPattern.matcher(origin.getText());
-        Matcher aliasMatcher = aliasPattern.matcher(origin.getText());
+        Matcher commandMatcher = commandPattern.matcher(message.getText());
+        Matcher aliasMatcher = aliasPattern.matcher(message.getText());
         return commandMatcher.matches() || aliasMatcher.matches();
     }
 
-    static boolean isDecreaseCommand(Message origin) {
+    static boolean isDecreaseCommand(Message message) {
         Pattern commandPattern = Pattern.compile("/decrease@queueupnow_bot @[a-zA-Z0-9]+ \\d+");
         Pattern aliasPattern = Pattern.compile("/decrease @[a-zA-Z0-9]+ \\d+");
-        Matcher commandMatcher = commandPattern.matcher(origin.getText());
-        Matcher aliasMatcher = aliasPattern.matcher(origin.getText());
+        Matcher commandMatcher = commandPattern.matcher(message.getText());
+        Matcher aliasMatcher = aliasPattern.matcher(message.getText());
         return commandMatcher.matches() || aliasMatcher.matches();
     }
 

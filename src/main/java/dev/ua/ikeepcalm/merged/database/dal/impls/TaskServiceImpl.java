@@ -4,7 +4,6 @@ import dev.ua.ikeepcalm.merged.database.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.merged.database.dal.repositories.TaskRepository;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.tasks.DueTask;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.InputMismatchException;

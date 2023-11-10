@@ -1,7 +1,9 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.timetable;
 
 import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.WeekCreationCommand;
+import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.TodayCommand;
+import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.FeedCommand;
+import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.WeekCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -9,21 +11,28 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class TimetableHandler implements HandlerParent {
 
-    private final WeekCreationCommand weekCreationCommand;
+    private final FeedCommand feedCommand;
+    private final TodayCommand todayCommand;
+    private final WeekCommand weekCommand;
 
-    public TimetableHandler(WeekCreationCommand weekCreationCommand) {
-        this.weekCreationCommand = weekCreationCommand;
+    public TimetableHandler(FeedCommand feedCommand, TodayCommand todayCommand, WeekCommand weekCommand) {
+        this.feedCommand = feedCommand;
+        this.todayCommand = todayCommand;
+        this.weekCommand = weekCommand;
     }
 
+
     public void manageCommands(Update update) {
-        Message origin = update.getMessage();
-        String commandText = origin.getText();
+        Message message = update.getMessage();
+        String commandText = message.getText();
         if (commandText != null && commandText.startsWith("/")) {
             String[] parts = commandText.split("\\s+", 2);
             String command = parts[0];
             command = command.replace("@queueupnow_bot", "");
             switch (command) {
-                case "/week" -> weekCreationCommand.execute(origin);
+                case "/feed" -> feedCommand.processUpdate(message);
+                case "/today" -> todayCommand.processUpdate(message);
+                case "/week" -> weekCommand.processUpdate(message);
             }
         }
     }

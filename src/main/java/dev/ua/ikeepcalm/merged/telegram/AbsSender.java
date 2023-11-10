@@ -12,12 +12,9 @@ import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
-import org.telegram.telegrambots.meta.api.methods.pinnedmessages.UnpinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.*;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -32,7 +29,6 @@ import java.util.List;
 public class AbsSender extends DefaultAbsSender{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbsSender.class);
-    private static final String MARKDOWN_PARSE_MODE = "Markdown";
 
     public AbsSender(@Value(value="${telegram.bot.token}") String botToken) {
         super(new DefaultBotOptions(), botToken);
@@ -53,15 +49,6 @@ public class AbsSender extends DefaultAbsSender{
         acq.setShowAlert(true);
         acq.setCallbackQueryId(callbackQueryId);
         executeCommand(acq, "Failed to send AnswerCallbackQuery");
-    }
-
-    public void sendForwardMessage(Message origin, long chatId) {
-        ForwardMessage forwardMessage = new ForwardMessage();
-        forwardMessage.setMessageId(origin.getMessageId());
-        forwardMessage.setChatId(chatId);
-        forwardMessage.setFromChatId(origin.getChatId());
-        forwardMessage.setProtectContent(Boolean.TRUE);
-        executeCommand(forwardMessage, "Failed to forward message");
     }
 
     public Message sendEditMessage(EditMessage editMessage) {
@@ -106,13 +93,6 @@ public class AbsSender extends DefaultAbsSender{
         executeCommand(pinChatMessage, "Failed to pin chat message");
     }
 
-    public void unpinChatMessage(long chatId, long messageId) {
-        UnpinChatMessage unpinChatMessage = new UnpinChatMessage();
-        unpinChatMessage.setChatId(chatId);
-        unpinChatMessage.setMessageId((int) messageId);
-        executeCommand(unpinChatMessage, "Failed to unpin chat message");
-    }
-
     public InlineKeyboardMarkup createMarkup(String[] values, String prefix) {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         for (String name : values) {
@@ -127,20 +107,6 @@ public class AbsSender extends DefaultAbsSender{
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(keyboard);
         return inlineKeyboardMarkup;
-    }
-
-    public void removeCallbackMessage(CallbackQuery origin) {
-        DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(String.valueOf(origin.getMessage().getChatId()));
-        deleteMessage.setMessageId(origin.getMessage().getMessageId());
-        executeCommand(deleteMessage, "Failed to delete callback message");
-    }
-
-    public Message sendCallbackMessage(CallbackQuery origin, String messageText) {
-        SendMessage message = new SendMessage();
-        message.setText(messageText);
-        message.setChatId(origin.getMessage().getChatId());
-        return (Message) executeCommand(message, "Failed to send callback message");
     }
 
     public Message sendTextMessage(TextMessage textMessage) {

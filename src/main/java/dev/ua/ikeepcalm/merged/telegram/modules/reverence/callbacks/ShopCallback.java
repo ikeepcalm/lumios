@@ -1,38 +1,27 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.reverence.callbacks;
 
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.ShopService;
-import dev.ua.ikeepcalm.merged.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ShoppingUser;
+import dev.ua.ikeepcalm.merged.telegram.modules.CallbackParent;
 import dev.ua.ikeepcalm.merged.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
-public class ShopCallback extends CommandParent {
+public class ShopCallback extends CallbackParent {
 
-    private final ChatService chatService;
-    private final UserService userService;
-    private final ShopService shopService;
+    @Override
+    public void processUpdate(CallbackQuery message) {
+        String receivedCallback = message.getData();
+        instantiateUpdate(message);
+        ShoppingUser whoCalled = shopService.find(message.getFrom().getId(), reverenceChat);
 
-    @Autowired
-    public ShopCallback(ChatService chatService, UserService userService, ShopService shopService) {
-        this.chatService = chatService;
-        this.userService = userService;
-        this.shopService = shopService;
-    }
-
-    public void manage(String receivedCallback, CallbackQuery origin) {
-        ShoppingUser whoCalled = shopService.find(origin.getFrom().getId(), chatService.find(origin.getMessage().getChatId()));
         if (whoCalled == null) {
-            sendMessage(origin, "@" + origin.getFrom().getUserName() + ", спочатку виконайте /shop@queueupnow_bot!");
+            sendMessage("@" + super.message.getFrom().getUserName() + ", спочатку виконайте /shop@queueupnow_bot!");
             return;
         }
-        ReverenceUser user = userService.findById(origin.getFrom().getId(), whoCalled.getChannel());
         int cost = 0;
         int increment = switch (receivedCallback) {
             case "shop_10" -> {
@@ -51,19 +40,17 @@ public class ShopCallback extends CommandParent {
         };
 
 
-
-
-        if (processPurchase(user, whoCalled, cost, increment)) {
+        if (processPurchase(reverenceUser, whoCalled, cost, increment)) {
             EditMessage editMessage = new EditMessage();
-            editMessage.setChatId(origin.getMessage().getChatId());
-            editMessage.setMessageId(origin.getMessage().getMessageId());
-            editMessage.setText("@" + user.getUsername() + " витратив " + cost + " (✧) і збільшив своє щоденне оновлення на " + increment + "!");
+            editMessage.setChatId(super.message.getChatId());
+            editMessage.setMessageId(super.message.getMessageId());
+            editMessage.setText("@" + reverenceUser.getUsername() + " витратив " + cost + " (✧) і збільшив своє щоденне оновлення на " + increment + "!");
             editMessage(editMessage);
         } else {
             EditMessage editMessage = new EditMessage();
-            editMessage.setChatId(origin.getMessage().getChatId());
-            editMessage.setMessageId(origin.getMessage().getMessageId());
-            editMessage.setText("@" + user.getUsername() + ", у вас недостатньо грошей (✧) у гаманці!\n\nНаявно на балансі: " + user.getBalance() + " (✧)\n\nНеобхідно для цієї дії: " + cost + " (✧)");
+            editMessage.setChatId(super.message.getChatId());
+            editMessage.setMessageId(super.message.getMessageId());
+            editMessage.setText("@" + reverenceUser.getUsername() + ", у вас недостатньо грошей (✧) у гаманці!\n\nНаявно на балансі: " + reverenceUser.getBalance() + " (✧)\n\nНеобхідно для цієї дії: " + cost + " (✧)");
             editMessage(editMessage);
         }
     }
@@ -78,4 +65,6 @@ public class ShopCallback extends CommandParent {
         }
         return false;
     }
+
+
 }

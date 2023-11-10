@@ -1,9 +1,9 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.tasks;
 
 import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands.TaskCreationCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands.TaskEditingCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.tasks.commands.WhatIsDueCommand;
-import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.WeekCreationCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -11,29 +11,28 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class TasksHandler implements HandlerParent {
 
-    private final WeekCreationCommand weekCreationCommand;
+    private final TaskCreationCommand taskCreationCommand;
     private final TaskEditingCommand taskEditingCommand;
     private final WhatIsDueCommand whatIsDueCommand;
 
-    public TasksHandler(WeekCreationCommand weekCreationCommand,
-                        TaskEditingCommand taskEditingCommand,
-                        WhatIsDueCommand whatIsDueCommand) {
-        this.weekCreationCommand = weekCreationCommand;
+    public TasksHandler(TaskCreationCommand taskCreationCommand, TaskEditingCommand taskEditingCommand, WhatIsDueCommand whatIsDueCommand) {
+        this.taskCreationCommand = taskCreationCommand;
         this.taskEditingCommand = taskEditingCommand;
         this.whatIsDueCommand = whatIsDueCommand;
     }
 
+
     public void manageCommands(Update update) {
-        Message origin = update.getMessage();
-        String commandText = origin.getText();
+        Message message = update.getMessage();
+        String commandText = message.getText();
         if (commandText != null && commandText.startsWith("/")) {
             String[] parts = commandText.split("\\s+", 2);
             String command = parts[0];
             command = command.replace("@queueupnow_bot", "");
             switch (command) {
-                case "/task" -> weekCreationCommand.execute(origin);
-                case "/edit" -> taskEditingCommand.execute(origin);
-                case "/whatisduetoday" -> whatIsDueCommand.execute(origin);
+                case "/task" -> taskCreationCommand.processUpdate(message);
+                case "/edit" -> taskEditingCommand.processUpdate(message);
+                case "/due" -> whatIsDueCommand.processUpdate(message);
             }
         }
     }

@@ -19,7 +19,7 @@ public class BotInstance  extends TelegramLongPollingBot implements LongPollingB
         for (HandlerParent handlerParent : this.handlerParentList) {
             if (handlerParent.supports(update)){
                 handlerParent.dispatchUpdate(update);
-            };
+            }
         }
     }
 

@@ -10,9 +10,11 @@ import java.util.Set;
 @Entity
 @Table(name = "chats")
 public class ReverenceChat {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column
     private Long chatId;
 

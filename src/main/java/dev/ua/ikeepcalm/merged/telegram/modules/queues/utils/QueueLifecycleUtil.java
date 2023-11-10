@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.merged.telegram.utils;
+package dev.ua.ikeepcalm.merged.telegram.modules.queues.utils;
 
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import org.springframework.stereotype.Component;
