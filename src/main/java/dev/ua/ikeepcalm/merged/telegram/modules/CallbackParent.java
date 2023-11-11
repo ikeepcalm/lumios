@@ -89,6 +89,7 @@ public abstract class CallbackParent {
             this.userService.save(newUser);
             this.reverenceUser = newUser;
             sendMessage("@" +  message.getFrom().getUserName() + """
+                    
                     Давай знайомитись! Мене звуть КуєуєАпБот, а тебе?
                                         
                     ...зроблю вигляд, що запам'ятав. Ще побачимося!

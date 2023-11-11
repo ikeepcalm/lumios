@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.merged.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.merged.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;

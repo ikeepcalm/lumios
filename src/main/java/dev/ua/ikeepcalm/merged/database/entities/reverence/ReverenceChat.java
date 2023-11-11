@@ -2,11 +2,13 @@ package dev.ua.ikeepcalm.merged.database.entities.reverence;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "chats")
 public class ReverenceChat {
@@ -21,16 +23,5 @@ public class ReverenceChat {
     @OneToMany(mappedBy = "channel")
     private Set<ReverenceUser> users = new HashSet<>();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
-    }
-
-    public void setUsers(Set<ReverenceUser> users) {
-        this.users = users;
-    }
 }
 

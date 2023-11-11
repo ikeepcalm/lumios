@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.ua.ikeepcalm.merged.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.merged.database.entities.timetable.types.ClassType;
 import dev.ua.ikeepcalm.merged.database.entities.timetable.wrappers.TimetableWrapper;
 
 import java.io.IOException;
@@ -24,6 +25,15 @@ public class TimetableParser {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String parseClassEmoji(ClassType classType){
+        return switch (classType.name()){
+            case "LECTURE" -> "\uD83D\uDD35";
+            case "PRACTICE" -> "\uD83D\uDFE0";
+            case "LAB" -> "\uD83D\uDFE2";
+            default -> "?";
+        };
     }
 
 }

@@ -8,8 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "users")
 public class ReverenceUser {
@@ -31,36 +33,5 @@ public class ReverenceUser {
     @ManyToOne
     private ReverenceChat channel;
 
-    public void setUserEntityId(int userEntityId) {
-        this.userEntityId = userEntityId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setReverence(int reverence) {
-        this.reverence = reverence;
-    }
-
-    public void setCredits(int credits) {
-        this.credits = credits;
-    }
-
-    public void setSustainable(int sustainable) {
-        this.sustainable = sustainable;
-    }
-
-    public void setBalance(int balance) {
-        this.balance = balance;
-    }
-
-    public void setChannel(ReverenceChat channel) {
-        this.channel = channel;
-    }
 }
 

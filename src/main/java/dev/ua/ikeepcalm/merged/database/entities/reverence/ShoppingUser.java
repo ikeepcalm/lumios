@@ -8,8 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "shopping")
 public class ShoppingUser {
@@ -20,17 +22,5 @@ public class ShoppingUser {
     private Long userId;
     @ManyToOne
     private ReverenceChat channel;
-
-    public void setUserEntityId(int userEntityId) {
-        this.userEntityId = userEntityId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public void setChannel(ReverenceChat channel) {
-        this.channel = channel;
-    }
 }
 

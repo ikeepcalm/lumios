@@ -13,6 +13,7 @@ import dev.ua.ikeepcalm.merged.telegram.modules.timetable.utils.ClassMarkupUtil;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.utils.WeekValidator;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ public class ClassNotification {
         this.allClassEntries = (List<ClassEntry>) classEntryRepository.findAll();
     }
 
+    @Transactional
     @Scheduled(cron = "0 0 * * * *")
     public void updateClassEntries(){
         DayOfWeek currentDay = LocalDate.now().getDayOfWeek();
