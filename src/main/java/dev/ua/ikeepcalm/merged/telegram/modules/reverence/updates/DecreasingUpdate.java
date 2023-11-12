@@ -20,13 +20,12 @@ public class DecreasingUpdate extends CommandParent {
             if (reverenceUser.getCredits() >= eventValue) {
                 foundRepliedUser.setReverence(foundRepliedUser.getReverence() - eventValue);
                 reverenceUser.setCredits(reverenceUser.getCredits() - eventValue);
+                userService.save(foundRepliedUser);
+                userService.save(reverenceUser);
+                sendMessage("✔");
             } else {
-                foundRepliedUser.setReverence(foundRepliedUser.getReverence() - foundRepliedUser.getCredits());
-                foundRepliedUser.setCredits(0);
+                sendMessage("✖️");
             }
-            userService.save(foundRepliedUser);
-            userService.save(reverenceUser);
-            sendMessage("✔");
         } else {
             sendMessage("✖️");
         }
