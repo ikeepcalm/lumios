@@ -66,13 +66,13 @@ public class ClassNotification {
 
     @Scheduled(cron = "0 0/1 * 1/1 * ?")
     public void sendClassNotifications() {
-        LocalTime currentTime = LocalTime.now();
+        LocalTime currentTime = LocalTime.now().plusHours(2);
         DayOfWeek currentDay = LocalDate.now().getDayOfWeek();
 
         for (ClassEntry classEntry : allClassEntries) {
             if (classEntry.getDayEntry().getDayName() == currentDay &&
                     classEntry.getStartTime().isAfter(currentTime) &&
-                    classEntry.getStartTime().isBefore(currentTime.plusMinutes(10)) &&
+                    classEntry.getStartTime().isBefore(currentTime.plusMinutes(1)) &&
                     !sendNotifications.contains(classEntry)) {
                 absSender.sendTextMessage(ClassMarkupUtil.createNotification(classEntry, classEntry.getDayEntry().getTimetableEntry().getChat().getChatId()));
                 sendNotifications.add(classEntry);

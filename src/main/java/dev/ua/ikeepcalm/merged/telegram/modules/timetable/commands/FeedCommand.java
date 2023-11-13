@@ -49,7 +49,7 @@ public class FeedCommand extends CommandParent {
             ArrayList<InlineKeyboardButton> firstRow = new ArrayList<>();
             InlineKeyboardButton notify = new InlineKeyboardButton();
             notify.setText("\uD83C\uDF10 Онлайн редактор");
-            notify.setUrl("https://timetable.uaproject.xyz/?chatId=" + message.getChatId());
+            notify.setUrl("https://timetable.uaproject.xyz/timetable?chatId=" + message.getChatId());
             firstRow.add(notify);
             keyboard.add(firstRow);
             inlineKeyboardMarkup.setKeyboard(keyboard);

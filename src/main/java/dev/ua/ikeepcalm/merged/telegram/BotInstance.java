@@ -10,7 +10,7 @@ import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import java.util.List;
 
 @Component
-public class BotInstance  extends TelegramLongPollingBot implements LongPollingBot {
+public class BotInstance extends TelegramLongPollingBot implements LongPollingBot {
 
     public final String botUsername;
     private final List<HandlerParent> handlerParentList;

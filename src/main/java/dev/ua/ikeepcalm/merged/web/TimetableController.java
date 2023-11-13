@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.merged.restapi;
+package dev.ua.ikeepcalm.merged.web;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.TimetableService;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/timetables")
+@RequestMapping("/timetables")
 public class TimetableController {
 
     private final TimetableService timetableService;
@@ -29,6 +29,7 @@ public class TimetableController {
 
 
     @PostMapping("/feed")
+    @CrossOrigin("")
     public ResponseEntity<String> saveTimetable(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
