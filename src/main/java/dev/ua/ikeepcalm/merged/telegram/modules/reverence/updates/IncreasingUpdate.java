@@ -15,19 +15,21 @@ public class IncreasingUpdate extends CommandParent {
     public void processUpdate(Message message) {
         instantiateUpdate(message);
         if (ReverencePatterns.isIncreasingUpdate(message) && userService.checkIfUserExists(message.getReplyToMessage().getFrom().getId(), reverenceChat)) {
-            ReverenceUser foundRepliedUser = userService.findById(message.getReplyToMessage().getFrom().getId(), reverenceChat);
-            int eventValue = Math.abs(Integer.parseInt(message.getText()));
-            if (reverenceUser.getCredits() >= eventValue) {
-                foundRepliedUser.setReverence(foundRepliedUser.getReverence() + eventValue);
-                reverenceUser.setCredits(reverenceUser.getCredits() - eventValue);
-                userService.save(foundRepliedUser);
-                userService.save(reverenceUser);
-                sendMessage("✔");
+            if (!message.getFrom().getUserName().equals(message.getReplyToMessage().getFrom().getUserName())) {
+                ReverenceUser foundRepliedUser = userService.findById(message.getReplyToMessage().getFrom().getId(), reverenceChat);
+                int eventValue = Math.abs(Integer.parseInt(message.getText()));
+                if (reverenceUser.getCredits() >= eventValue) {
+                    foundRepliedUser.setReverence(foundRepliedUser.getReverence() + eventValue);
+                    reverenceUser.setCredits(reverenceUser.getCredits() - eventValue);
+                    userService.save(foundRepliedUser);
+                    userService.save(reverenceUser);
+                    sendMessage("✔");
+                } else {
+                    sendMessage("Недостатньо кредитів! Дочекайтеся щоденного оновлення");
+                }
             } else {
-                sendMessage("✖️");
+                sendMessage("Ви не можете збільшувати повагу самому собі!");
             }
-        } else {
-            sendMessage("✖️");
         }
     }
 }

@@ -25,7 +25,6 @@ public class TasksHandler implements HandlerParent {
     public void manageCommands(Update update) {
         Message message = update.getMessage();
         String commandText = message.getText();
-        if (commandText != null && commandText.startsWith("/")) {
             String[] parts = commandText.split("\\s+", 2);
             String command = parts[0];
             command = command.replace("@queueupnow_bot", "");
@@ -34,7 +33,6 @@ public class TasksHandler implements HandlerParent {
                 case "/edit" -> taskEditingCommand.processUpdate(message);
                 case "/due" -> whatIsDueCommand.processUpdate(message);
             }
-        }
     }
 
     @Override

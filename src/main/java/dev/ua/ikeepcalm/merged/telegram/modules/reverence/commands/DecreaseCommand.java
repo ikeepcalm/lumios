@@ -48,7 +48,7 @@ public class DecreaseCommand extends CommandParent {
         mentionedUser.setReverence(mentionedUser.getReverence() - eventValue);
         userService.save(currentUser);
         userService.save(mentionedUser);
-        sendMessage("Ви успішно відняли " + eventValue + " витратних кредитів з рейтингу користувача!");
+        sendMessage("✔");
     }
 
 

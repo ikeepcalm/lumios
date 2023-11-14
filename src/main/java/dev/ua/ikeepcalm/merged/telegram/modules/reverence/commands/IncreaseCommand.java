@@ -12,7 +12,7 @@ public class IncreaseCommand extends CommandParent {
     @Override
     public void processUpdate(Message message) {
         instantiateUpdate(message);
-        if (ReverencePatterns.isIncreasingCommand(message)) {
+        if (ReverencePatterns.isIncreaseCommand(message)) {
             processIncreaseCommand(message);
         } else {
             sendMessage("Неправильний формат команди. Використовуйте: /increase@queueupnow_bot [@юзернейм] [кількість поваги]");
@@ -49,7 +49,7 @@ public class IncreaseCommand extends CommandParent {
         mentionedUser.setReverence(mentionedUser.getReverence() + eventValue);
         userService.save(currentUser);
         userService.save(mentionedUser);
-        sendMessage("Ви успішно додали " + eventValue + " витратних кредитів до рейтингу користувача!");
+        sendMessage("✔");
     }
 
 

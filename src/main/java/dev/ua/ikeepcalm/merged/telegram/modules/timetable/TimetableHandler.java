@@ -1,8 +1,8 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.timetable;
 
 import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.TodayCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.FeedCommand;
+import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.TodayCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.WeekCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -25,15 +25,11 @@ public class TimetableHandler implements HandlerParent {
     public void manageCommands(Update update) {
         Message message = update.getMessage();
         String commandText = message.getText();
-        if (commandText != null && commandText.startsWith("/")) {
-            String[] parts = commandText.split("\\s+", 2);
-            String command = parts[0];
-            command = command.replace("@queueupnow_bot", "");
-            switch (command) {
-                case "/feed" -> feedCommand.processUpdate(message);
-                case "/today" -> todayCommand.processUpdate(message);
-                case "/week" -> weekCommand.processUpdate(message);
-            }
+        commandText = commandText.replace("@queueupnow_bot", "");
+        switch (commandText) {
+            case "/feed" -> feedCommand.processUpdate(message);
+            case "/today" -> todayCommand.processUpdate(message);
+            case "/week" -> weekCommand.processUpdate(message);
         }
     }
 

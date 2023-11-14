@@ -11,8 +11,6 @@ import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.Timer;
@@ -75,24 +73,25 @@ public abstract class CommandParent {
                     """);
             return;
         }
-
-        try {
-            this.reverenceUser = this.userService.findById(message.getFrom().getId(), reverenceChat);
-        } catch (NoSuchEntityException e) {
-            ReverenceUser newUser = new ReverenceUser();
-            newUser.setUserId(message.getFrom().getId());
-            newUser.setUsername(message.getFrom().getUserName());
-            newUser.setCredits(100);
-            newUser.setSustainable(100);
-            newUser.setChannel(reverenceChat);
-            userService.save(reverenceUser);
-            this.userService.save(newUser);
-            this.reverenceUser = newUser;
-            sendMessage("""
-                    Давай знайомитись! Мене звуть КуєуєАпБот, а тебе?
-                                        
-                    ...зроблю вигляд, що запам'ятав. Ще побачимося!
-                    """);
+        if (!message.getFrom().getIsBot()) {
+            try {
+                this.reverenceUser = this.userService.findById(message.getFrom().getId(), reverenceChat);
+            } catch (NoSuchEntityException e) {
+                ReverenceUser newUser = new ReverenceUser();
+                newUser.setUserId(message.getFrom().getId());
+                newUser.setUsername(message.getFrom().getUserName());
+                newUser.setCredits(100);
+                newUser.setSustainable(100);
+                newUser.setChannel(reverenceChat);
+                userService.save(reverenceUser);
+                this.userService.save(newUser);
+                this.reverenceUser = newUser;
+                sendMessage("""
+                        Давай знайомитись! Мене звуть КуєуєАпБот, а тебе?
+                                            
+                        ...зроблю вигляд, що запам'ятав. Ще побачимося!
+                        """);
+            }
         }
     }
 
@@ -125,7 +124,7 @@ public abstract class CommandParent {
         scheduleMessageToDelete(sent);
     }
 
-    protected void editMessage(EditMessage message){
+    protected void editMessage(EditMessage message) {
         absSender.sendEditMessage(message);
     }
 
