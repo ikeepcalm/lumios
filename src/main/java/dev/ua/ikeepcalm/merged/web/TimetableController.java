@@ -61,13 +61,14 @@ public class TimetableController {
         try {
             TimetableEntry timetableEntry = TimetableParser.parseTimetableMessage(json);
             try {
+                timetableEntry.setChat(chatService.findByChatId(chatId));
                 TimetableEntry optionalTimetableEntry = timetableService.findByChatIdAndWeekType(chatId, timetableEntry.getWeekType());
                 timetableService.delete(optionalTimetableEntry);
                 timetableService.save(timetableEntry);
                 return ResponseEntity.status(HttpStatus.OK).body("Timetable updated with ID: " + timetableEntry.getId());
             } catch (NoSuchEntityException e) {
                 timetableService.save(timetableEntry);
-                return ResponseEntity.status(HttpStatus.OK).body("There was timetable with id: " + chatId + ". It was created instead");
+                return ResponseEntity.status(HttpStatus.OK).body("There was no timetable with id: " + chatId + ". It was created instead");
             }
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format");

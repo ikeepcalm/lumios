@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.util.Objects;
 import java.util.Timer;
 
 @Component
@@ -76,6 +77,10 @@ public abstract class CommandParent {
         if (!message.getFrom().getIsBot()) {
             try {
                 this.reverenceUser = this.userService.findById(message.getFrom().getId(), reverenceChat);
+                if (!Objects.equals(reverenceUser.getUsername(), message.getFrom().getUserName())) {
+                    reverenceUser.setUsername(message.getFrom().getUserName());
+                    userService.save(reverenceUser);
+                }
             } catch (NoSuchEntityException e) {
                 ReverenceUser newUser = new ReverenceUser();
                 newUser.setUserId(message.getFrom().getId());

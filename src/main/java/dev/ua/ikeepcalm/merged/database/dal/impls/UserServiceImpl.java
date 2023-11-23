@@ -34,16 +34,9 @@ implements UserService {
         Iterable<ReverenceUser> list = userRepository.findAll();
         for (ReverenceUser user : list) {
             user.setCredits(user.getSustainable());
-            if (user.getReverence() < 0) {
-                if (-0.1 * (double)user.getReverence() > (double)user.getBalance()) {
-                    user.setBalance(0);
-                } else {
-                    user.setBalance((int)((double)user.getBalance() + (double)user.getReverence() * 0.1));
-                }
-            } else {
-                user.setBalance((int)((double)user.getBalance() + (double)user.getReverence() * 0.1));
-            }
-            this.userRepository.save(user);
+            if (user.getReverence() > 0) {
+                user.setBalance((int) (user.getBalance() + Math.sqrt(user.getReverence())));
+            } this.userRepository.save(user);
         }
     }
 
