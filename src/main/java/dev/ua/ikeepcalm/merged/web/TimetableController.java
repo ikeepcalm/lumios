@@ -40,10 +40,14 @@ public class TimetableController {
         }
 
         try {
-            TimetableEntry timetableEntry = TimetableParser.parseTimetableMessage(json);
-            timetableEntry.setChat(reverenceChat);
-            timetableService.save(timetableEntry);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Timetable saved with ID: " + timetableEntry.getId());
+            List<TimetableEntry> timetableEntries = TimetableParser.parseTimetableMessage(json);
+
+            for (TimetableEntry timetableEntry : timetableEntries) {
+                timetableEntry.setChat(reverenceChat);
+                timetableEntry.setChat(reverenceChat);
+                timetableService.save(timetableEntry);
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved list of given timetables!");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format");
         }
@@ -56,23 +60,29 @@ public class TimetableController {
             chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
-
         }
+        List<TimetableEntry> timetableEntries = null;
         try {
-            TimetableEntry timetableEntry = TimetableParser.parseTimetableMessage(json);
-            try {
-                timetableEntry.setChat(chatService.findByChatId(chatId));
-                TimetableEntry optionalTimetableEntry = timetableService.findByChatIdAndWeekType(chatId, timetableEntry.getWeekType());
-                timetableService.delete(optionalTimetableEntry);
-                timetableService.save(timetableEntry);
-                return ResponseEntity.status(HttpStatus.OK).body("Timetable updated with ID: " + timetableEntry.getId());
-            } catch (NoSuchEntityException e) {
-                timetableService.save(timetableEntry);
-                return ResponseEntity.status(HttpStatus.OK).body("There was no timetable with id: " + chatId + ". It was created instead");
-            }
+            timetableEntries = TimetableParser.parseTimetableMessage(json);
+
+            if (timetableEntries.isEmpty())
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format! No timetable entries found!");
+
+            for (TimetableEntry timetableEntry : timetableEntries) {
+                try {
+                    timetableEntry.setChat(chatService.findByChatId(chatId));
+                    TimetableEntry optionalTimetableEntry = timetableService.findByChatIdAndWeekType(chatId, timetableEntry.getWeekType());
+                    timetableService.delete(optionalTimetableEntry);
+                    timetableService.save(timetableEntry);
+                } catch (NoSuchEntityException e) {
+                    timetableService.save(timetableEntry);
+                }
+            } return ResponseEntity.status(HttpStatus.OK).body("Successfully updated list of given timetables!");
+
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format!");
         }
+
     }
 
     @GetMapping("/retrieve")

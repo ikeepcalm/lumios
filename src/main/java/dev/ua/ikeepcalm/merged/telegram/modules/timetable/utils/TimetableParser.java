@@ -2,6 +2,7 @@ package dev.ua.ikeepcalm.merged.telegram.modules.timetable.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.ua.ikeepcalm.merged.database.entities.timetable.TimetableEntry;
@@ -9,23 +10,38 @@ import dev.ua.ikeepcalm.merged.database.entities.timetable.types.ClassType;
 import dev.ua.ikeepcalm.merged.database.entities.timetable.wrappers.TimetableWrapper;
 
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TimetableParser {
 
-    public static TimetableEntry parseTimetableMessage(String jsonMessage) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        return new TimetableEntry(objectMapper.readValue(jsonMessage, TimetableWrapper.class));
+    private static final ObjectMapper objectMapper;
+
+    static {
+        objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()
+                .addSerializer(LocalTime.class, new LocalTimeSerializer()));
     }
 
-    public static String parseTimetableObjects(List<TimetableWrapper> timetableEntries){
-        ObjectWriter objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).writer().withDefaultPrettyPrinter();
+    public static List<TimetableEntry> parseTimetableMessage(String json) throws IOException {
+        ObjectReader objectReader = objectMapper.readerForListOf(TimetableWrapper.class);
+
         try {
-            return objectMapper.writeValueAsString(timetableEntries);
+            List<TimetableWrapper> timetableWrappers = objectReader.readValue(json);
+            List<TimetableEntry> timetableEntries = new ArrayList<>();
+
+            for (TimetableWrapper timetableWrapper : timetableWrappers) {
+                TimetableEntry timetableEntry = new TimetableEntry(timetableWrapper);
+                timetableEntries.add(timetableEntry);
+            }
+
+            return timetableEntries;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     public static String parseClassEmoji(ClassType classType){
         return switch (classType.name()){
@@ -36,4 +52,11 @@ public class TimetableParser {
         };
     }
 
+    private static class LocalTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer {
+        public LocalTimeSerializer() {
+            super(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+    }
+
 }
+
