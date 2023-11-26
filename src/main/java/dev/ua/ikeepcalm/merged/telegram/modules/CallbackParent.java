@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.merged.telegram.modules;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.*;
+import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
@@ -9,12 +10,17 @@ import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.spi.SLF4JServiceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.time.LocalTime;
 import java.util.Timer;
+import java.util.UUID;
 
 @Component
 public abstract class CallbackParent {
@@ -32,6 +38,8 @@ public abstract class CallbackParent {
     protected TimetableService timetableService;
     protected QueueLifecycleUtil queueLifecycleUtil;
 
+    private Logger logger;
+
     @Autowired
     private void setupDependencies(AbsSender absSender,
                                    ChatService chatService,
@@ -47,6 +55,7 @@ public abstract class CallbackParent {
         this.shopService = shopService;
         this.timetableService = timetableService;
         this.queueLifecycleUtil = queueLifecycleUtil;
+        this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 
     protected void instantiateUpdate(CallbackQuery message) {
@@ -95,7 +104,7 @@ public abstract class CallbackParent {
                         ...зроблю вигляд, що запам'ятав. Ще побачимося!
                         """);
             }
-        }
+        } logInteraction(message);
     }
 
     public abstract void processUpdate(CallbackQuery message);
@@ -129,6 +138,52 @@ public abstract class CallbackParent {
 
     protected void editMessage(EditMessage message) {
         absSender.sendEditMessage(message);
+    }
+
+    private void logInteraction(CallbackQuery message) {
+        if (message == null || message.getData() == null) {
+            return;
+        }
+
+        String receivedCallback = message.getData();
+        String action = getActionFromCallback(receivedCallback);
+        String queueUUID = removeCallbackPrefixes(receivedCallback);
+
+        QueueItself queueItself = queueLifecycleUtil.getQueue(UUID.fromString(queueUUID));
+        String username = message.getFrom().getUserName();
+
+        if (queueItself != null) {
+            logger.info("Callback: [{}] - [{}]: {}",
+                    username,
+                    queueItself.getAlias(),
+                    action);
+        } else {
+            logger.info("Callback: [{}]: {}",
+                    username,
+                    action);
+        }
+    }
+
+    private String getActionFromCallback(String data) {
+        String[] suffixes = {"-delete", "-exit", "-flush", "-join", "-notify"};
+        for (String suffix : suffixes) {
+            if (data.endsWith(suffix)) {
+                return suffix;
+            }
+        }
+        return "";
+    }
+
+    private String removeCallbackPrefixes(String data) {
+        if (data != null) {
+            String[] suffixes = {"-delete", "-exit", "-flush", "-join", "-notify"};
+
+            for (String suffix : suffixes) {
+                data = data.replace(suffix, "");
+            }
+        }
+
+        return data;
     }
 
     private void scheduleMessageToDelete(Message message) {

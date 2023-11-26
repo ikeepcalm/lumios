@@ -9,6 +9,9 @@ import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.spi.SLF4JServiceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -32,6 +35,8 @@ public abstract class CommandParent {
     protected TimetableService timetableService;
     protected QueueLifecycleUtil queueLifecycleUtil;
 
+    private Logger logger;
+
     @Autowired
     private void setupDependencies(AbsSender absSender,
                                    ChatService chatService,
@@ -47,6 +52,7 @@ public abstract class CommandParent {
         this.shopService = shopService;
         this.timetableService = timetableService;
         this.queueLifecycleUtil = queueLifecycleUtil;
+        this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 
     protected void instantiateUpdate(Message message) {
@@ -97,7 +103,7 @@ public abstract class CommandParent {
                         ...зроблю вигляд, що запам'ятав. Ще побачимося!
                         """);
             }
-        }
+        } logInteraction();
     }
 
     public abstract void processUpdate(Message message);
@@ -129,8 +135,10 @@ public abstract class CommandParent {
         scheduleMessageToDelete(sent);
     }
 
-    protected void editMessage(EditMessage message) {
-        absSender.sendEditMessage(message);
+    private void logInteraction() {
+        logger.info("Command: [{}]: {}",
+                message.getFrom().getUserName(),
+                message.getText());
     }
 
     private void scheduleMessageToDelete(Message message) {

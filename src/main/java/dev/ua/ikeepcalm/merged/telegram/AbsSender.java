@@ -12,10 +12,12 @@ import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.*;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -41,6 +43,11 @@ public class AbsSender extends DefaultAbsSender{
             LOGGER.error(errorMessage, e);
             throw new RuntimeException(e);
         }
+    }
+
+    public List<ChatMember> getChatAdministrators(String chatId) {
+        GetChatAdministrators getChatAdministrators = new GetChatAdministrators(chatId);
+        return (List<ChatMember>) executeCommand(getChatAdministrators, "Failed to get chat administrators!");
     }
 
     public void sendAnswerCallbackQuery(String text, String callbackQueryId) {

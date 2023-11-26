@@ -18,8 +18,7 @@ public class JoinCallback extends CallbackParent {
     @Override
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-join", "");
-        String callbackQueryId = message.getId();
-        instantiateUpdate(message);
+        String callbackQueryId = message.getId(); instantiateUpdate(message);
         QueueItself queueItself = queueLifecycleUtil.getQueue(UUID.fromString(receivedCallback));
         QueueUser queueUser = new QueueUser();
         queueUser.setName(message.getFrom().getFirstName());
