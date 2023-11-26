@@ -14,9 +14,9 @@ public class WeekValidator {
         int weekANumber = weekAStartDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         int weekDifference = weekNumber - weekANumber;
         if (weekDifference % 2 == 0) {
-            return WeekType.WEEK_A;
-        } else {
             return WeekType.WEEK_B;
+        } else {
+            return WeekType.WEEK_A;
         }
     }
 
