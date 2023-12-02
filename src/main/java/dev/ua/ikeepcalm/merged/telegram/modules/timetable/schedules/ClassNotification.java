@@ -11,6 +11,8 @@ import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.merged.telegram.AbsSender;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.utils.ClassMarkupUtil;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.utils.WeekValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +32,7 @@ public class ClassNotification {
     private final AbsSender absSender;
     private final List<ClassEntry> allClassEntries;
     private final Set<ClassEntry> sendNotifications;
+    private final Logger logger = LoggerFactory.getLogger(ClassNotification.class);
 
 
     public ClassNotification(ChatService chatService, TimetableService timetableService, ClassEntryRepository classEntryRepository, AbsSender absSender) {
@@ -42,7 +46,8 @@ public class ClassNotification {
     @Transactional
     @Scheduled(cron = "0 0 * * * *")
     public void updateClassEntries(){
-        DayOfWeek currentDay = LocalDate.now().getDayOfWeek();
+        DayOfWeek currentDay = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
+        logger.info("Updating class entries for day: {}", currentDay);
         Iterable<ReverenceChat> reverenceChats = chatService.findAll();
         for (ReverenceChat reverenceChat : reverenceChats){
             TimetableEntry timetableEntry;
@@ -54,20 +59,25 @@ public class ClassNotification {
                         allClassEntries.addAll(dayEntry.getClassEntries());
                     }
                 }
-            } catch (NoSuchEntityException ignored) {}
-        }
+            } catch (NoSuchEntityException ignored) {
+
+            }
+        } logger.debug("Updated class entries: {}", allClassEntries);
     }
 
     @Scheduled(cron = "0 0 0 * * ?")
     public void clearSentNotifications() {
+        logger.info("Clearing sent notifications.");
         sendNotifications.clear();
+        logger.debug("Sent notifications cleared.");
     }
 
 
     @Scheduled(cron = "0 0/1 * 1/1 * ?")
     public void sendClassNotifications() {
-        LocalTime currentTime = LocalTime.now().plusHours(2);
-        DayOfWeek currentDay = LocalDate.now().getDayOfWeek();
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
+        DayOfWeek currentDay = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
+        logger.info("Sending class notifications for day: {}", currentDay);
 
         for (ClassEntry classEntry : allClassEntries) {
             if (classEntry.getDayEntry().getDayName() == currentDay &&
@@ -78,11 +88,8 @@ public class ClassNotification {
                 sendNotifications.add(classEntry);
             }
         }
+        logger.debug("Notifications sent for class entries: {}", sendNotifications);
     }
-
-
-
-
 }
 
 
