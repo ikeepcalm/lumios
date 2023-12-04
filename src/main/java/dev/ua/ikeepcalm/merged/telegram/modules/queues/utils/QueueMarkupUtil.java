@@ -1,10 +1,9 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.queues.utils;
 
-import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
+import dev.ua.ikeepcalm.merged.database.entities.queue.MixedQueue;
 import dev.ua.ikeepcalm.merged.database.entities.queue.QueueUser;
-import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
+import dev.ua.ikeepcalm.merged.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -13,7 +12,7 @@ import java.util.List;
 
 public class QueueMarkupUtil {
 
-    public static InlineKeyboardMarkup createMarkup(QueueItself queueItself) {
+    public static InlineKeyboardMarkup createMarkup(SimpleQueue simpleQueue) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         ArrayList<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         ArrayList<InlineKeyboardButton> firstRow = new ArrayList<>();
@@ -21,23 +20,23 @@ public class QueueMarkupUtil {
 
         InlineKeyboardButton queueUp = new InlineKeyboardButton();
         queueUp.setText("Join \uD83D\uDD30");
-        queueUp.setCallbackData(queueItself.getId() + "-join");
+        queueUp.setCallbackData(simpleQueue.getId() + "-simple-join");
 
         InlineKeyboardButton flush = new InlineKeyboardButton();
         flush.setText("I'm done ✅");
-        flush.setCallbackData(queueItself.getId() + "-flush");
+        flush.setCallbackData(simpleQueue.getId() + "-simple-flush");
 
         InlineKeyboardButton exit = new InlineKeyboardButton();
         exit.setText("Leave \ud83d\udd04");
-        exit.setCallbackData(queueItself.getId() + "-exit");
+        exit.setCallbackData(simpleQueue.getId() + "-simple-exit");
 
         InlineKeyboardButton delete = new InlineKeyboardButton();
         delete.setText("Delete ❌");
-        delete.setCallbackData(queueItself.getId() + "-delete");
+        delete.setCallbackData(simpleQueue.getId() + "-simple-delete");
 
         InlineKeyboardButton notify = new InlineKeyboardButton();
         notify.setText("Notify ⚠");
-        notify.setCallbackData(queueItself.getId() + "-notify");
+        notify.setCallbackData(simpleQueue.getId() + "-simple-notify");
         firstRow.add(queueUp);
         firstRow.add(flush);
         firstRow.add(exit);
@@ -51,14 +50,36 @@ public class QueueMarkupUtil {
         return inlineKeyboardMarkup;
     }
 
-    public static TextMessage createNotification(long chatId, QueueItself queueItself) {
-        QueueUser queueUser = queueItself.getContents().peek();
+    public static InlineKeyboardMarkup createMarkup(MixedQueue mixedQueue) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        ArrayList<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        ArrayList<InlineKeyboardButton> firstRow = new ArrayList<>();
+        ArrayList<InlineKeyboardButton> secondRow = new ArrayList<>();
+
+        InlineKeyboardButton join = new InlineKeyboardButton();
+        join.setText("Join \uD83D\uDD30");
+        join.setCallbackData(mixedQueue.getId() + "-mixed-join");
+
+        InlineKeyboardButton shuffle = new InlineKeyboardButton();
+        shuffle.setText("Shuffle \uD83D\uDD00");
+        shuffle.setCallbackData(mixedQueue.getId() + "-mixed-shuffle");
+        firstRow.add(join);
+        secondRow.add(shuffle);
+
+        keyboard.add(firstRow);
+        keyboard.add(secondRow);
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+        return inlineKeyboardMarkup;
+    }
+
+    public static TextMessage createNotification(long chatId, SimpleQueue simpleQueue) {
+        QueueUser queueUser = simpleQueue.getContents().peek();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
-        textMessage.setMessageId(queueItself.getMessageId());
+        textMessage.setMessageId(simpleQueue.getMessageId());
 
         if (queueUser != null) {
-            textMessage.setText(queueUser.getName() + " (@" + queueUser.getUsername() + "), твоя черга відповідати у " + queueItself.getAlias() + "!");
+            textMessage.setText(queueUser.getName() + " (@" + queueUser.getUsername() + "), твоя черга відповідати у " + simpleQueue.getAlias() + "!");
         }
 
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -67,7 +88,7 @@ public class QueueMarkupUtil {
 
         InlineKeyboardButton flush = new InlineKeyboardButton();
         flush.setText("I'm done ✅");
-        flush.setCallbackData(queueItself.getId() + "-flush");
+        flush.setCallbackData(simpleQueue.getId() + "-flush");
 
         row.add(flush);
 
@@ -79,21 +100,4 @@ public class QueueMarkupUtil {
         return textMessage;
     }
 
-
-    public static EditMessage updateMessage(Message message, QueueItself queueItself) {
-        EditMessage editMessage = new EditMessage();
-        editMessage.setChatId(message.getChatId());
-        editMessage.setMessageId(queueItself.getMessageId());
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(">>> ").append(queueItself.getAlias()).append(" <<<\n\n");
-        int id = 1;
-        for (QueueUser iteQueueUser : queueItself.getContents()) {
-            stringBuilder.append("ID: ").append(id).append(" - ").append(iteQueueUser.getName()).append(" (@").append(iteQueueUser.getUsername()).append(")\n");
-            ++id;
-        }
-        editMessage.setText(stringBuilder.toString());
-        editMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queueItself));
-        return editMessage;
-    }
 }
-

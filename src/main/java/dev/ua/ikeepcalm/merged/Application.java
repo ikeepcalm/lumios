@@ -3,7 +3,6 @@ package dev.ua.ikeepcalm.merged;
 
 
 import dev.ua.ikeepcalm.merged.telegram.modules.system.utils.InteractiveRunnerUtil;
-import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.SLF4JServiceProvider;
@@ -23,15 +22,12 @@ import java.util.Scanner;
 public class Application implements CommandLineRunner {
 
     private final ApplicationContext applicationContext;
-    private final QueueLifecycleUtil queueLifecycleUtil;
     private final InteractiveRunnerUtil interactiveRunnerUtil;
     private final Logger logger;
 
     public Application(ApplicationContext applicationContext,
-                       QueueLifecycleUtil queueLifecycleUtil,
                        InteractiveRunnerUtil interactiveRunnerUtil) {
         this.applicationContext = applicationContext;
-        this.queueLifecycleUtil = queueLifecycleUtil;
         this.interactiveRunnerUtil = interactiveRunnerUtil;
         this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
@@ -52,7 +48,6 @@ public class Application implements CommandLineRunner {
             switch (command) {
                 case "stop":
                     logger.info("Shutting down the application...");
-                    queueLifecycleUtil.saveHashMapToFile();
                     SpringApplication.exit(applicationContext);
                     System.exit(0);
                     break label;

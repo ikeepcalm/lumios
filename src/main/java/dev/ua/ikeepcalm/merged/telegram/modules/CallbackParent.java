@@ -1,24 +1,23 @@
 package dev.ua.ikeepcalm.merged.telegram.modules;
 
 import dev.ua.ikeepcalm.merged.database.dal.interfaces.*;
-import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
+import dev.ua.ikeepcalm.merged.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.merged.telegram.AbsSender;
-import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.lifecycles.MixedQueueLifecycle;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.lifecycles.SimpleQueueLifecycle;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.spi.SLF4JServiceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.time.LocalTime;
 import java.util.Timer;
 import java.util.UUID;
 
@@ -36,7 +35,8 @@ public abstract class CallbackParent {
     protected TaskService taskService;
     protected ShopService shopService;
     protected TimetableService timetableService;
-    protected QueueLifecycleUtil queueLifecycleUtil;
+    protected SimpleQueueLifecycle simpleQueueLifecycle;
+    protected MixedQueueLifecycle mixedQueueLifecycle;
 
     private Logger logger;
 
@@ -47,15 +47,17 @@ public abstract class CallbackParent {
                                    TaskService taskService,
                                    ShopService shopService,
                                    TimetableService timetableService,
-                                   QueueLifecycleUtil queueLifecycleUtil) {
+                                   SimpleQueueLifecycle simpleQueueLifecycle,
+                                   MixedQueueLifecycle mixedQueueLifecycle) {
         this.absSender = absSender;
         this.chatService = chatService;
         this.userService = userService;
         this.taskService = taskService;
         this.shopService = shopService;
         this.timetableService = timetableService;
-        this.queueLifecycleUtil = queueLifecycleUtil;
-        this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
+        this.simpleQueueLifecycle = simpleQueueLifecycle;
+        this.mixedQueueLifecycle = mixedQueueLifecycle;
+        this.logger = LoggerFactory.getLogger(CallbackParent.class);
     }
 
     protected void instantiateUpdate(CallbackQuery message) {
@@ -119,6 +121,7 @@ public abstract class CallbackParent {
         scheduleMessageToDelete(sent);
     }
 
+
     protected void sendMessage(String text, String parseMode) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
@@ -149,13 +152,13 @@ public abstract class CallbackParent {
         String action = getActionFromCallback(receivedCallback);
         String queueUUID = removeCallbackPrefixes(receivedCallback);
 
-        QueueItself queueItself = queueLifecycleUtil.getQueue(UUID.fromString(queueUUID));
+        SimpleQueue simpleQueue = simpleQueueLifecycle.getSimpleQueue(UUID.fromString(queueUUID));
         String username = message.getFrom().getUserName();
 
-        if (queueItself != null) {
+        if (simpleQueue != null) {
             logger.info("Callback: [{}] - [{}]: {}",
                     username,
-                    queueItself.getAlias(),
+                    simpleQueue.getAlias(),
                     action);
         } else {
             logger.info("Callback: [{}]: {}",
@@ -165,7 +168,8 @@ public abstract class CallbackParent {
     }
 
     private String getActionFromCallback(String data) {
-        String[] suffixes = {"-delete", "-exit", "-flush", "-join", "-notify"};
+        String[] suffixes = {"-simple-delete", "-simple-exit", "-simple-flush", "-simple-join", "-simple-notify",
+                "-mixed-join", "-mixed-shuffle"};
         for (String suffix : suffixes) {
             if (data.endsWith(suffix)) {
                 return suffix;
@@ -176,7 +180,8 @@ public abstract class CallbackParent {
 
     private String removeCallbackPrefixes(String data) {
         if (data != null) {
-            String[] suffixes = {"-delete", "-exit", "-flush", "-join", "-notify"};
+            String[] suffixes = {"-simple-delete", "-simple-exit", "-simple-flush", "-simple-join", "-simple-notify",
+                    "-mixed-join", "-mixed-shuffle"};
 
             for (String suffix : suffixes) {
                 data = data.replace(suffix, "");

@@ -5,13 +5,12 @@ import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.merged.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.merged.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.merged.telegram.AbsSender;
-import dev.ua.ikeepcalm.merged.telegram.modules.queues.utils.QueueLifecycleUtil;
-import dev.ua.ikeepcalm.merged.telegram.wrappers.EditMessage;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.lifecycles.MixedQueueLifecycle;
+import dev.ua.ikeepcalm.merged.telegram.modules.queues.lifecycles.SimpleQueueLifecycle;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.spi.SLF4JServiceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -33,7 +32,8 @@ public abstract class CommandParent {
     protected TaskService taskService;
     protected ShopService shopService;
     protected TimetableService timetableService;
-    protected QueueLifecycleUtil queueLifecycleUtil;
+    protected SimpleQueueLifecycle simpleQueueLifecycle;
+    protected MixedQueueLifecycle mixedQueueLifecycle;
 
     private Logger logger;
 
@@ -44,15 +44,17 @@ public abstract class CommandParent {
                                    TaskService taskService,
                                    ShopService shopService,
                                    TimetableService timetableService,
-                                   QueueLifecycleUtil queueLifecycleUtil) {
+                                   SimpleQueueLifecycle simpleQueueLifecycle,
+                                   MixedQueueLifecycle mixedQueueLifecycle) {
         this.absSender = absSender;
         this.chatService = chatService;
         this.userService = userService;
         this.taskService = taskService;
         this.shopService = shopService;
         this.timetableService = timetableService;
-        this.queueLifecycleUtil = queueLifecycleUtil;
-        this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
+        this.simpleQueueLifecycle = simpleQueueLifecycle;
+        this.mixedQueueLifecycle = mixedQueueLifecycle;
+        this.logger = LoggerFactory.getLogger(CommandParent.class);
     }
 
     protected void instantiateUpdate(Message message) {

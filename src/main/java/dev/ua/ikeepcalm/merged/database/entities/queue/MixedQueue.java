@@ -4,25 +4,27 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class QueueItself
+public class MixedQueue
 implements Serializable {
     private UUID id;
     private String alias;
     private int messageId;
+    private boolean shuffled = false;
     private Queue<QueueUser> contents = new LinkedList<>();
 
-    public QueueItself() {
-        this.alias = "СТАНДАРТНА ЧЕРГА";
+    public MixedQueue() {
+        this.alias = "ЗМІШАНА ЧЕРГА";
         this.id  = UUID.randomUUID();
     }
 
-    public QueueItself(String alias) {
+    public MixedQueue(String alias) {
         this.alias = alias;
         this.id = UUID.randomUUID();
     }
@@ -31,16 +33,9 @@ implements Serializable {
         this.contents.add(queueUser);
     }
 
-    public void removeUser(QueueUser queueUser) {
-        this.contents.remove(queueUser);
-    }
-
-    public boolean flushUser(QueueUser queueUser) {
-        if (this.contents.peek() != null && this.contents.peek().getAccountId().equals(queueUser.getAccountId())) {
-            this.contents.poll();
-            return true;
-        }
-        return false;
+    public void shuffleContents() {
+        Collections.shuffle((LinkedList<QueueUser>) this.contents);
+        this.shuffled = true;
     }
 
     public void setContents(Queue<QueueUser> contents) {

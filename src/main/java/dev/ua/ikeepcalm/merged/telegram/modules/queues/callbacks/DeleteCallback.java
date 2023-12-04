@@ -1,8 +1,9 @@
 package dev.ua.ikeepcalm.merged.telegram.modules.queues.callbacks;
 
-import dev.ua.ikeepcalm.merged.database.entities.queue.QueueItself;
+import dev.ua.ikeepcalm.merged.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.merged.telegram.modules.CallbackParent;
 import dev.ua.ikeepcalm.merged.telegram.wrappers.RemoveMessage;
+import dev.ua.ikeepcalm.merged.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
@@ -14,17 +15,19 @@ public class DeleteCallback extends CallbackParent {
 
     @Override
     public void processUpdate(CallbackQuery message) {
-        String receivedCallback = message.getData().replace("-delete", "");
-        String callbackQueryId = message.getId();
+        String receivedCallback = message.getData().replace("-simple-delete", "");
         instantiateUpdate(message);
         for (ChatMember chatMember : absSender.getChatAdministrators(String.valueOf(message.getMessage().getChatId()))) {
             if (chatMember.getUser().getId().equals(message.getFrom().getId())) {
-                QueueItself queueItself = queueLifecycleUtil.getQueue(UUID.fromString(receivedCallback));
-                queueLifecycleUtil.deleteQueue(queueItself);
-                absSender.sendRemoveMessage(new RemoveMessage(queueItself.getMessageId(), super.message.getChatId()));
-                sendMessage("@".concat(message.getFrom().getUserName()).concat(" видалив чергу: ").concat(queueItself.getAlias()).concat("!"));
+                SimpleQueue simpleQueue = simpleQueueLifecycle.getSimpleQueue(UUID.fromString(receivedCallback));
+                simpleQueueLifecycle.deleteSimpleQueue(simpleQueue);
+                absSender.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), super.message.getChatId()));
+                TextMessage textMessage = new TextMessage();
+                textMessage.setChatId(message.getMessage().getChatId());
+                textMessage.setText("@".concat(message.getFrom().getUserName()).concat(" видалив чергу: ").concat(simpleQueue.getAlias()).concat("!"));
+                sendMessage(textMessage);
                 break;
-            } absSender.sendAnswerCallbackQuery("Авторизувати цю дію може лише адміністратор цього чату!", callbackQueryId);
+            }
         }
     }
 }
