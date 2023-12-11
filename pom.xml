@@ -10,10 +10,10 @@
     </parent>
     <groupId>dev.ua.ikeepcalm</groupId>
     <artifactId>QueueUpNow</artifactId>
-    <version>1.2.9-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <name>QueueUpNow</name>
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -95,6 +95,15 @@
                         <version>1.0.30.RELEASE</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
+                </configuration>
             </plugin>
         </plugins>
     </build>

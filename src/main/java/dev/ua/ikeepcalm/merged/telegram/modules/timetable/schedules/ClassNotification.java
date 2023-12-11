@@ -35,7 +35,10 @@ public class ClassNotification {
     private final Logger logger = LoggerFactory.getLogger(ClassNotification.class);
 
 
-    public ClassNotification(ChatService chatService, TimetableService timetableService, ClassEntryRepository classEntryRepository, AbsSender absSender) {
+    public ClassNotification(ChatService chatService,
+                             TimetableService timetableService,
+                             ClassEntryRepository classEntryRepository,
+                             AbsSender absSender) {
         this.chatService = chatService;
         this.timetableService = timetableService;
         this.absSender = absSender;
@@ -59,13 +62,13 @@ public class ClassNotification {
                         allClassEntries.addAll(dayEntry.getClassEntries());
                     }
                 }
-            } catch (NoSuchEntityException ignored) {
-
+            } catch (NoSuchEntityException e) {
+                logger.debug("Couldn't find Timetable for chat {} and week type {}", reverenceChat.getChatId(), WeekValidator.determineWeekDay());
             }
         } logger.debug("Updated class entries: {}", allClassEntries);
     }
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * * ")
     public void clearSentNotifications() {
         logger.info("Clearing sent notifications.");
         sendNotifications.clear();

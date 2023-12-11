@@ -26,7 +26,6 @@ public abstract class CommandParent {
 
     protected ReverenceChat reverenceChat;
     protected ReverenceUser reverenceUser;
-
     protected ChatService chatService;
     protected UserService userService;
     protected TaskService taskService;

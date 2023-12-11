@@ -2,6 +2,7 @@ package dev.ua.ikeepcalm.merged.telegram.modules.timetable;
 
 import dev.ua.ikeepcalm.merged.telegram.modules.HandlerParent;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.FeedCommand;
+import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.NowCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.TodayCommand;
 import dev.ua.ikeepcalm.merged.telegram.modules.timetable.commands.WeekCommand;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,16 @@ public class TimetableHandler implements HandlerParent {
     private final FeedCommand feedCommand;
     private final TodayCommand todayCommand;
     private final WeekCommand weekCommand;
+    private final NowCommand nowCommand;
 
-    public TimetableHandler(FeedCommand feedCommand, TodayCommand todayCommand, WeekCommand weekCommand) {
+    public TimetableHandler(FeedCommand feedCommand,
+                            TodayCommand todayCommand,
+                            WeekCommand weekCommand,
+                            NowCommand nowCommand) {
         this.feedCommand = feedCommand;
         this.todayCommand = todayCommand;
         this.weekCommand = weekCommand;
+        this.nowCommand = nowCommand;
     }
 
 
@@ -30,6 +36,7 @@ public class TimetableHandler implements HandlerParent {
             case "/feed" -> feedCommand.processUpdate(message);
             case "/today" -> todayCommand.processUpdate(message);
             case "/week" -> weekCommand.processUpdate(message);
+            case "/now" -> nowCommand.processUpdate(message);
         }
     }
 

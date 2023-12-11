@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import static java.lang.StringTemplate.STR;
+
 @Component
 public class MeCommand extends CommandParent {
 
@@ -17,5 +19,4 @@ public class MeCommand extends CommandParent {
                 " ◈ Оновлення: " + reverenceUser.getSustainable() + "\n" +
                 " ◈ Гаманець: " + reverenceUser.getBalance() + "```", ParseMode.MARKDOWN);
     }
-
 }

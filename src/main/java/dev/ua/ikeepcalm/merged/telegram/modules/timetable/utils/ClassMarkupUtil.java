@@ -16,7 +16,7 @@ public class ClassMarkupUtil {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
         textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                + "Вже за 1 хвилину за вашим розкладом розпочнеться пара: \n"
+                + "Шановне панство, незабаром почнеться / вже проходить пара: \n"
                 + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
                 + "Посилання на конференцію ⬇️"
         );
