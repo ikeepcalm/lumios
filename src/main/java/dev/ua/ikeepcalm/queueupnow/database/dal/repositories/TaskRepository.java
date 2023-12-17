@@ -1,7 +1,7 @@
-package dev.ua.ikeepcalm.queue.database.dal.repositories;
+package dev.ua.ikeepcalm.queueupnow.database.dal.repositories;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.tasks.DueTask;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.DueTask;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

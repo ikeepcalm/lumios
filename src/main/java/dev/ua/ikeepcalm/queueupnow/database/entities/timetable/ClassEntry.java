@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.database.entities.timetable;
+package dev.ua.ikeepcalm.queueupnow.database.entities.timetable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.ClassType;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.wrappers.ClassWrapper;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.ClassType;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers.ClassWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

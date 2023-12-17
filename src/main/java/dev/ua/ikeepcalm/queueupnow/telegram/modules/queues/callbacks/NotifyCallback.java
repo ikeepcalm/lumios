@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.queues.callbacks;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks;
 
-import dev.ua.ikeepcalm.queue.database.entities.queue.SimpleQueue;
-import dev.ua.ikeepcalm.queue.telegram.modules.CallbackParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.utils.QueueMarkupUtil;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CallbackParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils.QueueMarkupUtil;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 

@@ -1,14 +1,14 @@
-package dev.ua.ikeepcalm.queue.telegram.modules;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules;
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.*;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.queue.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.queue.telegram.AbsSender;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.lifecycles.MixedQueueLifecycle;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.lifecycles.SimpleQueueLifecycle;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.RemoveMessage;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.TextMessage;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.*;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.queueupnow.telegram.AbsSender;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles.MixedQueueLifecycle;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles.SimpleQueueLifecycle;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

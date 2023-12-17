@@ -1,7 +1,7 @@
-package dev.ua.ikeepcalm.queue.telegram;
+package dev.ua.ikeepcalm.queueupnow.telegram;
 
-import dev.ua.ikeepcalm.queue.telegram.config.TelegramBotConfig;
-import dev.ua.ikeepcalm.queue.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.config.TelegramBotConfig;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;

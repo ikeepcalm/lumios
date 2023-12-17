@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.web.security.auth;
+package dev.ua.ikeepcalm.queueupnow.web.security.auth;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

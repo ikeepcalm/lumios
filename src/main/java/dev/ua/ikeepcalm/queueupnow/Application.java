@@ -1,8 +1,8 @@
 
-package dev.ua.ikeepcalm.queue;
+package dev.ua.ikeepcalm.queueupnow;
 
 
-import dev.ua.ikeepcalm.queue.telegram.modules.system.utils.InteractiveRunnerUtil;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.system.utils.InteractiveRunnerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.SLF4JServiceProvider;
@@ -18,7 +18,7 @@ import java.util.Scanner;
 
 @EnableScheduling
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
-@ComponentScan(basePackages={"dev.ua.ikeepcalm.queue", "org.telegram.telegrambots"})
+@ComponentScan(basePackages={"dev.ua.ikeepcalm.queueupnow", "org.telegram.telegrambots"})
 public class Application implements CommandLineRunner {
 
     private final ApplicationContext applicationContext;

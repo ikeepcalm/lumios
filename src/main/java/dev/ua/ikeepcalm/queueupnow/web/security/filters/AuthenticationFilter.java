@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.queue.web.security.filters;
+package dev.ua.ikeepcalm.queueupnow.web.security.filters;
 
-import dev.ua.ikeepcalm.queue.web.security.services.AuthenticationService;
+import dev.ua.ikeepcalm.queueupnow.web.security.services.AuthenticationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;

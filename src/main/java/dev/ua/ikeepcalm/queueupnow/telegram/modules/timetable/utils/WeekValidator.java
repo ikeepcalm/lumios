@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.timetable.utils;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils;
 
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.WeekType;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.WeekType;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;

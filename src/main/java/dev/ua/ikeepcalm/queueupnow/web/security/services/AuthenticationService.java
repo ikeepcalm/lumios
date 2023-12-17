@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.queue.web.security.services;
+package dev.ua.ikeepcalm.queueupnow.web.security.services;
 
-import dev.ua.ikeepcalm.queue.web.security.auth.ApiKeyAuthentication;
+import dev.ua.ikeepcalm.queueupnow.web.security.auth.ApiKeyAuthentication;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;

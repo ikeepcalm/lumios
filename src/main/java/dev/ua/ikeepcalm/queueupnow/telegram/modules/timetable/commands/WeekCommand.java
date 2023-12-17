@@ -1,12 +1,12 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.timetable.commands;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands;
 
-import dev.ua.ikeepcalm.queue.database.entities.timetable.ClassEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.DayEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.TimetableEntry;
-import dev.ua.ikeepcalm.queue.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.queue.telegram.modules.CommandParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.utils.TimetableParser;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.utils.WeekValidator;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.ClassEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.DayEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils.TimetableParser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils.WeekValidator;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;

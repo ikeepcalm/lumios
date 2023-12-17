@@ -1,7 +1,7 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.tasks.commands;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.tasks.commands;
 
-import dev.ua.ikeepcalm.queue.database.entities.tasks.DueTask;
-import dev.ua.ikeepcalm.queue.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.DueTask;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 

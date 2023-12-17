@@ -1,12 +1,12 @@
-package dev.ua.ikeepcalm.queue.database.dal.impls;
+package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.TimetableService;
-import dev.ua.ikeepcalm.queue.database.dal.repositories.TimetableRepository;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.TimetableEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.WeekType;
-import dev.ua.ikeepcalm.queue.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.TimetableService;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.TimetableRepository;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.WeekType;
+import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

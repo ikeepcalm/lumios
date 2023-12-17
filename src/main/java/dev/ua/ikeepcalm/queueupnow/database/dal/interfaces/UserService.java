@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.database.dal.interfaces;
+package dev.ua.ikeepcalm.queueupnow.database.dal.interfaces;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.queue.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 
 import java.util.List;
 

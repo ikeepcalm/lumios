@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.database.dal.impls;
+package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.ShopService;
-import dev.ua.ikeepcalm.queue.database.dal.repositories.ShopRepository;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ShoppingUser;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ShopService;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.ShopRepository;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ShoppingUser;
 import org.springframework.stereotype.Service;
 
 @Service

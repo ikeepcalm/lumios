@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.telegram.wrappers;
+package dev.ua.ikeepcalm.queueupnow.telegram.wrappers;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

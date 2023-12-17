@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.queue.database.entities.tasks;
+package dev.ua.ikeepcalm.queueupnow.database.entities.tasks;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

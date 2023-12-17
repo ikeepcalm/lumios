@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.reverence.updates;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.reverence.updates;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.queue.telegram.modules.CommandParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.reverence.patterns.ReverencePatterns;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.reverence.patterns.ReverencePatterns;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;

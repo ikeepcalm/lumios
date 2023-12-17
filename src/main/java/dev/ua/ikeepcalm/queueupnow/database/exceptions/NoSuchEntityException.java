@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.database.exceptions;
+package dev.ua.ikeepcalm.queueupnow.database.exceptions;
 
 import lombok.experimental.StandardException;
 

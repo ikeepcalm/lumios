@@ -1,11 +1,11 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.queues.callbacks;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks;
 
-import dev.ua.ikeepcalm.queue.database.entities.queue.SimpleQueue;
-import dev.ua.ikeepcalm.queue.database.entities.queue.QueueUser;
-import dev.ua.ikeepcalm.queue.telegram.modules.CallbackParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.utils.QueueMarkupUtil;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.RemoveMessage;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.utils.QueueUpdateUtil;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.QueueUser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CallbackParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils.QueueMarkupUtil;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils.QueueUpdateUtil;
 
 import java.util.UUID;
 

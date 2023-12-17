@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.system.utils;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.system.utils;
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.telegram.AbsSender;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.TextMessage;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.telegram.AbsSender;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 
 @Component

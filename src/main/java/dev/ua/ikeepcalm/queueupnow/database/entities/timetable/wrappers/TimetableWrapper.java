@@ -1,10 +1,10 @@
-package dev.ua.ikeepcalm.queue.database.entities.timetable.wrappers;
+package dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.DayEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.TimetableEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.WeekType;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.DayEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.WeekType;
 import lombok.Getter;
 import lombok.Setter;
 

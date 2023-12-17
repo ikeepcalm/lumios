@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.database.entities.reverence;
+package dev.ua.ikeepcalm.queueupnow.database.entities.reverence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

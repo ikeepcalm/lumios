@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.queues.lifecycles;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.ua.ikeepcalm.queue.database.entities.queue.MixedQueue;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.MixedQueue;
 import org.springframework.stereotype.Component;
 
 import java.io.File;

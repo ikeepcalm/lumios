@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.telegram.modules;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 

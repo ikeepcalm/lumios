@@ -1,12 +1,12 @@
-package dev.ua.ikeepcalm.queue.web;
+package dev.ua.ikeepcalm.queueupnow.web;
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.TimetableService;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.TimetableEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.wrappers.TimetableWrapper;
-import dev.ua.ikeepcalm.queue.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.utils.TimetableParser;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.TimetableService;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers.TimetableWrapper;
+import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils.TimetableParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

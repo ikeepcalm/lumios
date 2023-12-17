@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.database.entities.timetable;
+package dev.ua.ikeepcalm.queueupnow.database.entities.timetable;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.WeekType;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.wrappers.DayWrapper;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.wrappers.TimetableWrapper;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.WeekType;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers.DayWrapper;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers.TimetableWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

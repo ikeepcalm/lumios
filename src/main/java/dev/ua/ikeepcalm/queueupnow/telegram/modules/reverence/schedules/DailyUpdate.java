@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.reverence.schedules;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.reverence.schedules;
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.UserService;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.UserService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

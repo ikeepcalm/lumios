@@ -1,10 +1,10 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.queues.commands;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.commands;
 
-import dev.ua.ikeepcalm.queue.database.entities.queue.SimpleQueue;
-import dev.ua.ikeepcalm.queue.database.entities.queue.QueueUser;
-import dev.ua.ikeepcalm.queue.telegram.modules.CommandParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.utils.QueueMarkupUtil;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.TextMessage;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.QueueUser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CommandParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils.QueueMarkupUtil;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 

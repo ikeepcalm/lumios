@@ -1,7 +1,7 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.system;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.system;
 
-import dev.ua.ikeepcalm.queue.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.system.commands.HelpCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.system.commands.HelpCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;

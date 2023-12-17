@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.tasks;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.tasks;
 
-import dev.ua.ikeepcalm.queue.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.tasks.commands.TaskCreationCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.tasks.commands.TaskEditingCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.tasks.commands.WhatIsDueCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.tasks.commands.TaskCreationCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.tasks.commands.TaskEditingCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.tasks.commands.WhatIsDueCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;

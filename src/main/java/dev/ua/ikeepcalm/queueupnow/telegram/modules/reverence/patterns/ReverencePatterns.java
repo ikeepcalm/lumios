@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.reverence.patterns;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.reverence.patterns;
 
 import org.telegram.telegrambots.meta.api.objects.Message;
 

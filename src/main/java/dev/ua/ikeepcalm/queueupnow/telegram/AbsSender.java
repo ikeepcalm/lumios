@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.telegram;
+package dev.ua.ikeepcalm.queueupnow.telegram;
 
-import dev.ua.ikeepcalm.queue.telegram.wrappers.EditMessage;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.RemoveMessage;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.TextMessage;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

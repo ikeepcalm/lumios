@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.queues.utils;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils;
 
-import dev.ua.ikeepcalm.queue.database.entities.queue.MixedQueue;
-import dev.ua.ikeepcalm.queue.database.entities.queue.QueueUser;
-import dev.ua.ikeepcalm.queue.database.entities.queue.SimpleQueue;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.EditMessage;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.MixedQueue;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.QueueUser;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 public class QueueUpdateUtil {

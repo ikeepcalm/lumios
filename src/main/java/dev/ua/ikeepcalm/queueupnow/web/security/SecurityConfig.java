@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.queue.web.security;
+package dev.ua.ikeepcalm.queueupnow.web.security;
 
-import dev.ua.ikeepcalm.queue.web.security.filters.AuthenticationFilter;
+import dev.ua.ikeepcalm.queueupnow.web.security.filters.AuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;

@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.database.dal.impls;
+package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 
-import dev.ua.ikeepcalm.queue.database.dal.interfaces.TaskService;
-import dev.ua.ikeepcalm.queue.database.dal.repositories.TaskRepository;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.tasks.DueTask;
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.TaskService;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.TaskRepository;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.DueTask;
 import org.springframework.stereotype.Service;
 
 import java.util.InputMismatchException;

@@ -1,4 +1,6 @@
-/target
+/build
+/.gradle
+/gradle
 /.idea
 README.md
 /.mvn

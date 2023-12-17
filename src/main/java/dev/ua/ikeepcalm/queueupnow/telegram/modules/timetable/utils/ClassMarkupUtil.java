@@ -1,8 +1,8 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.timetable.utils;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils;
 
-import dev.ua.ikeepcalm.queue.database.entities.timetable.ClassEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.ClassType;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.TextMessage;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.ClassEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.ClassType;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;

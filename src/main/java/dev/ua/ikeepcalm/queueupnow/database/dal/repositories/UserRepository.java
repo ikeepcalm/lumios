@@ -1,7 +1,7 @@
-package dev.ua.ikeepcalm.queue.database.dal.repositories;
+package dev.ua.ikeepcalm.queueupnow.database.dal.repositories;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
 
 import java.util.List;
 import java.util.Optional;

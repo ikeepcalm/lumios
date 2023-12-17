@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.database.entities.queue;
+package dev.ua.ikeepcalm.queueupnow.database.entities.queue;
 
 import lombok.Getter;
 

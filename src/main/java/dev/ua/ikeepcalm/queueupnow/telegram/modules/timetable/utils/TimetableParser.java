@@ -1,12 +1,12 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.timetable.utils;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.TimetableEntry;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.types.ClassType;
-import dev.ua.ikeepcalm.queue.database.entities.timetable.wrappers.TimetableWrapper;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.ClassType;
+import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers.TimetableWrapper;
 
 import java.io.IOException;
 import java.time.LocalTime;

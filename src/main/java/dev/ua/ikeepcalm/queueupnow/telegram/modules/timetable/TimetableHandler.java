@@ -1,10 +1,10 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.timetable;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable;
 
-import dev.ua.ikeepcalm.queue.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.commands.FeedCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.commands.NowCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.commands.TodayCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.timetable.commands.WeekCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.FeedCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.NowCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.TodayCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.WeekCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;

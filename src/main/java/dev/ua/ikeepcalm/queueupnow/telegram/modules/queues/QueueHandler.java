@@ -1,11 +1,11 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.queues;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues;
 
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.callbacks.*;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.*;
 
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.callbacks.mixed.ShuffleCallback;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.commands.MixedCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.queues.commands.QueueCommand;
-import dev.ua.ikeepcalm.queue.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.mixed.ShuffleCallback;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.commands.MixedCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.commands.QueueCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -17,7 +17,7 @@ public class QueueHandler implements HandlerParent {
     private final QueueCommand queueCommand;
     private final MixedCommand mixedCommand;
     private final JoinCallback simpleJoinCallback;
-    private final dev.ua.ikeepcalm.queue.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback;
+    private final dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback;
     private final ShuffleCallback shuffleCallback;
     private final FlushCallback flushCallback;
     private final ExitCallback exitCallback;
@@ -26,7 +26,7 @@ public class QueueHandler implements HandlerParent {
 
     public QueueHandler(QueueCommand queueCommand,
                         MixedCommand mixedCommand, JoinCallback simpleJoinCallback,
-                        dev.ua.ikeepcalm.queue.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback, ShuffleCallback shuffleCallback, FlushCallback flushCallback,
+                        dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback, ShuffleCallback shuffleCallback, FlushCallback flushCallback,
                         ExitCallback exitCallback,
                         DeleteCallback deleteCallback,
                         NotifyCallback notifyCallback) {

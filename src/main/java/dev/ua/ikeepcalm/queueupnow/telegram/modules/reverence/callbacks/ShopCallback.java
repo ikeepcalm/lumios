@@ -1,9 +1,9 @@
-package dev.ua.ikeepcalm.queue.telegram.modules.reverence.callbacks;
+package dev.ua.ikeepcalm.queueupnow.telegram.modules.reverence.callbacks;
 
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.queue.database.entities.reverence.ShoppingUser;
-import dev.ua.ikeepcalm.queue.telegram.modules.CallbackParent;
-import dev.ua.ikeepcalm.queue.telegram.wrappers.EditMessage;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ShoppingUser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.CallbackParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 

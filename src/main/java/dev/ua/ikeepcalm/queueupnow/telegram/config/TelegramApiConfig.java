@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queue.telegram.config;
+package dev.ua.ikeepcalm.queueupnow.telegram.config;
 
 
 import org.springframework.beans.factory.ObjectProvider;
