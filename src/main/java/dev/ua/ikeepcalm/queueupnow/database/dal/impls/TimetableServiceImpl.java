@@ -3,7 +3,7 @@ package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.TimetableService;
-import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.TimetableRepository;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.timetable.TimetableRepository;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;

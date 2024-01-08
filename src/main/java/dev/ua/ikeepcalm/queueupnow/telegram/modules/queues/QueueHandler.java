@@ -19,14 +19,13 @@ public class QueueHandler implements HandlerParent {
     private final JoinCallback simpleJoinCallback;
     private final dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback;
     private final ShuffleCallback shuffleCallback;
-    private final FlushCallback flushCallback;
     private final ExitCallback exitCallback;
     private final DeleteCallback deleteCallback;
     private final NotifyCallback notifyCallback;
 
     public QueueHandler(QueueCommand queueCommand,
                         MixedCommand mixedCommand, JoinCallback simpleJoinCallback,
-                        dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback, ShuffleCallback shuffleCallback, FlushCallback flushCallback,
+                        dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.callbacks.mixed.JoinCallback mixedJoinCallback, ShuffleCallback shuffleCallback,
                         ExitCallback exitCallback,
                         DeleteCallback deleteCallback,
                         NotifyCallback notifyCallback) {
@@ -35,7 +34,6 @@ public class QueueHandler implements HandlerParent {
         this.simpleJoinCallback = simpleJoinCallback;
         this.mixedJoinCallback = mixedJoinCallback;
         this.shuffleCallback = shuffleCallback;
-        this.flushCallback = flushCallback;
         this.exitCallback = exitCallback;
         this.deleteCallback = deleteCallback;
         this.notifyCallback = notifyCallback;
@@ -61,10 +59,8 @@ public class QueueHandler implements HandlerParent {
         String callback = update.getCallbackQuery().getData();
         CallbackQuery message = update.getCallbackQuery();
         if (callback.endsWith("-simple-join")) {
-            simpleJoinCallback.processUpdate(message);
-        } else if (callback.endsWith("-simple-flush")) {
-            flushCallback.processUpdate(message);
-        } else if (callback.endsWith("-simple-exit")) {
+            simpleJoinCallback.processUpdate(message);}
+        else if (callback.endsWith("-simple-exit")) {
             exitCallback.processUpdate(message);
         } else if (callback.endsWith("-simple-delete")){
             deleteCallback.processUpdate(message);

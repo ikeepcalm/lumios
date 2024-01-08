@@ -13,7 +13,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@Entity(name = "timetables")
+@Entity(name = "timetable_entries")
 public class TimetableEntry {
 
     @Id

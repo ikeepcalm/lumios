@@ -2,7 +2,7 @@ package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.schedules;
 
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.TimetableService;
-import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.ClassEntryRepository;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.timetable.ClassEntryRepository;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.DayEntry;
@@ -80,7 +80,6 @@ public class ClassNotification {
     public void sendClassNotifications() {
         LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
         DayOfWeek currentDay = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
-        logger.info("Sending class notifications for day: {}", currentDay);
 
         for (ClassEntry classEntry : allClassEntries) {
             if (classEntry.getDayEntry().getDayName() == currentDay &&

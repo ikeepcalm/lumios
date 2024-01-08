@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "shopping")
+@Table(name = "shopping_users")
 public class ShoppingUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

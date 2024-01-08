@@ -1,21 +1,30 @@
 package dev.ua.ikeepcalm.queueupnow.database.entities.queue;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class SimpleQueue
-implements Serializable {
+@Entity(name = "simple_queues")
+public class SimpleQueue{
+
+    @Id
+    @Column
     private UUID id;
+
+    @Column
     private String alias;
+
+    @Column
     private int messageId;
-    private Queue<QueueUser> contents = new LinkedList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "simpleQueue", fetch = FetchType.LAZY)
+    private List<SimpleUser> contents = new LinkedList<>();
 
     public SimpleQueue() {
         this.alias = "СТАНДАРТНА ЧЕРГА";
@@ -27,24 +36,8 @@ implements Serializable {
         this.id = UUID.randomUUID();
     }
 
-    public void addUser(QueueUser queueUser) {
-        this.contents.add(queueUser);
-    }
-
-    public void removeUser(QueueUser queueUser) {
-        this.contents.remove(queueUser);
-    }
-
-    public boolean flushUser(QueueUser queueUser) {
-        if (this.contents.peek() != null && this.contents.peek().getAccountId().equals(queueUser.getAccountId())) {
-            this.contents.poll();
-            return true;
-        }
-        return false;
-    }
-
-    public void setContents(Queue<QueueUser> contents) {
-        this.contents = contents;
+    public boolean flushUser(SimpleUser simpleUser) {
+        return this.contents.get(0).equals(simpleUser);
     }
 }
 
