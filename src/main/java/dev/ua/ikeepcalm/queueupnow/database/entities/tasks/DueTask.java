@@ -8,9 +8,9 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Entity
 @Getter
 @Setter
+@Entity(name = "due_tasks")
 public class DueTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

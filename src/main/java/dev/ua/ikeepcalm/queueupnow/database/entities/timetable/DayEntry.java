@@ -13,7 +13,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@Entity(name = "dayEntries")
+@Entity(name = "day_entries")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DayEntry {
 

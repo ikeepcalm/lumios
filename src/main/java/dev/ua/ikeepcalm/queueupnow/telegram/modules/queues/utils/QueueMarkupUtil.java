@@ -1,8 +1,8 @@
 package dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils;
 
 import dev.ua.ikeepcalm.queueupnow.database.entities.queue.MixedQueue;
-import dev.ua.ikeepcalm.queueupnow.database.entities.queue.QueueUser;
 import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -22,10 +22,6 @@ public class QueueMarkupUtil {
         queueUp.setText("Join \uD83D\uDD30");
         queueUp.setCallbackData(simpleQueue.getId() + "-simple-join");
 
-        InlineKeyboardButton flush = new InlineKeyboardButton();
-        flush.setText("I'm done ✅");
-        flush.setCallbackData(simpleQueue.getId() + "-simple-flush");
-
         InlineKeyboardButton exit = new InlineKeyboardButton();
         exit.setText("Leave \ud83d\udd04");
         exit.setCallbackData(simpleQueue.getId() + "-simple-exit");
@@ -38,7 +34,6 @@ public class QueueMarkupUtil {
         notify.setText("Notify ⚠");
         notify.setCallbackData(simpleQueue.getId() + "-simple-notify");
         firstRow.add(queueUp);
-        firstRow.add(flush);
         firstRow.add(exit);
 
         secondRow.add(delete);
@@ -73,13 +68,13 @@ public class QueueMarkupUtil {
     }
 
     public static TextMessage createNotification(long chatId, SimpleQueue simpleQueue) {
-        QueueUser queueUser = simpleQueue.getContents().peek();
+        SimpleUser simpleUser = simpleQueue.getContents().get(0);
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
         textMessage.setMessageId(simpleQueue.getMessageId());
 
-        if (queueUser != null) {
-            textMessage.setText(queueUser.getName() + " (@" + queueUser.getUsername() + "), твоя черга відповідати у " + simpleQueue.getAlias() + "!");
+        if (simpleUser != null) {
+            textMessage.setText(simpleUser.getName() + " (@" + simpleUser.getUsername() + "), твоя черга відповідати у " + simpleQueue.getAlias() + "!");
         }
 
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -88,7 +83,7 @@ public class QueueMarkupUtil {
 
         InlineKeyboardButton flush = new InlineKeyboardButton();
         flush.setText("I'm done ✅");
-        flush.setCallbackData(simpleQueue.getId() + "-flush");
+        flush.setCallbackData(simpleQueue.getId() + "-simple-exit");
 
         row.add(flush);
 

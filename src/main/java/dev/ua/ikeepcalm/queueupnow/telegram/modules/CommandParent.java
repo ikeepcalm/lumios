@@ -5,8 +5,6 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.queueupnow.telegram.AbsSender;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles.MixedQueueLifecycle;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles.SimpleQueueLifecycle;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
@@ -31,8 +29,7 @@ public abstract class CommandParent {
     protected TaskService taskService;
     protected ShopService shopService;
     protected TimetableService timetableService;
-    protected SimpleQueueLifecycle simpleQueueLifecycle;
-    protected MixedQueueLifecycle mixedQueueLifecycle;
+    protected QueueService queueService;
 
     private Logger logger;
 
@@ -43,16 +40,14 @@ public abstract class CommandParent {
                                    TaskService taskService,
                                    ShopService shopService,
                                    TimetableService timetableService,
-                                   SimpleQueueLifecycle simpleQueueLifecycle,
-                                   MixedQueueLifecycle mixedQueueLifecycle) {
+                                   QueueService queueService){
         this.absSender = absSender;
         this.chatService = chatService;
         this.userService = userService;
         this.taskService = taskService;
         this.shopService = shopService;
         this.timetableService = timetableService;
-        this.simpleQueueLifecycle = simpleQueueLifecycle;
-        this.mixedQueueLifecycle = mixedQueueLifecycle;
+        this.queueService = queueService;
         this.logger = LoggerFactory.getLogger(CommandParent.class);
     }
 
@@ -95,9 +90,8 @@ public abstract class CommandParent {
                 newUser.setCredits(100);
                 newUser.setSustainable(100);
                 newUser.setChannel(reverenceChat);
-                userService.save(reverenceUser);
-                this.userService.save(newUser);
-                this.reverenceUser = newUser;
+                userService.save(newUser);
+                reverenceUser = newUser;
                 sendMessage("""
                         Давай знайомитись! Мене звуть КуєуєАпБот, а тебе?
                                             

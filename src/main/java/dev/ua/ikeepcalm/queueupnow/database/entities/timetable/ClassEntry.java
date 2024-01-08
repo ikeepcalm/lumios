@@ -11,7 +11,7 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-@Entity(name = "classEntries")
+@Entity(name = "class_entries")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ClassEntry {
 

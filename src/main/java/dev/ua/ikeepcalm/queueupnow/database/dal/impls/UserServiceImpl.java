@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.UserService;
-import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.UserRepository;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.reverence.UserRepository;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;

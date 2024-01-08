@@ -35,7 +35,6 @@ public class TelegramBotInitializer implements InitializingBean {
     public void afterPropertiesSet() {
         try {
             for (LongPollingBot bot : longPollingBots) {
-
                 telegramBotsApi.registerBot(bot);
             }
         } catch (TelegramApiException e) {

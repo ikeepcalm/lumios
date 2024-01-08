@@ -1,23 +1,34 @@
 package dev.ua.ikeepcalm.queueupnow.database.entities.queue;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class MixedQueue
-implements Serializable {
+@Entity(name = "mixed_queues")
+public class MixedQueue {
+
+    @Id
+    @Column
     private UUID id;
+
+    @Column
     private String alias;
+
+    @Column
     private int messageId;
+
+    @Column
     private boolean shuffled = false;
-    private Queue<QueueUser> contents = new LinkedList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "mixedQueue")
+    private List<MixedUser> contents = new LinkedList<>();
 
     public MixedQueue() {
         this.alias = "ЗМІШАНА ЧЕРГА";
@@ -29,17 +40,10 @@ implements Serializable {
         this.id = UUID.randomUUID();
     }
 
-    public void addUser(QueueUser queueUser) {
-        this.contents.add(queueUser);
-    }
-
     public void shuffleContents() {
-        Collections.shuffle((LinkedList<QueueUser>) this.contents);
+        Collections.shuffle(this.contents);
         this.shuffled = true;
     }
 
-    public void setContents(Queue<QueueUser> contents) {
-        this.contents = contents;
-    }
 }
 

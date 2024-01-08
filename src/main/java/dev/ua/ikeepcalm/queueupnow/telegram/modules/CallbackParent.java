@@ -6,8 +6,6 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.queueupnow.telegram.AbsSender;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles.MixedQueueLifecycle;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.lifecycles.SimpleQueueLifecycle;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
@@ -35,9 +33,7 @@ public abstract class CallbackParent {
     protected TaskService taskService;
     protected ShopService shopService;
     protected TimetableService timetableService;
-    protected SimpleQueueLifecycle simpleQueueLifecycle;
-    protected MixedQueueLifecycle mixedQueueLifecycle;
-
+    protected QueueService queueService;
     private Logger logger;
 
     @Autowired
@@ -47,16 +43,14 @@ public abstract class CallbackParent {
                                    TaskService taskService,
                                    ShopService shopService,
                                    TimetableService timetableService,
-                                   SimpleQueueLifecycle simpleQueueLifecycle,
-                                   MixedQueueLifecycle mixedQueueLifecycle) {
+                                   QueueService queueService) {
         this.absSender = absSender;
         this.chatService = chatService;
         this.userService = userService;
         this.taskService = taskService;
         this.shopService = shopService;
         this.timetableService = timetableService;
-        this.simpleQueueLifecycle = simpleQueueLifecycle;
-        this.mixedQueueLifecycle = mixedQueueLifecycle;
+        this.queueService = queueService;
         this.logger = LoggerFactory.getLogger(CallbackParent.class);
     }
 
@@ -152,7 +146,14 @@ public abstract class CallbackParent {
         String action = getActionFromCallback(receivedCallback);
         String queueUUID = removeCallbackPrefixes(receivedCallback);
 
-        SimpleQueue simpleQueue = simpleQueueLifecycle.getSimpleQueue(UUID.fromString(queueUUID));
+        SimpleQueue simpleQueue = null;
+        try {
+            simpleQueue = queueService.findSimpleById(UUID.fromString(queueUUID));
+        } catch (NoSuchEntityException e) {
+            logger.error("Callback: [{}]: {}",
+                    message.getFrom().getUserName(),
+                    "No such queue");
+        }
         String username = message.getFrom().getUserName();
 
         if (simpleQueue != null) {
