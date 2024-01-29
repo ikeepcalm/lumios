@@ -21,7 +21,7 @@ public class AddReactionUpdate extends UpdateParent {
             if (reverenceUser.getCredits() > reactionValue) {
                 ReverenceUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
                 if (reverenceUser != onUser) {
-                    reverenceUser.setCredits(reverenceUser.getCredits() - reactionValue);
+                    reverenceUser.setCredits(reverenceUser.getCredits() - Math.abs(reactionValue));
                     onUser.setReverence(onUser.getReverence() + reactionValue);
                     userService.save(reverenceUser);
                     userService.save(onUser);

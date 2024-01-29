@@ -21,13 +21,16 @@ public class RemoveReactionUpdate extends UpdateParent {
             if (reverenceUser.getCredits() > reactionValue) {
                 ReverenceUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
                 if (reverenceUser != onUser) {
-                    reverenceUser.setCredits(reverenceUser.getCredits() - reactionValue);
-                    onUser.setReverence(onUser.getReverence() - reactionValue);
+                    reverenceUser.setCredits(reverenceUser.getCredits() - Math.abs(reactionValue));
+                    if (reactionValue < 0){
+                        onUser.setReverence(onUser.getReverence() + reactionValue);
+                    } else if (reactionValue > 0){
+                        onUser.setReverence(onUser.getReverence() - reactionValue);
+                    }
                     userService.save(reverenceUser);
                     userService.save(onUser);
                 }
             }
-        } catch (NoSuchEntityException ignored) {
-        }
+        } catch (NoSuchEntityException ignored) {}
     }
 }
