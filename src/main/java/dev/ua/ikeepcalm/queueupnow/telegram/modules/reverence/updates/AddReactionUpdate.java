@@ -20,15 +20,14 @@ public class AddReactionUpdate extends UpdateParent {
             int reactionValue = ReverenceReaction.determineReactionValue(newReaction);
             if (reverenceUser.getCredits() > reactionValue) {
                 ReverenceUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
-                if (reverenceUser != onUser) {
+                if (!reverenceUser.getUsername().equals(onUser.getUsername())) {
                     reverenceUser.setCredits(reverenceUser.getCredits() - Math.abs(reactionValue));
                     onUser.setReverence(onUser.getReverence() + reactionValue);
                     userService.save(reverenceUser);
                     userService.save(onUser);
                 }
             }
-        } catch (NoSuchEntityException ignored) {
-        }
+        } catch (NoSuchEntityException ignored) {}
     }
 
 }

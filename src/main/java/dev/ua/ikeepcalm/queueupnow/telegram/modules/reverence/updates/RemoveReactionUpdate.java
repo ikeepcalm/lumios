@@ -20,7 +20,7 @@ public class RemoveReactionUpdate extends UpdateParent {
             int reactionValue = ReverenceReaction.determineReactionValue(newReaction);
             if (reverenceUser.getCredits() > reactionValue) {
                 ReverenceUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
-                if (reverenceUser != onUser) {
+                if (!reverenceUser.getUsername().equals(onUser.getUsername())) {
                     reverenceUser.setCredits(reverenceUser.getCredits() - Math.abs(reactionValue));
                     if (reactionValue < 0){
                         onUser.setReverence(onUser.getReverence() + reactionValue);
