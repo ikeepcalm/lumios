@@ -55,8 +55,7 @@ public abstract class CallbackParent {
     }
 
     protected void instantiateUpdate(CallbackQuery message) {
-        this.message = message.getMessage();
-
+        this.message = (Message) message.getMessage();
         try {
             this.reverenceChat = chatService.findByChatId(message.getMessage().getChatId());
         } catch (NoSuchEntityException e) {
@@ -73,7 +72,8 @@ public abstract class CallbackParent {
                     - записувати завдання;
                     - виводити розклад по команді;
                     - нагадувати про пару за декілька хвилин до початку
-                    - керувати мікро-економікою всередині чату і ще багато чого!
+                    - відслідковувати реакції на повідомлення
+                    - і ще багато чого!
                                         
                     Щоб дізнатися більше, натисніть /help@queueupnow_bot!
                     """);
@@ -95,7 +95,7 @@ public abstract class CallbackParent {
                 this.reverenceUser = newUser;
                 sendMessage("@" + message.getFrom().getUserName() + """
                                             
-                        Давай знайомитись! Мене звуть КуєуєАпБот, а тебе?
+                        Давай знайомитись! Мене звуть Кукує Бот, а тебе?
                                             
                         ...зроблю вигляд, що запам'ятав. Ще побачимося!
                         """);

@@ -21,7 +21,6 @@ public abstract class CommandParent {
 
     protected Message message;
     protected AbsSender absSender;
-
     protected ReverenceChat reverenceChat;
     protected ReverenceUser reverenceUser;
     protected ChatService chatService;
@@ -30,7 +29,6 @@ public abstract class CommandParent {
     protected ShopService shopService;
     protected TimetableService timetableService;
     protected QueueService queueService;
-
     private Logger logger;
 
     @Autowired
@@ -70,7 +68,8 @@ public abstract class CommandParent {
                     - записувати завдання;
                     - виводити розклад по команді;
                     - нагадувати про пару за декілька хвилин до початку
-                    - керувати мікро-економікою всередині чату і ще багато чого!
+                    - відслідковувати реакції на повідомлення
+                    - і ще багато чого!
                                         
                     Щоб дізнатися більше, натисніть /help@queueupnow_bot!
                     """);
@@ -92,8 +91,8 @@ public abstract class CommandParent {
                 newUser.setChannel(reverenceChat);
                 userService.save(newUser);
                 reverenceUser = newUser;
-                sendMessage("""
-                        Давай знайомитись! Мене звуть КуєуєАпБот, а тебе?
+                sendMessage("@" + message.getFrom().getUserName() + """      
+                        Давай знайомитись! Мене звуть Кукує Бот, а тебе?
                                             
                         ...зроблю вигляд, що запам'ятав. Ще побачимося!
                         """);

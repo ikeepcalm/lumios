@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.queues.utils.QueueUpdateUtil
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.UUID;
 
@@ -29,7 +30,7 @@ public class JoinCallback extends CallbackParent {
             if (!simpleQueue.getContents().contains(simpleUser)) {
                 simpleQueue.getContents().add(simpleUser);
                 simpleQueue.setMessageId(absSender.sendEditMessage
-                                (QueueUpdateUtil.updateMessage(message.getMessage(), simpleQueue))
+                                (QueueUpdateUtil.updateMessage((Message) message.getMessage(), simpleQueue))
                         .getMessageId());
                 queueService.save(simpleQueue);
                 this.absSender.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", callbackQueryId);

@@ -34,7 +34,7 @@ public class SystemHandler implements HandlerParent {
     public boolean supports(Update update) {
         if (update != null) {
             if (update.getMessage() != null) {
-                if (update.getMessage().hasText() && !update.getMessage().getText().isEmpty()) {
+                if (update.getMessage().hasText() && ! update.getMessage().getText().isEmpty()) {
                     return update.getMessage().getText().startsWith("/");
                 } else {
                     return false;

@@ -25,6 +25,7 @@ public class BotInstance extends TelegramLongPollingBot implements LongPollingBo
 
     public BotInstance(TelegramBotConfig config, List<HandlerParent> handlerParentList) {
         super(config.getToken());
+        getOptions().setAllowedUpdates(List.of("message", "callback_query", "message_reaction", "chat_member"));
         this.handlerParentList = handlerParentList;
         this.botUsername = config.getUsername();
     }

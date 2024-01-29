@@ -17,7 +17,7 @@ public class ShopCallback extends CallbackParent {
         ShoppingUser whoCalled = shopService.find(message.getFrom().getId(), reverenceChat);
 
         if (whoCalled == null) {
-            sendMessage("@" + super.message.getFrom().getUserName() + ", спочатку виконайте /shop@queueupnow_bot!");
+            sendMessage("@" + message.getFrom().getUserName() + ", спочатку виконайте /shop@queueupnow_bot!");
             return;
         }
         int cost = 0;

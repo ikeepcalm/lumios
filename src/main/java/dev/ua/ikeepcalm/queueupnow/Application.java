@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.Scanner;
 
 @EnableScheduling
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+@SpringBootApplication(exclude = {SecurityAutoConfiguration.class })
 @ComponentScan(basePackages={"dev.ua.ikeepcalm.queueupnow", "org.telegram.telegrambots"})
 public class Application implements CommandLineRunner {
 
@@ -77,5 +77,6 @@ public class Application implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+
     }
 }

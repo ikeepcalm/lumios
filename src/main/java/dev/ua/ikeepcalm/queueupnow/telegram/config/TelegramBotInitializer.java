@@ -18,8 +18,6 @@ import static java.lang.String.format;
 
 @Component
 public class TelegramBotInitializer implements InitializingBean {
-    private static final Logger log = LoggerFactory.getLogger(TelegramBotInitializer.class);
-
     private final TelegramBotsApi telegramBotsApi;
     private final List<LongPollingBot> longPollingBots;
 
@@ -39,29 +37,6 @@ public class TelegramBotInitializer implements InitializingBean {
             }
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void handleAnnotatedMethod(Object bot, Method method, BotSession session) {
-        try {
-            if (method.getParameterCount() > 1) {
-                log.warn(format("Method %s of Type %s has too many parameters",
-                        method.getName(), method.getDeclaringClass().getCanonicalName()));
-                return;
-            }
-            if (method.getParameterCount() == 0) {
-                method.invoke(bot);
-                return;
-            }
-            if (method.getParameterTypes()[0].equals(BotSession.class)) {
-                method.invoke(bot, session);
-                return;
-            }
-            log.warn(format("Method %s of Type %s has invalid parameter type",
-                    method.getName(), method.getDeclaringClass().getCanonicalName()));
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            log.error(format("Couldn't invoke Method %s of Type %s",
-                    method.getName(), method.getDeclaringClass().getCanonicalName()));
         }
     }
 

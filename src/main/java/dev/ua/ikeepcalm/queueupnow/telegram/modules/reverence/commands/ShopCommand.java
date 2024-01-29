@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.queueupnow.telegram.modules.reverence.commands;
 
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ShoppingUser;
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.CommandParent;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,11 @@ public class ShopCommand extends CommandParent {
         InlineKeyboardMarkup inlineKeyboardMarkup = absSender.createMarkup(values, prefix);
         textMessage.setReplyKeyboard(inlineKeyboardMarkup);
         sendMessage(textMessage);
+        ShoppingUser shoppingUser = new ShoppingUser();
+        shoppingUser.setChannel(reverenceChat);
+        shoppingUser.setUserId(reverenceUser.getUserId());
+        shoppingUser.setUserEntityId(reverenceUser.getUserEntityId());
+        shopService.save(shoppingUser);
     }
 
     private TextMessage createShopMessage(long chatId, int messageId) {
@@ -27,6 +33,5 @@ public class ShopCommand extends CommandParent {
         message.setText("Оберіть варіант збільшення постійних кредитів!");
         return message;
     }
-
 
 }

@@ -29,13 +29,14 @@ Queue Up Now is pretty simple and open-source telegram bot useful mainly for uni
 The project is entirely made using the Java Telegram API Wrapper Library from rubenlagus <a href="https://github.com/rubenlagus/TelegramBots"> TelegramBots</a>, using the Chain of Responsibility pattern which delegates specific updates to different Handlers based on their features and unique content. The general structure also uses the Spring Framework (Spring Data, Spring REST, Spring Security) and Spring Boot launcher particularly as out-of-the-box solutions for many possible problems and vulnerabilities in the code. Additionally, the project can be built using Spring Thin-Jar Plugin, so all the dependencies will be downloaded in Runtime, that can also provide us with the minimized jar which contains only required classes  
 
 # Make it better together
-In order to successfully set up the application and launch it in order to somehow enhance the bot, you should specify credentials for your Telegram bot retrieved via BotFather in Telegram in file named ```thirdparty.properties``` located in resources folder
+In order to successfully set up the application and launch it in order to somehow enhance the bot, you should specify credentials for your Telegram bot retrieved via BotFather in Telegram in file named ```application.properties``` located in resources folder
 
 ```properties
 #credentials
 telegram.bot.token= #BOT TOKEN
 telegram.bot.username= #BOT USERNAME
-rest.api.origin = #CORS WHITELISTED ORIGIN
+rest.api.key = #API KEY FOR THE REST API
+rest.api.header = #NAME OF THE API KEY HEADER
 ```
 
 # Official Release
