@@ -95,9 +95,8 @@ public class TimetableController {
                 timetableWrappers.add(new TimetableWrapper(timetableEntry));
             } return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
         } catch (NoSuchEntityException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
     }
-
 
 }

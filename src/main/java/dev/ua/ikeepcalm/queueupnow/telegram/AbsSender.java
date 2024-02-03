@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.queueupnow.telegram;
 
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.ReactionMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
@@ -13,11 +14,13 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
+import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.*;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
+import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -132,6 +135,19 @@ public class AbsSender extends DefaultAbsSender{
         deleteMessage.setChatId(removeMessage.getChatId());
         deleteMessage.setMessageId(removeMessage.getMessageId());
         executeCommand(deleteMessage, "Failed to purge message");
+    }
+
+    public void sendReaction(ReactionMessage reactionMessage){
+        SetMessageReaction reaction = new SetMessageReaction();
+        reaction.setChatId(reactionMessage.getChatId());
+        reaction.setMessageId(reactionMessage.getMessageId());
+        reaction.setReactionTypes(reactionMessage.getReactionTypes());
+        try {
+            execute(reaction);
+        } catch (TelegramApiException e) {
+            LOGGER.error("Failed to send reaction: " + e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
 }

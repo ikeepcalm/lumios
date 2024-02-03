@@ -63,20 +63,6 @@ public abstract class CallbackParent {
             newChat.setChatId(message.getMessage().getChatId());
             this.chatService.save(newChat);
             this.reverenceChat = newChat;
-            sendMessage("""
-                    Привіт!
-
-                    Дякую за те, що додали мене сюди! Коротенький список того, що я вмію:
-                                        
-                    - створювати черги;
-                    - записувати завдання;
-                    - виводити розклад по команді;
-                    - нагадувати про пару за декілька хвилин до початку
-                    - відслідковувати реакції на повідомлення
-                    - і ще багато чого!
-                                        
-                    Щоб дізнатися більше, натисніть /help@queueupnow_bot!
-                    """);
             return;
         }
 
@@ -93,12 +79,6 @@ public abstract class CallbackParent {
                 userService.save(newUser);
                 this.userService.save(newUser);
                 this.reverenceUser = newUser;
-                sendMessage("@" + message.getFrom().getUserName() + """
-                                            
-                        Давай знайомитись! Мене звуть Кукує Бот, а тебе?
-                                            
-                        ...зроблю вигляд, що запам'ятав. Ще побачимося!
-                        """);
             }
         } logInteraction(message);
     }

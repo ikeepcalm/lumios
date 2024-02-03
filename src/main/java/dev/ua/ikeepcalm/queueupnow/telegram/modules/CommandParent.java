@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.queueupnow.telegram.AbsSender;
+import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.ReactionMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.slf4j.Logger;
@@ -12,7 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.reactions.ReactionType;
+import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeCustomEmoji;
+import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 
@@ -59,20 +65,6 @@ public abstract class CommandParent {
             newChat.setChatId(message.getChatId());
             this.chatService.save(newChat);
             this.reverenceChat = newChat;
-            sendMessage("""
-                    Привіт!
-
-                    Дякую за те, що додали мене сюди! Коротенький список того, що я вмію:
-                                        
-                    - створювати черги;
-                    - записувати завдання;
-                    - виводити розклад по команді;
-                    - нагадувати про пару за декілька хвилин до початку
-                    - відслідковувати реакції на повідомлення
-                    - і ще багато чого!
-                                        
-                    Щоб дізнатися більше, натисніть /help@queueupnow_bot!
-                    """);
             return;
         }
         if (!message.getFrom().getIsBot()) {
@@ -91,11 +83,6 @@ public abstract class CommandParent {
                 newUser.setChannel(reverenceChat);
                 userService.save(newUser);
                 reverenceUser = newUser;
-                sendMessage("@" + message.getFrom().getUserName() + """      
-                        Давай знайомитись! Мене звуть Кукує Бот, а тебе?
-                                            
-                        ...зроблю вигляд, що запам'ятав. Ще побачимося!
-                        """);
             }
         } logInteraction();
     }
@@ -127,6 +114,16 @@ public abstract class CommandParent {
         Message sent = absSender.sendTextMessage(textMessage);
         scheduleMessageToDelete(message);
         scheduleMessageToDelete(sent);
+    }
+
+    protected void sendConfirmationReaction(Message message) {
+        ReactionMessage reactionMessage = new ReactionMessage();
+        reactionMessage.setChatId(message.getChatId());
+        reactionMessage.setMessageId(message.getMessageId());
+        List<ReactionType> reactionTypes = new ArrayList<>();
+        reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "👾"));
+        reactionMessage.setReactionTypes(reactionTypes);
+        absSender.sendReaction(reactionMessage);
     }
 
     private void logInteraction() {
