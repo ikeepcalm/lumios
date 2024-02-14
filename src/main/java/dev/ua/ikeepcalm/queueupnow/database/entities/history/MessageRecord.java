@@ -23,7 +23,7 @@ public class MessageRecord {
     @NotNull
     private Long chatId;
 
-    @Column
+    @Column(columnDefinition = "LONGTEXT")
     private String text;
 
     @ManyToOne

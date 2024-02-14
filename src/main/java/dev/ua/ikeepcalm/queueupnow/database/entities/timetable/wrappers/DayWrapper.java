@@ -22,7 +22,6 @@ public class DayWrapper {
     @JsonProperty("classEntries")
     private List<ClassWrapper> classEntries;
 
-
     public DayWrapper(DayEntry dayEntry) {
         this.dayName = dayEntry.getDayName();
         this.classEntries = new ArrayList<>();

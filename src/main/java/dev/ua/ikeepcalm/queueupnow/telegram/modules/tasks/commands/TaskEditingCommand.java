@@ -35,7 +35,7 @@ public class TaskEditingCommand extends CommandParent {
                     existingTask.setTaskName(taskName);
                     existingTask.setUrl(url);
                     taskService.save(existingTask);
-                    sendConfirmationReaction(message);
+//                    sendConfirmationReaction(message);
             } catch (DateTimeParseException e) {
                 sendMessage("Неправильний формат дати або часу. Будь ласка, використовуйте формат HH:mm для часу, та dd.MM.yyyy");
             } catch (InputMismatchException e){

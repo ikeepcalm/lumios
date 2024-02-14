@@ -1,10 +1,7 @@
 package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable;
 
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.FeedCommand;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.NowCommand;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.TodayCommand;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.WeekCommand;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.commands.*;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -16,15 +13,21 @@ public class TimetableHandler implements HandlerParent {
     private final TodayCommand todayCommand;
     private final WeekCommand weekCommand;
     private final NowCommand nowCommand;
+    private final NextCommand nextCommand;
+    private final TomorrowCommand tomorrowCommand;
 
     public TimetableHandler(FeedCommand feedCommand,
                             TodayCommand todayCommand,
                             WeekCommand weekCommand,
-                            NowCommand nowCommand) {
+                            NowCommand nowCommand,
+                            NextCommand nextCommand,
+                            TomorrowCommand tomorrowCommand) {
         this.feedCommand = feedCommand;
         this.todayCommand = todayCommand;
         this.weekCommand = weekCommand;
         this.nowCommand = nowCommand;
+        this.nextCommand = nextCommand;
+        this.tomorrowCommand = tomorrowCommand;
     }
 
 
@@ -37,6 +40,8 @@ public class TimetableHandler implements HandlerParent {
             case "/today" -> todayCommand.processUpdate(message);
             case "/week" -> weekCommand.processUpdate(message);
             case "/now" -> nowCommand.processUpdate(message);
+            case "/next" -> nextCommand.processUpdate(message);
+            case "/tomorrow" -> tomorrowCommand.processUpdate(message);
         }
     }
 

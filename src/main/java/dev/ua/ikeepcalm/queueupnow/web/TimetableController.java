@@ -29,7 +29,6 @@ public class TimetableController {
 
 
     @PostMapping("/feed")
-    @CrossOrigin("")
     public ResponseEntity<String> saveTimetable(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -43,7 +42,6 @@ public class TimetableController {
             List<TimetableEntry> timetableEntries = TimetableParser.parseTimetableMessage(json);
 
             for (TimetableEntry timetableEntry : timetableEntries) {
-                timetableEntry.setChat(reverenceChat);
                 timetableEntry.setChat(reverenceChat);
                 timetableService.save(timetableEntry);
             }
@@ -61,7 +59,7 @@ public class TimetableController {
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }
-        List<TimetableEntry> timetableEntries = null;
+        List<TimetableEntry> timetableEntries;
         try {
             timetableEntries = TimetableParser.parseTimetableMessage(json);
 

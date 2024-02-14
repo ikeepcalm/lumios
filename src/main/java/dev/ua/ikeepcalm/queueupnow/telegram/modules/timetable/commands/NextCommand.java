@@ -17,16 +17,14 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 
 @Component
-public class NowCommand extends CommandParent {
+public class NextCommand extends CommandParent {
 
     @Override
     @Transactional
     public void processUpdate(Message message) {
         instantiateUpdate(message);
         try {
-            TimetableEntry timetableEntry = timetableService
-                    .findByChatIdAndWeekType(message.getChatId(),
-                    WeekValidator.determineWeekDay());
+            TimetableEntry timetableEntry = timetableService.findByChatIdAndWeekType(message.getChatId(), WeekValidator.determineWeekDay());
             DayOfWeek dayOfWeek = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
             LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
             boolean isClassNow = false;
@@ -35,17 +33,16 @@ public class NowCommand extends CommandParent {
                     for (ClassEntry classEntry : dayEntry.getClassEntries()) {
                         LocalTime startTime = classEntry.getStartTime();
                         LocalTime endTime = classEntry.getEndTime();
+                        if (isClassNow) {
+                            sendMessage(ClassMarkupUtil.createNextNotification(classEntry, message.getChatId()));
+                            isClassNow = false;
+                            break;
+                        }
                         if (currentTime.isAfter(startTime) && currentTime.isBefore(endTime)) {
                             isClassNow = true;
-                            sendMessage(ClassMarkupUtil.createNowNotification(classEntry, message.getChatId()));
-                            break;
                         }
                     }
                 }
-            }
-
-            if (!isClassNow) {
-                sendMessage("Наразі жодної пари за розкладом не проходиь!");
             }
         } catch (NoSuchEntityException e) {
             sendMessage("Не знайдено розкладу на даний момент! Ви точно все налаштували?");

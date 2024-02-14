@@ -54,8 +54,9 @@ public class ReverenceHandler implements HandlerParent {
                 case "/shop" -> shopCommand.processUpdate(update.getMessage());
                 case "/me" -> meCommand.processUpdate(update.getMessage());
                 case "/stats" -> statsCommand.processUpdate(update.getMessage());
+                case "/rating" -> statsCommand.processUpdate(update.getMessage());
             }
-        } else if (update.hasCallbackQuery()){
+        } else if (update.hasCallbackQuery() && update.getCallbackQuery().getData().startsWith("shop")){
             shopCallback.processUpdate(update.getCallbackQuery());
         }
     }

@@ -86,7 +86,7 @@ public class ClassNotification {
                     classEntry.getStartTime().isAfter(currentTime) &&
                     classEntry.getStartTime().isBefore(currentTime.plusMinutes(1)) &&
                     !sendNotifications.contains(classEntry)) {
-                absSender.sendTextMessage(ClassMarkupUtil.createNotification(classEntry, classEntry.getDayEntry().getTimetableEntry().getChat().getChatId()));
+                absSender.sendTextMessage(ClassMarkupUtil.createNowNotification(classEntry, classEntry.getDayEntry().getTimetableEntry().getChat().getChatId()));
                 sendNotifications.add(classEntry);
             }
         }

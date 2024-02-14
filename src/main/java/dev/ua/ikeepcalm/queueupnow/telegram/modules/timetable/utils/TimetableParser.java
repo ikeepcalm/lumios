@@ -3,6 +3,7 @@ package dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.types.ClassType;
@@ -23,7 +24,7 @@ public class TimetableParser {
                 .addSerializer(LocalTime.class, new LocalTimeSerializer()));
     }
 
-    public static List<TimetableEntry> parseTimetableMessage(String json) throws IOException {
+    public static List<TimetableEntry> parseTimetableMessage(String json) throws JsonProcessingException {
         ObjectReader objectReader = objectMapper.readerForListOf(TimetableWrapper.class);
 
         try {
