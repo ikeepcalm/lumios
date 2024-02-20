@@ -12,7 +12,10 @@ public class TextUpdate extends UpdateParent {
     public void processUpdate(Update update) {
         instantiateUpdate(update);
         MessageRecord messageRecord = new MessageRecord();
-        messageRecord.setText(update.getMessage().getText());
+        if (update.getMessage().getText().length() > 65000)
+            messageRecord.setText(update.getMessage().getText().substring(1, 65000));
+        else
+            messageRecord.setText(update.getMessage().getText());
         messageRecord.setChatId(update.getMessage().getChatId());
         messageRecord.setMessageId(Long.valueOf(update.getMessage().getMessageId()));
         messageRecord.setUser(super.reverenceUser);

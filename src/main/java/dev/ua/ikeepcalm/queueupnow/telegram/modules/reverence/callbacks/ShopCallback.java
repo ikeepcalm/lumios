@@ -51,6 +51,8 @@ public class ShopCallback extends CallbackParent {
             editMessage.setText("@" + reverenceUser.getUsername() + ", у вас недостатньо грошей (✧) у гаманці!\n\nНаявно на балансі: " + reverenceUser.getBalance() + " (✧)\n\nНеобхідно для цієї дії: " + cost + " (✧)");
             editMessage(editMessage);
         }
+
+        shopService.delete(whoCalled);
     }
 
     private boolean processPurchase(ReverenceUser user, ShoppingUser shoppingUser, int cost, int increment) {

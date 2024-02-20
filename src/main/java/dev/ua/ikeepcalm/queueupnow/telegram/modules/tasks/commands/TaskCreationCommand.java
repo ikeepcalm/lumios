@@ -34,7 +34,7 @@ public class TaskCreationCommand extends CommandParent {
                 task.setUrl(url);
                 task.setChat(reverenceChat);
                 taskService.save(task);
-//                sendConfirmationReaction(message);
+                sendConfirmationReaction(message);
             } catch (DateTimeParseException e) {
                 sendMessage("Неправильний формат дати або часу. Будь ласка, використовуйте формат HH:mm для часу, та dd.MM.yyyy");
             }

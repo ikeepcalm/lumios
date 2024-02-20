@@ -19,6 +19,9 @@ public class ShopCommand extends CommandParent {
         InlineKeyboardMarkup inlineKeyboardMarkup = absSender.createMarkup(values, prefix);
         textMessage.setReplyKeyboard(inlineKeyboardMarkup);
         sendMessage(textMessage);
+        if (shopService.find(reverenceUser.getUserId(), reverenceChat) != null) {
+            return;
+        }
         ShoppingUser shoppingUser = new ShoppingUser();
         shoppingUser.setChannel(reverenceChat);
         shoppingUser.setUserId(reverenceUser.getUserId());
