@@ -195,7 +195,7 @@ public enum ReverenceReaction {
             case CRY -> 2;
             case WOW -> 5;
             case SAD -> 1;
-            case HUNDRED -> 5;
+            case HUNDRED -> 100;
             case FUCK -> -10;
             case WHALE -> 5;
             case DEFAULT -> 0;
