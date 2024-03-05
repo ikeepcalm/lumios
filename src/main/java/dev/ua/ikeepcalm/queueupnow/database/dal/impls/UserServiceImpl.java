@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceImpl
-implements UserService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     public UserServiceImpl(UserRepository userRepository) {
@@ -36,7 +35,18 @@ implements UserService {
             user.setCredits(user.getSustainable());
             if (user.getReverence() > 0) {
                 user.setBalance((int) (user.getBalance() + Math.sqrt(user.getReverence())));
-            } this.userRepository.save(user);
+            }
+            this.userRepository.save(user);
+        }
+    }
+
+    @Override
+    public void increaseAll() {
+        Iterable<ReverenceUser> list = userRepository.findAll();
+        for (ReverenceUser user : list) {
+            user.setSustainable((int) (user.getSustainable() + Math.sqrt(user.getBalance())));
+            user.setBalance(0);
+            this.userRepository.save(user);
         }
     }
 

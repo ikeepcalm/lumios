@@ -1,28 +1,27 @@
 package dev.ua.ikeepcalm.queueupnow.telegram.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.longpolling.util.DefaultGetUpdatesGenerator;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.TelegramUrl;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.BotSession;
-import org.telegram.telegrambots.meta.generics.LongPollingBot;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
-import static java.lang.String.format;
-
 @Component
 public class TelegramBotInitializer implements InitializingBean {
-    private final TelegramBotsApi telegramBotsApi;
-    private final List<LongPollingBot> longPollingBots;
+    private final TelegramBotsLongPollingApplication telegramBotsApi;
+    private final List<LongPollingSingleThreadUpdateConsumer> longPollingBots;
 
-    public TelegramBotInitializer(TelegramBotsApi telegramBotsApi,
-                                  List<LongPollingBot> longPollingBots) {
+    @Value("${telegram.bot.token}")
+    private String token;
+
+    public TelegramBotInitializer(TelegramBotsLongPollingApplication telegramBotsApi,
+                                  List<LongPollingSingleThreadUpdateConsumer> longPollingBots) {
         Objects.requireNonNull(telegramBotsApi);
         Objects.requireNonNull(longPollingBots);
         this.telegramBotsApi = telegramBotsApi;
@@ -32,8 +31,8 @@ public class TelegramBotInitializer implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         try {
-            for (LongPollingBot bot : longPollingBots) {
-                telegramBotsApi.registerBot(bot);
+            for (LongPollingSingleThreadUpdateConsumer bot : longPollingBots) {
+                telegramBotsApi.registerBot(token, () -> TelegramUrl.DEFAULT_URL, new DefaultGetUpdatesGenerator(List.of("message", "callback_query", "message_reaction", "chat_member")),  bot);
             }
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);

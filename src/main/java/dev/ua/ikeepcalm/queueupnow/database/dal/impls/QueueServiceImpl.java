@@ -21,13 +21,11 @@ public class QueueServiceImpl implements QueueService {
 
     private final MixedQueueRepository mixedQueueRepository;
     private final SimpleQueueRepository simpleQueueRepository;
-    private final MixedUserRepository mixedUserRepository;
     private final SimpleUserRepository simpleUserRepository;
 
-    public QueueServiceImpl(MixedQueueRepository mixedQueueRepository, SimpleQueueRepository simpleQueueRepository, MixedUserRepository mixedUserRepository, SimpleUserRepository simpleUserRepository) {
+    public QueueServiceImpl(MixedQueueRepository mixedQueueRepository, SimpleQueueRepository simpleQueueRepository, SimpleUserRepository simpleUserRepository) {
         this.mixedQueueRepository = mixedQueueRepository;
         this.simpleQueueRepository = simpleQueueRepository;
-        this.mixedUserRepository = mixedUserRepository;
         this.simpleUserRepository = simpleUserRepository;
     }
 

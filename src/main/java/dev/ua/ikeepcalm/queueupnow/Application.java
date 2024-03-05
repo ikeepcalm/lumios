@@ -2,7 +2,6 @@
 package dev.ua.ikeepcalm.queueupnow;
 
 
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.system.utils.InteractiveRunnerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.SLF4JServiceProvider;
@@ -22,13 +21,10 @@ import java.util.Scanner;
 public class Application implements CommandLineRunner {
 
     private final ApplicationContext applicationContext;
-    private final InteractiveRunnerUtil interactiveRunnerUtil;
     private final Logger logger;
 
-    public Application(ApplicationContext applicationContext,
-                       InteractiveRunnerUtil interactiveRunnerUtil) {
+    public Application(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        this.interactiveRunnerUtil = interactiveRunnerUtil;
         this.logger = LoggerFactory.getLogger(SLF4JServiceProvider.class);
     }
 
@@ -51,22 +47,11 @@ public class Application implements CommandLineRunner {
                     SpringApplication.exit(applicationContext);
                     System.exit(0);
                     break label;
-                case "say":
-                    if (arguments != null && !arguments.isEmpty()) {
-                        logger.info("Executing TextMessage...");
-                        interactiveRunnerUtil.ip32Command(arguments);
-                    } else {
-                        logger.info("You should also set desired text to be sent!");
-                    }
-                    break;
-                case "announce":
-                    if (arguments != null && !arguments.isEmpty()) {
-                        logger.info("Executing TextMessage...");
-                        interactiveRunnerUtil.announceCommand(arguments);
-                    } else {
-                        logger.info("You should also set desired text to be sent!");
-                    }
-                    break;
+                case "restart":
+                    logger.info("Restarting the application...");
+                    SpringApplication.exit(applicationContext);
+                    SpringApplication.run(Application.class, arguments);
+                    break label;
                 default:
                     logger.info("Unknown command. Please, try again.");
                     break;
@@ -77,6 +62,5 @@ public class Application implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-
     }
 }

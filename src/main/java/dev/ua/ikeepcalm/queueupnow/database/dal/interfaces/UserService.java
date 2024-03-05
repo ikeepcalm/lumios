@@ -10,6 +10,7 @@ public interface UserService {
     ReverenceUser findById(long userId, ReverenceChat chat) throws NoSuchEntityException;
 
     void updateAll();
+    void increaseAll();
 
     ReverenceUser findByUsername(String var1, ReverenceChat var2);
 

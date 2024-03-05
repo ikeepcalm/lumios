@@ -1,5 +1,3 @@
-import org.springframework.boot.gradle.plugin.SpringBootPlugin
-
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -9,12 +7,6 @@ plugins {
 
 apply plugin: 'io.spring.dependency-management'
 
-dependencyManagement {
-    imports {
-        mavenBom SpringBootPlugin.BOM_COORDINATES
-    }
-}
-
 dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.0'
@@ -23,20 +15,34 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'org.yaml:snakeyaml:2.2'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
-    implementation 'org.telegram:telegrambots:6.9.7.1'
+    implementation 'org.telegram:telegrambots-longpolling:7.0.0-rc0'
+    implementation 'org.telegram:telegrambots-client:7.0.0-rc0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
  }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.4.7-SNAPSHOT'
+version = '1.5-SNAPSHOT'
 description = 'queue-up-now'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(Javadoc).configureEach {
-    options.encoding = 'UTF-8'
+graalvmNative {
+    binaries {
+        main {
+            imageName = "queue-up-now"
+            mainClass = "dev.ua.ikeepcalm.queueupnow.Application"
+        }
+    }
+    binaries{
+        configureEach {
+            buildArgs.add("--verbose")
+        }
+        main {
+            useFatJar = true
+        }
+    }
 }

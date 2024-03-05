@@ -6,7 +6,7 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.queueupnow.database.entities.timetable.wrappers.TimetableWrapper;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.timetable.utils.TimetableParser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.heirs.timetable.utils.TimetableParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,6 @@ public class TimetableController {
         this.timetableService = timetableService;
         this.chatService = chatService;
     }
-
 
     @PostMapping("/feed")
     public ResponseEntity<String> saveTimetable(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
