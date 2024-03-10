@@ -23,7 +23,7 @@ dependencies {
  }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.5-SNAPSHOT'
+version = '1.6-SNAPSHOT'
 description = 'queue-up-now'
 
 tasks.withType(JavaCompile).configureEach {

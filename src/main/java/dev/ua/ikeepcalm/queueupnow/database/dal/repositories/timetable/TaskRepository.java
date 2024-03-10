@@ -10,5 +10,7 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends CrudRepository<DueTask, Long> {
     List<DueTask> findByChat(ReverenceChat chat);
+    boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);
+
 }
 

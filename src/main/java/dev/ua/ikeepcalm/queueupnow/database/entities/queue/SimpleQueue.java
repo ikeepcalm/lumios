@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.queueupnow.database.entities.queue;
 
+import dev.ua.ikeepcalm.queueupnow.database.entities.queue.wrappers.QueueWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,9 @@ public class SimpleQueue{
     @Column
     private int messageId;
 
+    @Column
+    private long chatId;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "simpleQueue", fetch = FetchType.LAZY)
     private List<SimpleUser> contents = new LinkedList<>();
 
@@ -36,8 +40,15 @@ public class SimpleQueue{
         this.id = UUID.randomUUID();
     }
 
+    public SimpleQueue(QueueWrapper queueWrapper) {
+        this.alias = queueWrapper.getAlias();
+        this.messageId = queueWrapper.getMessageId();
+        this.id = queueWrapper.getId();
+        this.contents = queueWrapper.unwrapContents();
+    }
+
     public boolean flushUser(SimpleUser simpleUser) {
-        return this.contents.get(0).equals(simpleUser);
+        return this.contents.getFirst().equals(simpleUser);
     }
 }
 

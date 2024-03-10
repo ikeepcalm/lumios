@@ -25,6 +25,9 @@ public class MixedQueue {
     private int messageId;
 
     @Column
+    private long chatId;
+
+    @Column
     private boolean shuffled = false;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "mixedQueue")

@@ -48,6 +48,7 @@ public class QueueCommand extends CommandParent {
         Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
         this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         simpleQueue.setMessageId(sendTextMessage.getMessageId());
+        simpleQueue.setChatId(message.getChatId());
         queueService.save(simpleQueue);
     }
 }

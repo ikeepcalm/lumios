@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.queueupnow.database.entities.tasks;
 
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.wrappers.TaskWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,4 +27,13 @@ public class DueTask {
     @ManyToOne
     private ReverenceChat chat;
 
+    public DueTask() {
+    }
+
+    public DueTask(TaskWrapper taskWrapper) {
+        this.dueDate = taskWrapper.getDueDate();
+        this.dueTime = taskWrapper.getDueTime();
+        this.taskName = taskWrapper.getTaskName();
+        this.url = taskWrapper.getUrl();
+    }
 }

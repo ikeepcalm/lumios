@@ -45,6 +45,7 @@ public class MixedCommand extends CommandParent {
         Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
         this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         mixedQueue.setMessageId(sendTextMessage.getMessageId());
+        mixedQueue.setChatId(message.getChatId());
         queueService.save(mixedQueue);
     }
 }

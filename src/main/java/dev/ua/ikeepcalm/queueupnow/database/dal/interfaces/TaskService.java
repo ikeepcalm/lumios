@@ -8,9 +8,11 @@ import java.util.List;
 public interface TaskService {
 
     void save(DueTask dueTask);
-
+    void delete(DueTask dueTask);
+    boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);
     List<DueTask> getTasksForCurrentChat(ReverenceChat chat);
 
     DueTask findTaskById(Long id);
+
 }
 

@@ -35,6 +35,7 @@ public class ShuffleCallback extends CallbackParent {
                         simpleQueue.setId(mixedQueue.getId());
                         simpleQueue.setMessageId(mixedQueue.getMessageId());
                         simpleQueue.setAlias(mixedQueue.getAlias());
+                        simpleQueue.setChatId(mixedQueue.getChatId());
                         for (int i = 0; i < mixedQueue.getContents().size(); i++) {
                             SimpleUser simpleUser = new SimpleUser();
                             simpleUser.setName(mixedQueue.getContents().get(i).getName());

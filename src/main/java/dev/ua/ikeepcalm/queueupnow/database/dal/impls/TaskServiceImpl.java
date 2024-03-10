@@ -26,6 +26,16 @@ implements TaskService {
     }
 
     @Override
+    public void delete(DueTask dueTask) {
+        taskRepository.delete(dueTask);
+    }
+
+    @Override
+    public boolean existsByChatAndTaskName(ReverenceChat chat, String taskName) {
+        return taskRepository.existsByChatAndTaskName(chat, taskName);
+    }
+
+    @Override
     public List<DueTask> getTasksForCurrentChat(ReverenceChat chatId) {
         return taskRepository.findByChat(chatId);
     }
