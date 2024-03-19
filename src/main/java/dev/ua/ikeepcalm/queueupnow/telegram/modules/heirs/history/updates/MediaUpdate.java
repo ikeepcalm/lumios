@@ -5,6 +5,8 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.parents.UpdateParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.time.LocalDate;
+
 @Component
 public class MediaUpdate extends UpdateParent {
 
@@ -16,6 +18,7 @@ public class MediaUpdate extends UpdateParent {
         messageRecord.setChatId(update.getMessage().getChatId());
         messageRecord.setMessageId(Long.valueOf(update.getMessage().getMessageId()));
         messageRecord.setUser(reverenceUser);
+        messageRecord.setDate(LocalDate.now());
         recordService.save(messageRecord);
     }
 }

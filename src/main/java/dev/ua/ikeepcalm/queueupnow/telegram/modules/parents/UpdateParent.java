@@ -26,7 +26,6 @@ public abstract class UpdateParent {
     protected ChatService chatService;
     protected UserService userService;
     protected TaskService taskService;
-    protected ShopService shopService;
     protected RecordService recordService;
     protected TimetableService timetableService;
     protected QueueService queueService;
@@ -36,7 +35,6 @@ public abstract class UpdateParent {
                                    ChatService chatService,
                                    UserService userService,
                                    TaskService taskService,
-                                   ShopService shopService,
                                    RecordService recordService,
                                    TimetableService timetableService,
                                    QueueService queueService) {
@@ -44,7 +42,6 @@ public abstract class UpdateParent {
         this.chatService = chatService;
         this.userService = userService;
         this.taskService = taskService;
-        this.shopService = shopService;
         this.timetableService = timetableService;
         this.queueService = queueService;
         this.recordService = recordService;

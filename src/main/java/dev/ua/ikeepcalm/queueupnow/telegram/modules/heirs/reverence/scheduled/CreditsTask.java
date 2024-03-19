@@ -5,11 +5,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DailyUpdate {
+public class CreditsTask {
 
     private final UserService userService;
 
-    public DailyUpdate(UserService userService) {
+    public CreditsTask(UserService userService) {
         this.userService = userService;
     }
 

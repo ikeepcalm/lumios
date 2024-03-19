@@ -31,7 +31,6 @@ public abstract class CallbackParent {
     protected ChatService chatService;
     protected UserService userService;
     protected TaskService taskService;
-    protected ShopService shopService;
     protected TimetableService timetableService;
     protected QueueService queueService;
     private Logger logger;
@@ -41,14 +40,12 @@ public abstract class CallbackParent {
                                    ChatService chatService,
                                    UserService userService,
                                    TaskService taskService,
-                                   ShopService shopService,
                                    TimetableService timetableService,
                                    QueueService queueService) {
         this.telegramClient = telegramClient;
         this.chatService = chatService;
         this.userService = userService;
         this.taskService = taskService;
-        this.shopService = shopService;
         this.timetableService = timetableService;
         this.queueService = queueService;
         this.logger = LoggerFactory.getLogger(CallbackParent.class);

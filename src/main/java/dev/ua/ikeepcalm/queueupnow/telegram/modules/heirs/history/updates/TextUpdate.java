@@ -5,6 +5,10 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.parents.UpdateParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
+
 @Component
 public class TextUpdate extends UpdateParent {
     @Override
@@ -18,6 +22,7 @@ public class TextUpdate extends UpdateParent {
         messageRecord.setChatId(update.getMessage().getChatId());
         messageRecord.setMessageId(Long.valueOf(update.getMessage().getMessageId()));
         messageRecord.setUser(reverenceUser);
+        messageRecord.setDate(LocalDate.now());
         recordService.save(messageRecord);
     }
 

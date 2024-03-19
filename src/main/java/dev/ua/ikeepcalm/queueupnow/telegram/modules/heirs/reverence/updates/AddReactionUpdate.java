@@ -18,6 +18,7 @@ public class AddReactionUpdate extends UpdateParent {
             MessageReactionUpdated message = update.getMessageReaction();
             ReverenceReaction newReaction = findNewReaction(message.getOldReaction(), message.getNewReaction());
             int reactionValue = ReverenceReaction.determineReactionValue(newReaction);
+
             if (reverenceUser.getCredits() > reactionValue) {
                 ReverenceUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
                 if (!reverenceUser.getUsername().equals(onUser.getUsername())) {
