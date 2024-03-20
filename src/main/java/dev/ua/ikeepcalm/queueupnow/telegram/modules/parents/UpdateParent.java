@@ -47,7 +47,7 @@ public abstract class UpdateParent {
         this.recordService = recordService;
     }
 
-    protected void instantiateUpdate(Update update) {
+    public void handleUpdate(Update update) {
         if (update.getMessageReaction() != null) {
             MessageReactionUpdated message = update.getMessageReaction();
             try {
@@ -126,7 +126,7 @@ public abstract class UpdateParent {
                         """, update);
                 }
             }
-        }
+        } processUpdate(update);
     }
 
     public abstract void processUpdate(Update update);

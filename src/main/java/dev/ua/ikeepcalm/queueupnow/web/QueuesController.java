@@ -7,7 +7,7 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.queueupnow.database.entities.queue.wrappers.QueueWrapper;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.queueupnow.telegram.modules.heirs.queues.utils.QueueParser;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.queues.utils.QueueParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

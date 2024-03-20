@@ -52,7 +52,7 @@ public abstract class CommandParent {
         this.logger = LoggerFactory.getLogger(CommandParent.class);
     }
 
-    protected void instantiateUpdate(Message message) {
+    public void handleUpdate(Message message) {
         this.message = message;
 
         try {
@@ -81,7 +81,9 @@ public abstract class CommandParent {
                 userService.save(newUser);
                 reverenceUser = newUser;
             }
-        } logInteraction();
+        }
+        logInteraction();
+        processUpdate(message);
     }
 
     public abstract void processUpdate(Message message);

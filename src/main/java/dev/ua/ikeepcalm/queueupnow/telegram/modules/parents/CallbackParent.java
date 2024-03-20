@@ -51,7 +51,7 @@ public abstract class CallbackParent {
         this.logger = LoggerFactory.getLogger(CallbackParent.class);
     }
 
-    protected void instantiateUpdate(CallbackQuery message) {
+    public void handleUpdate(CallbackQuery message) {
         this.message = (Message) message.getMessage();
         try {
             this.reverenceChat = chatService.findByChatId(message.getMessage().getChatId());
@@ -78,6 +78,7 @@ public abstract class CallbackParent {
                 this.reverenceUser = newUser;
             }
         } logInteraction(message);
+        processUpdate(message);
     }
 
     public abstract void processUpdate(CallbackQuery message);

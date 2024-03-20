@@ -16,8 +16,6 @@ public class ShotServiceImpl implements ShotService {
         this.chatShotRepository = chatShotRepository;
         this.userShotRepository = userShotRepository;
     }
-
-
     @Override
     public void save(ReverenceChatShot chatShot) {
         this.userShotRepository.saveAll(chatShot.getUsers());
