@@ -6,6 +6,9 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.history.MessageRecord;
 import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Component
 public class RecordServiceImpl implements RecordService {
 
@@ -28,6 +31,11 @@ public class RecordServiceImpl implements RecordService {
     @Override
     public MessageRecord findByMessageIdAndChatId(Long id, Long chatId) throws NoSuchEntityException {
         return this.messageRecordRepository.findByMessageIdAndChatId(id, chatId).orElseThrow(() -> new NoSuchEntityException("No such record with id: " + id));
+    }
+
+    @Override
+    public List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDate startDate, LocalDate endDate) {
+        return this.messageRecordRepository.findAllByChatIdAndDateBetween(chatId, startDate, endDate);
     }
 
 }

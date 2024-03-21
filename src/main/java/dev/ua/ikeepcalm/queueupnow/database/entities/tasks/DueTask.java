@@ -13,6 +13,7 @@ import java.time.LocalTime;
 @Setter
 @Entity(name = "due_tasks")
 public class DueTask {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

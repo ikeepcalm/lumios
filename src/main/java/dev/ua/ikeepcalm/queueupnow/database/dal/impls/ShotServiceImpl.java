@@ -3,8 +3,11 @@ package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ShotService;
 import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.reverence.ChatShotRepository;
 import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.reverence.UserShotRepository;
-import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.shots.ReverenceChatShot;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.shots.ChatShot;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.NoSuchElementException;
 
 @Component
 public class ShotServiceImpl implements ShotService {
@@ -17,8 +20,13 @@ public class ShotServiceImpl implements ShotService {
         this.userShotRepository = userShotRepository;
     }
     @Override
-    public void save(ReverenceChatShot chatShot) {
+    public void save(ChatShot chatShot) {
         this.userShotRepository.saveAll(chatShot.getUsers());
         this.chatShotRepository.save(chatShot);
+    }
+
+    @Override
+    public ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchElementException {
+        return this.chatShotRepository.findByReverenceChatIdAndDate(chatId, date).orElseThrow();
     }
 }

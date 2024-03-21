@@ -4,8 +4,8 @@ import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ShotService;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.shots.ReverenceChatShot;
-import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.shots.ReverenceUserShot;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.shots.ChatShot;
+import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.shots.UserShot;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -30,12 +30,12 @@ public class ShotTask {
         Iterable<ReverenceChat> chats = this.chatService.findAll();
         for (ReverenceChat chat : chats) {
             Set<ReverenceUser> users = chat.getUsers();
-            ReverenceChatShot chatShot = new ReverenceChatShot();
+            ChatShot chatShot = new ChatShot();
             chatShot.setReverenceChat(chat);
             chatShot.setDate(LocalDate.now());
-            List<ReverenceUserShot> userShots = new ArrayList<>();
+            List<UserShot> userShots = new ArrayList<>();
             for (ReverenceUser user : users) {
-                ReverenceUserShot userShot = new ReverenceUserShot();
+                UserShot userShot = new UserShot();
                 userShot.setUserId(user.getUserId());
                 userShot.setUsername(user.getUsername());
                 userShot.setReverence(user.getReverence());

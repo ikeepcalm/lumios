@@ -13,7 +13,6 @@ import java.util.Date;
 @Setter
 @Entity(name = "message_records")
 public class MessageRecord {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +26,6 @@ public class MessageRecord {
     private String text;
     @Column
     private LocalDate date;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private ReverenceUser user;

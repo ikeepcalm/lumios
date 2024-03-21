@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "reverence_shots")
-public class ReverenceChatShot {
+public class ChatShot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class ReverenceChatShot {
 
     @Column
     @OneToMany
-    private List<ReverenceUserShot> users;
+    private List<UserShot> users;
 
     @ManyToOne
     private ReverenceChat reverenceChat;
