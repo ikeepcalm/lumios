@@ -22,9 +22,6 @@ public class ExitCallback extends CallbackParent {
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-exit", "");
         String callbackQueryId = message.getId();
-
-        handleUpdate(message);
-
         try {
             UUID queueId = UUID.fromString(receivedCallback);
             SimpleQueue simpleQueue = queueService.findSimpleById(queueId);

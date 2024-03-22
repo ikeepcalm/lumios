@@ -19,6 +19,9 @@ public class HistoryHandler implements HandlerParent {
 
     @Override
     public void dispatchUpdate(Update update) {
+        if (update.getMessage().getChat().getType().equals("private")) {
+            return;
+        }
         if (update.getMessage().hasText()){
             textUpdate.handleUpdate(update);
         } else {
@@ -28,10 +31,6 @@ public class HistoryHandler implements HandlerParent {
 
     @Override
     public boolean supports(Update update) {
-        if (update.getMessage().getChat().getType().equals("private")) {
-            return false;
-        }
-
         return update.hasMessage();
     }
 }

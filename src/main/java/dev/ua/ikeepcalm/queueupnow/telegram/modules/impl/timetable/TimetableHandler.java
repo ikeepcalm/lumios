@@ -37,12 +37,12 @@ public class TimetableHandler implements HandlerParent {
         String commandText = message.getText();
         commandText = commandText.replace("@queueupnow_bot", "");
         switch (commandText) {
-            case "/feed" -> feedCommand.processUpdate(message);
-            case "/today" -> todayCommand.processUpdate(message);
-            case "/week" -> weekCommand.processUpdate(message);
-            case "/now" -> nowCommand.processUpdate(message);
-            case "/next" -> nextCommand.processUpdate(message);
-            case "/tomorrow" -> tomorrowCommand.processUpdate(message);
+            case "/feed" -> feedCommand.handleUpdate(message);
+            case "/today" -> todayCommand.handleUpdate(message);
+            case "/week" -> weekCommand.handleUpdate(message);
+            case "/now" -> nowCommand.handleUpdate(message);
+            case "/next" -> nextCommand.handleUpdate(message);
+            case "/tomorrow" -> tomorrowCommand.handleUpdate(message);
         }
     }
 

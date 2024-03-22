@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.TelegramClient;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.ReactionMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public abstract class CommandParent {
         this.logger = LoggerFactory.getLogger(CommandParent.class);
     }
 
+    @Transactional
     public void handleUpdate(Message message) {
         this.message = message;
 
@@ -86,7 +88,7 @@ public abstract class CommandParent {
         processUpdate(message);
     }
 
-    public abstract void processUpdate(Message message);
+    protected abstract void processUpdate(Message message);
 
     protected void sendMessage(String text) {
         TextMessage textMessage = new TextMessage();

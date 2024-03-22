@@ -29,6 +29,10 @@ public class ReverenceHandler implements HandlerParent {
 
     @Override
     public void dispatchUpdate(Update update) {
+        if (update.getMessage().getChat().getType().equals("private")) {
+            return;
+        }
+
         if (update.getMessageReaction() != null){
             MessageReactionUpdated reactionUpdated = update.getMessageReaction();
             int oldCount = reactionUpdated.getOldReaction().size();
@@ -52,10 +56,6 @@ public class ReverenceHandler implements HandlerParent {
 
     @Override
     public boolean supports(Update update) {
-        if (update.getMessage().getChat().getType().equals("private")) {
-            return false;
-        }
-
         if (update.getMessageReaction() != null){
             return true;
         } else {

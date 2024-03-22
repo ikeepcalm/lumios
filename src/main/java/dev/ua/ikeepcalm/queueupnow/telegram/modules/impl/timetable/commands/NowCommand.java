@@ -20,9 +20,7 @@ import java.time.ZoneId;
 public class NowCommand extends CommandParent {
 
     @Override
-    @Transactional
     public void processUpdate(Message message) {
-        handleUpdate(message);
         try {
             TimetableEntry timetableEntry = timetableService
                     .findByChatIdAndWeekType(message.getChatId(),

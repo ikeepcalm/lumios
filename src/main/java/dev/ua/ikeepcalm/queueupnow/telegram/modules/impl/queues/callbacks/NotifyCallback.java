@@ -17,7 +17,6 @@ public class NotifyCallback extends CallbackParent {
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-notify", "");
         String callbackQueryId = message.getId();
-        handleUpdate(message);
         SimpleQueue simpleQueue;
         try {
             simpleQueue = queueService.findSimpleById(UUID.fromString(receivedCallback));

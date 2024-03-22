@@ -20,9 +20,7 @@ import java.time.ZoneId;
 public class NextCommand extends CommandParent {
 
     @Override
-    @Transactional
     public void processUpdate(Message message) {
-        handleUpdate(message);
         try {
             TimetableEntry timetableEntry = timetableService.findByChatIdAndWeekType(message.getChatId(), WeekValidator.determineWeekDay());
             DayOfWeek dayOfWeek = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();

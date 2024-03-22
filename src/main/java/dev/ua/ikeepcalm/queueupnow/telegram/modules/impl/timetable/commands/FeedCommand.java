@@ -15,7 +15,6 @@ public class FeedCommand extends CommandParent {
 
     @Override
     public void processUpdate(Message message) {
-        handleUpdate(message);
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
         textMessage.setText("Посилання на онлайн-редактор розкладу ⬇️");

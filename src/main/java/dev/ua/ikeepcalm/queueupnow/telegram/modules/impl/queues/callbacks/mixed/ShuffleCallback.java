@@ -22,7 +22,6 @@ public class ShuffleCallback extends CallbackParent {
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-mixed-shuffle", "");
         String callbackQueryId = message.getId();
-        handleUpdate(message);
         MixedQueue mixedQueue = null;
         try {
             mixedQueue = queueService.findMixedById(UUID.fromString(receivedCallback));

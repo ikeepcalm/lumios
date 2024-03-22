@@ -19,9 +19,7 @@ import java.time.LocalDate;
 public class TomorrowCommand extends CommandParent {
 
     @Override
-    @Transactional
     public void processUpdate(Message message) {
-        handleUpdate(message);
         try {
             TimetableEntry timetableEntry = timetableService.findByChatIdAndWeekType(message.getChatId(),
                     WeekValidator.determineWeekDay());

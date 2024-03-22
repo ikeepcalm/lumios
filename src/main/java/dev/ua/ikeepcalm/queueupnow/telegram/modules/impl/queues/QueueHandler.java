@@ -44,6 +44,10 @@ public class QueueHandler implements HandlerParent {
 
     private void manageCommands(Update update) {
         Message message = update.getMessage();
+        if (message.getChat().getType().equals("private")) {
+            return;
+        }
+
         String commandText = message.getText();
         if (commandText != null && commandText.startsWith("/")) {
             String[] parts = commandText.split("\\s+", 10);
@@ -77,10 +81,6 @@ public class QueueHandler implements HandlerParent {
 
     @Override
     public void dispatchUpdate(Update update) {
-        if (update.getMessage().getChat().getType().equals("private")) {
-            return;
-        }
-
         if (update.hasMessage()){
             manageCommands(update);
         } else if (update.hasCallbackQuery()){

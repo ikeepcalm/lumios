@@ -19,7 +19,6 @@ public class DeleteCallback extends CallbackParent {
     @Transactional
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-delete", "");
-        handleUpdate(message);
         for (ChatMember chatMember : telegramClient.getChatAdministrators(String.valueOf(message.getMessage().getChatId()))) {
             if (chatMember.getUser().getId().equals(message.getFrom().getId()) || message.getFrom().getUserName().equals("ikeepcalm")) {
                 SimpleQueue simpleQueue = null;
