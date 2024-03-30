@@ -29,5 +29,4 @@ public class MessageRecord {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private ReverenceUser user;
-
 }

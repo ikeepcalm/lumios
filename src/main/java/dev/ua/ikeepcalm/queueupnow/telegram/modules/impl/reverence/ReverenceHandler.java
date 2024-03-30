@@ -29,10 +29,6 @@ public class ReverenceHandler implements HandlerParent {
 
     @Override
     public void dispatchUpdate(Update update) {
-        if (update.getMessage().getChat().getType().equals("private")) {
-            return;
-        }
-
         if (update.getMessageReaction() != null){
             MessageReactionUpdated reactionUpdated = update.getMessageReaction();
             int oldCount = reactionUpdated.getOldReaction().size();
@@ -43,6 +39,9 @@ public class ReverenceHandler implements HandlerParent {
                 removeReactionUpdate.handleUpdate(update);
             }
         } else if (update.hasMessage() && update.getMessage().hasText()){
+            if (update.getMessage().getChat().getType().equals("private")) {
+                return;
+            }
             String commandText = update.getMessage().getText();
             String[] parts = commandText.split("\\s+", 2);
             String command = parts[0].toLowerCase();

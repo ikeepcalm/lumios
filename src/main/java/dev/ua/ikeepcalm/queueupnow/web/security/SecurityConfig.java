@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -22,6 +23,26 @@ public class SecurityConfig {
 
     private final AuthenticationFilter authenticationFilter;
 
+    private static final String[] AUTH_WHITELIST = {
+            "/v2/api-docs",
+            "v2/api-docs",
+            "/swagger-resources",
+            "swagger-resources",
+            "/swagger-resources/**",
+            "swagger-resources/**",
+            "/configuration/ui",
+            "configuration/ui",
+            "/configuration/security",
+            "configuration/security",
+            "/swagger-ui.html",
+            "swagger-ui.html",
+            "webjars/**",
+            "/v3/api-docs/**",
+            "v3/api-docs/**",
+            "/swagger-ui/**",
+            "swagger-ui/**",
+    };
+
     public SecurityConfig(AuthenticationFilter authenticationFilter) {
         this.authenticationFilter = authenticationFilter;
     }
@@ -32,7 +53,11 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .requestMatchers("/timetables/**").permitAll()
+                        .requestMatchers("/queues/**").permitAll()
+                        .requestMatchers("/tasks/**").permitAll()
+                        .requestMatchers("/statistics/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session
