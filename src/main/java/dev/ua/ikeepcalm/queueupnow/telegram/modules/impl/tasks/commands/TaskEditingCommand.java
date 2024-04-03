@@ -3,7 +3,7 @@ package dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.tasks.commands;
 import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.parents.CommandParent;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

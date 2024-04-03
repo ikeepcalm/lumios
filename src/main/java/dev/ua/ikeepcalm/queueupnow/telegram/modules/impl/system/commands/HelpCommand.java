@@ -4,7 +4,7 @@ package dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.system.commands;
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.parents.CommandParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 
 @Component

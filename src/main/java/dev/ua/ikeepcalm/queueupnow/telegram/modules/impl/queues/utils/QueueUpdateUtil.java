@@ -5,7 +5,7 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.queue.MixedUser;
 import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.queueupnow.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 public class QueueUpdateUtil {
 

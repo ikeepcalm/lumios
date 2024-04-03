@@ -5,7 +5,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.tasks.commands.TaskCrea
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.tasks.commands.TaskEditingCommand;
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.tasks.commands.WhatIsDueCommand;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component

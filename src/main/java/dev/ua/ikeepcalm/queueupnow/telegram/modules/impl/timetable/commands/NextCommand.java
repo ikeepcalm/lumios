@@ -9,7 +9,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.timetable.utils.WeekVal
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.parents.CommandParent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -35,7 +35,11 @@ public class NextCommand extends CommandParent {
                             sendMessage(ClassMarkupUtil.createNextNotification(classEntry, message.getChatId()));
                             isClassNow = false;
                             break;
+                        } else if (currentTime.isBefore(startTime)) {
+                            sendMessage(ClassMarkupUtil.createNextNotification(classEntry, message.getChatId()));
+                            break;
                         }
+
                         if (currentTime.isAfter(startTime) && currentTime.isBefore(endTime)) {
                             isClassNow = true;
                         }

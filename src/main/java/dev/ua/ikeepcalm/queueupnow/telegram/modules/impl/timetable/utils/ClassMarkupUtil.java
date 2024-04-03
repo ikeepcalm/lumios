@@ -6,6 +6,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +22,14 @@ public class ClassMarkupUtil {
                 + "Посилання на конференцію ⬇️"
         );
 
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        ArrayList<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        ArrayList<InlineKeyboardButton> firstRow = new ArrayList<>();
-        InlineKeyboardButton notify = new InlineKeyboardButton();
-        notify.setText("\uD83C\uDF10 Туда мені нада");
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        InlineKeyboardRow firstRow = new InlineKeyboardRow();
+        InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
         notify.setUrl(classEntry.getUrl());
         firstRow.add(notify);
         keyboard.add(firstRow);
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        textMessage.setReplyKeyboard(inlineKeyboardMarkup);
+
+        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         return  textMessage;
     }
@@ -44,16 +43,14 @@ public class ClassMarkupUtil {
                 + "Посилання на конференцію ⬇️"
         );
 
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        ArrayList<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        ArrayList<InlineKeyboardButton> firstRow = new ArrayList<>();
-        InlineKeyboardButton notify = new InlineKeyboardButton();
-        notify.setText("\uD83C\uDF10 Туда мені нада");
+
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        InlineKeyboardRow firstRow = new InlineKeyboardRow();
+        InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
         notify.setUrl(classEntry.getUrl());
         firstRow.add(notify);
         keyboard.add(firstRow);
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        textMessage.setReplyKeyboard(inlineKeyboardMarkup);
+        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         return  textMessage;
     }

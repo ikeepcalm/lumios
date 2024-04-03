@@ -9,7 +9,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.queues.utils.QueueUpdat
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 
 import java.util.UUID;

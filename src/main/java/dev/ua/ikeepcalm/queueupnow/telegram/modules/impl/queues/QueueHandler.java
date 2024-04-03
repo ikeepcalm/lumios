@@ -10,7 +10,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.queues.commands.MixedCo
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.queues.commands.QueueCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
