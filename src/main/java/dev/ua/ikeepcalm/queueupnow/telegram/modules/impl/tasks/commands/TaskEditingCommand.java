@@ -28,7 +28,7 @@ public class TaskEditingCommand extends CommandParent {
             try {
                 LocalDate dueDate = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
                 LocalTime dueTime = LocalTime.parse(timeStr, DateTimeFormatter.ofPattern("HH:mm"));
-                DueTask existingTask = taskService.findTaskById(Long.valueOf(taskIdentifier));
+                DueTask existingTask = taskService.findTaskById(reverenceChat.getChatId(), Long.valueOf(taskIdentifier));
                     existingTask.setDueDate(dueDate);
                     existingTask.setDueTime(dueTime);
                     existingTask.setTaskName(taskName);

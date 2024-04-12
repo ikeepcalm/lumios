@@ -9,7 +9,6 @@ import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.wrappers.TaskWrapper;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class TaskParser {
 
@@ -19,13 +18,10 @@ public class TaskParser {
         objectMapper = new ObjectMapper().registerModule(new JavaTimeModule().addSerializer(LocalTime.class, new LocalTimeSerializer()));
     }
 
-    public static List<DueTask> parseTaskMessage(String json) throws JsonProcessingException {
-        ObjectReader objectReader = objectMapper.readerForListOf(TaskWrapper.class);
-        List<TaskWrapper> taskWrappers = objectReader.readValue(json);
-        List<DueTask> tasks = new java.util.ArrayList<>();
-        for (TaskWrapper taskWrapper : taskWrappers) {
-            tasks.add(new DueTask(taskWrapper));
-        } return tasks;
+    public static DueTask parseTaskMessage(String json) throws JsonProcessingException {
+        ObjectReader objectReader = objectMapper.readerFor(TaskWrapper.class);
+        TaskWrapper taskWrappers = objectReader.readValue(json);
+        return new DueTask(taskWrappers);
     }
 
     private static class LocalTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer {

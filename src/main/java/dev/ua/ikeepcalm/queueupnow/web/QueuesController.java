@@ -39,7 +39,7 @@ public class QueuesController {
         return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
     }
 
-    @GetMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<String> createQueues(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -65,7 +65,7 @@ public class QueuesController {
         }
     }
 
-    @GetMapping("/update")
+    @PostMapping("/update")
     public ResponseEntity<String> updateQueues(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {

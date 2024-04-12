@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.InputMismatchException;
 import java.util.List;
 
 @RestController
@@ -40,7 +41,7 @@ public class TasksController {
         return ResponseEntity.status(HttpStatus.OK).body(TaskWrapper.wrapTasks(tasks));
     }
 
-    @GetMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<String> createTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -50,23 +51,19 @@ public class TasksController {
         }
 
         try {
-            List<DueTask> tasks = TaskParser.parseTaskMessage(json);
+            DueTask tasks = TaskParser.parseTaskMessage(json);
 
-            if (tasks.isEmpty())
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format! No task entries found!");
+            tasks.setChat(reverenceChat);
+            taskService.save(tasks);
 
-            for (DueTask t : tasks) {
-                t.setChat(reverenceChat);
-                taskService.save(t);
-            }
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given list of tasks!");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully created given tasks!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
     }
 
 
-    @GetMapping("/update")
+    @PostMapping("/update")
     public ResponseEntity<String> updateTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -76,22 +73,35 @@ public class TasksController {
         }
 
         try {
-            List<DueTask> tasks = TaskParser.parseTaskMessage(json);
+            DueTask task = TaskParser.parseTaskMessage(json);
+            if (taskService.existsByChatAndTaskName(reverenceChat, task.getTaskName()))
+                taskService.delete(task);
 
-            if (tasks.isEmpty())
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format! No task entries found!");
+            task.setChat(reverenceChat);
+            taskService.save(task);
 
-            for (DueTask t : tasks) {
-
-                if (taskService.existsByChatAndTaskName(reverenceChat, t.getTaskName()))
-                    taskService.delete(t);
-
-                t.setChat(reverenceChat);
-                taskService.save(t);
-            }
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given list of tasks!");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given task!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
     }
+
+    @PostMapping("/delete")
+    public ResponseEntity<String> deleteTask(@RequestHeader("chatId") Long chatId, @RequestHeader("taskId") Long taskId) {
+        ReverenceChat reverenceChat;
+        try {
+            reverenceChat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
+        }
+
+        try {
+            DueTask task = taskService.findTaskById(reverenceChat.getChatId(), taskId);
+            taskService.delete(task);
+            return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted task with ID: " + taskId);
+        } catch (InputMismatchException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Task with ID: " + taskId + " is not found");
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/timetables")
@@ -49,8 +50,7 @@ public class TimetablesController {
             }
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved list of given timetables!");
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
     }
@@ -66,8 +66,11 @@ public class TimetablesController {
         try {
             timetableEntries = TimetableParser.parseTimetableMessage(json);
 
-            if (timetableEntries.isEmpty())
+            if (timetableEntries.isEmpty()) {
+                Logger.getGlobal().log(java.util.logging.Level.WARNING, "Invalid JSON body format! No timetable entries found!");
+                Logger.getGlobal().log(java.util.logging.Level.WARNING, json);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format! No timetable entries found!");
+            }
 
             for (TimetableEntry timetableEntry : timetableEntries) {
                 try {
@@ -78,9 +81,13 @@ public class TimetablesController {
                 } catch (NoSuchEntityException e) {
                     timetableService.save(timetableEntry);
                 }
-            } return ResponseEntity.status(HttpStatus.OK).body("Successfully updated list of given timetables!");
+            }
+            Logger.getGlobal().log(java.util.logging.Level.INFO, "Successfully updated list of given timetables!");
+            return ResponseEntity.status(HttpStatus.OK).body("Successfully updated list of given timetables!");
 
         } catch (IOException e) {
+            Logger.getGlobal().log(java.util.logging.Level.WARNING, "Invalid JSON body format!");
+            Logger.getGlobal().log(java.util.logging.Level.WARNING, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
 
@@ -94,7 +101,8 @@ public class TimetablesController {
             timetableEntries = timetableService.findAllByChatId(chatId);
             for (TimetableEntry timetableEntry : timetableEntries) {
                 timetableWrappers.add(new TimetableWrapper(timetableEntry));
-            } return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

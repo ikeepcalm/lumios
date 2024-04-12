@@ -41,8 +41,8 @@ implements TaskService {
     }
 
     @Override
-    public DueTask findTaskById(Long id) throws InputMismatchException{
-        Optional<DueTask> dueTask = taskRepository.findById(id);
+    public DueTask findTaskById(Long chatId, Long id) throws InputMismatchException{
+        Optional<DueTask> dueTask = taskRepository.findByChat_IdAndId(chatId, id);
         if (dueTask.isEmpty()){
             throw new InputMismatchException("Couldn't find DueTask by id " + id);
         } else {
