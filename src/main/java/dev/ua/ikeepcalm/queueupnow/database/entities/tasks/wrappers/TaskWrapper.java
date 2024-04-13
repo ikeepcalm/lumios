@@ -36,4 +36,13 @@ public class TaskWrapper {
         } return taskWrappers;
     }
 
+    public static TaskWrapper wrapTask(DueTask task){
+        TaskWrapper taskWrapper = new TaskWrapper();
+        taskWrapper.setDueDate(task.getDueDate());
+        taskWrapper.setDueTime(task.getDueTime());
+        taskWrapper.setTaskName(task.getTaskName());
+        taskWrapper.setUrl(task.getUrl());
+        return taskWrapper;
+    }
+
 }
