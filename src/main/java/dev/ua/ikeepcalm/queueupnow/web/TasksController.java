@@ -27,7 +27,7 @@ public class TasksController {
         this.chatService = chatService;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<TaskWrapper>> getTasks(@RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
 
@@ -60,7 +60,7 @@ public class TasksController {
 
     }
 
-    @PutMapping("/update")
+    @PutMapping
     public ResponseEntity<String> updateTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -83,7 +83,7 @@ public class TasksController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<String> createTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -103,7 +103,7 @@ public class TasksController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTask(@RequestHeader("chatId") Long chatId, @PathVariable("id") Long taskId) {
         ReverenceChat reverenceChat;
         try {

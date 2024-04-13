@@ -53,4 +53,15 @@ public class QueueWrapper {
         } return queueWrappers;
     }
 
+    public static QueueWrapper wrapQueue(SimpleQueue queue) {
+        QueueWrapper queueWrapper = new QueueWrapper();
+        queueWrapper.setAlias(queue.getAlias());
+        queueWrapper.setMessageId(queue.getMessageId());
+        queueWrapper.setId(queue.getId());
+        queueWrapper.setChatId(queue.getChatId());
+        for (SimpleUser user : queue.getContents()) {
+            queueWrapper.getContents().add(UserWrapper.wrapUsers(user));
+        } return queueWrapper;
+    }
+
 }

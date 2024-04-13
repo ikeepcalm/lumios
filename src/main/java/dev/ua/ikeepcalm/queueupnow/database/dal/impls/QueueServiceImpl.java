@@ -73,7 +73,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     public void deleteSimpleQueue(SimpleQueue simpleQueue) {
-        simpleQueueRepository.delete(simpleQueue);
+        simpleQueueRepository.deleteById(simpleQueue.getId());
     }
 
 }

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/queues")
@@ -26,7 +27,7 @@ public class QueuesController {
         this.chatService = chatService;
     }
 
-    @GetMapping("/retrieve")
+    @GetMapping
     public ResponseEntity<List<QueueWrapper>> getQueues(@RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
@@ -39,8 +40,27 @@ public class QueuesController {
         return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<String> createQueues(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
+    @GetMapping("/{id}")
+    public ResponseEntity<QueueWrapper> getQueues(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
+        ReverenceChat reverenceChat;
+        try {
+            reverenceChat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
+        QueueWrapper timetableWrappers;
+        try {
+            timetableWrappers = QueueWrapper.wrapQueue(queueService.findSimpleById(id));
+            return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+
+    @PostMapping
+    public ResponseEntity<String> createQueue(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
             reverenceChat = chatService.findByChatId(chatId);
@@ -49,24 +69,18 @@ public class QueuesController {
         }
 
         try {
-            List<SimpleQueue> queues = QueueParser.parseQueueMessage(json);
+            SimpleQueue queue = QueueParser.parseQueueMessage(json);
+            queue.setChatId(reverenceChat.getChatId());
+            queueService.save(queue);
 
-            if (queues.isEmpty())
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format! No queues found!");
-
-            for (SimpleQueue q : queues) {
-                q.setChatId(reverenceChat.getChatId());
-                queueService.save(q);
-            }
-
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given list of queues!");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
     }
 
-    @PostMapping("/update")
-    public ResponseEntity<String> updateQueues(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
+    @PutMapping
+    public ResponseEntity<String> updateQueue(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         ReverenceChat reverenceChat;
         try {
             reverenceChat = chatService.findByChatId(chatId);
@@ -75,30 +89,32 @@ public class QueuesController {
         }
 
         try {
-            List<SimpleQueue> queues = QueueParser.parseQueueMessage(json);
+            SimpleQueue queue = QueueParser.parseQueueMessage(json);
+            queueService.deleteSimpleQueue(queue);
+            queue.setChatId(reverenceChat.getChatId());
+            queueService.save(queue);
 
-            if (queues.isEmpty())
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format! No queues found!");
-
-            List<SimpleQueue> savedQueues = queueService.findAllSimpleByChatId(reverenceChat.getChatId());
-
-            for (SimpleQueue q : queues) {
-                for (SimpleQueue savedQueue : savedQueues) {
-                    if (q.getChatId() == savedQueue.getChatId() && q.getMessageId() == savedQueue.getMessageId()) {
-                        q.setId(savedQueue.getId());
-                        break;
-                    }
-                }
-                q.setChatId(reverenceChat.getChatId());
-                queueService.save(q);
-            }
-
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given list of queues!");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated queue!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
+        ReverenceChat reverenceChat;
+        try {
+            reverenceChat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
+        }
 
+        try {
+            queueService.deleteSimpleQueue(queueService.findSimpleById(id));
+            return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + id + " is not found");
+        }
+    }
 
 }

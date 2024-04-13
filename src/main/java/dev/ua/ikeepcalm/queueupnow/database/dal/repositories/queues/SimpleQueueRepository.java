@@ -14,5 +14,7 @@ public interface SimpleQueueRepository extends CrudRepository<SimpleQueue, UUID>
     Optional<SimpleQueue> findById(UUID id);
     List<SimpleQueue> findAllByChatId(long chatId);
 
+    void deleteById(UUID id);
+
 }
 

@@ -19,13 +19,10 @@ public class QueueParser {
         objectMapper = new ObjectMapper().registerModule(new JavaTimeModule().addSerializer(LocalTime.class, new LocalTimeSerializer()));
     }
 
-    public static List<SimpleQueue> parseQueueMessage(String json) throws JsonProcessingException {
-        ObjectReader objectReader = objectMapper.readerForListOf(QueueWrapper.class);
-        List<QueueWrapper> queueWrappers = objectReader.readValue(json);
-        List<SimpleQueue> queueList = new java.util.ArrayList<>();
-        for (QueueWrapper taskWrapper : queueWrappers) {
-            queueList.add(new SimpleQueue(taskWrapper));
-        } return queueList;
+    public static SimpleQueue parseQueueMessage(String json) throws JsonProcessingException {
+        ObjectReader objectReader = objectMapper.readerFor(QueueWrapper.class);
+        QueueWrapper queueWrapper = objectReader.readValue(json);
+        return new SimpleQueue(queueWrapper);
     }
 
     private static class LocalTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer {
