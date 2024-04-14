@@ -61,7 +61,7 @@ public class TasksController {
     }
 
     @PutMapping
-    public ResponseEntity<String> updateTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
+    public ResponseEntity<String> updateTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId, @RequestHeader("taskId") Long taskId){
         ReverenceChat reverenceChat;
         try {
             reverenceChat = chatService.findByChatId(chatId);
@@ -71,13 +71,15 @@ public class TasksController {
 
         try {
             DueTask task = TaskParser.parseTaskMessage(json);
-            if (taskService.existsByChatAndTaskName(reverenceChat, task.getTaskName()))
-                taskService.delete(task);
 
-            task.setChat(reverenceChat);
-            taskService.save(task);
+            DueTask existingTask = taskService.findTaskById(reverenceChat.getChatId(), taskId);
+            existingTask.setTaskName(task.getTaskName());
+            existingTask.setDueDate(task.getDueDate());
+            existingTask.setDueTime(task.getDueTime());
+            existingTask.setUrl(task.getUrl());
+            taskService.save(existingTask);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given task!");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated given task!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }

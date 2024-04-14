@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.queueupnow.database.dal.repositories.timetable;
+package dev.ua.ikeepcalm.queueupnow.database.dal.repositories.tasks;
 
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.DueTask;
@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface TaskRepository extends CrudRepository<DueTask, Long> {
     List<DueTask> findByChat(ReverenceChat chat);
-    Optional<DueTask> findByChat_IdAndId(Long chatId, Long taskId);
+    Optional<DueTask> findByChatAndId(ReverenceChat chat, Long id);
     boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);
 
 }

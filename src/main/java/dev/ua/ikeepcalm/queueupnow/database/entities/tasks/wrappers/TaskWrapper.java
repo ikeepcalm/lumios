@@ -16,6 +16,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TaskWrapper {
 
+    @JsonProperty
+    private Long id;
     @JsonProperty("dueDate")
     private LocalDate dueDate;
     @JsonProperty("dueTime")
@@ -28,6 +30,7 @@ public class TaskWrapper {
         List<TaskWrapper> taskWrappers = new LinkedList<>();
         for (DueTask task : tasks) {
             TaskWrapper taskWrapper = new TaskWrapper();
+            taskWrapper.setId(task.getId());
             taskWrapper.setDueDate(task.getDueDate());
             taskWrapper.setDueTime(task.getDueTime());
             taskWrapper.setTaskName(task.getTaskName());
@@ -38,6 +41,7 @@ public class TaskWrapper {
 
     public static TaskWrapper wrapTask(DueTask task){
         TaskWrapper taskWrapper = new TaskWrapper();
+        taskWrapper.setId(task.getId());
         taskWrapper.setDueDate(task.getDueDate());
         taskWrapper.setDueTime(task.getDueTime());
         taskWrapper.setTaskName(task.getTaskName());

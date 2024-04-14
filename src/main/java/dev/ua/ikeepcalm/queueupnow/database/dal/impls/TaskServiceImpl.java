@@ -1,9 +1,11 @@
 package dev.ua.ikeepcalm.queueupnow.database.dal.impls;
 
+import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.queueupnow.database.dal.interfaces.TaskService;
-import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.timetable.TaskRepository;
+import dev.ua.ikeepcalm.queueupnow.database.dal.repositories.tasks.TaskRepository;
 import dev.ua.ikeepcalm.queueupnow.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.queueupnow.database.entities.tasks.DueTask;
+import dev.ua.ikeepcalm.queueupnow.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
 import java.util.InputMismatchException;
@@ -15,9 +17,11 @@ public class TaskServiceImpl
 implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final ChatService chatService;
 
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, ChatService chatService) {
         this.taskRepository = taskRepository;
+        this.chatService = chatService;
     }
 
     @Override
@@ -42,7 +46,13 @@ implements TaskService {
 
     @Override
     public DueTask findTaskById(Long chatId, Long id) throws InputMismatchException{
-        Optional<DueTask> dueTask = taskRepository.findByChat_IdAndId(chatId, id);
+        ReverenceChat chat;
+        try {
+             chat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            throw new InputMismatchException("Couldn't find chat by id " + chatId);
+        }
+        Optional<DueTask> dueTask = taskRepository.findByChatAndId(chat, id);
         if (dueTask.isEmpty()){
             throw new InputMismatchException("Couldn't find DueTask by id " + id);
         } else {
