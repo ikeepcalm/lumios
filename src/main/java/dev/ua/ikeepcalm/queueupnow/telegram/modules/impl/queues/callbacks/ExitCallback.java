@@ -18,7 +18,6 @@ import java.util.UUID;
 public class ExitCallback extends CallbackParent {
 
     @Override
-    @Transactional
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-exit", "");
         String callbackQueryId = message.getId();

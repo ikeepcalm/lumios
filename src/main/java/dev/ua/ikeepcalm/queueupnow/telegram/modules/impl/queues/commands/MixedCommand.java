@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 public class MixedCommand extends CommandParent {
 
     @Override
-    @Transactional
     public void processUpdate(Message message) {
         MixedQueue mixedQueue;
         if (!message.getText().equals("/mixed") && !message.getText().equals("/mixed@queueupnow_bot")) {

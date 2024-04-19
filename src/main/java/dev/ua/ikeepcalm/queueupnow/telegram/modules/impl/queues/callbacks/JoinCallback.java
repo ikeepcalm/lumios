@@ -16,10 +16,9 @@ import java.util.UUID;
 public class JoinCallback extends CallbackParent {
 
     @Override
-    @Transactional
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-join", "");
-        String callbackQueryId = message.getId(); handleUpdate(message);
+        String callbackQueryId = message.getId();
         SimpleQueue simpleQueue;
         try {
             simpleQueue = queueService.findSimpleById(UUID.fromString(receivedCallback));

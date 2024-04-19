@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Component
 public class NotifyCallback extends CallbackParent {
+
     @Override
-    @Transactional
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-notify", "");
         String callbackQueryId = message.getId();

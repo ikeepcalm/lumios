@@ -9,6 +9,7 @@ import dev.ua.ikeepcalm.queueupnow.telegram.TelegramClient;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.queueupnow.telegram.wrappers.TextMessage;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,7 @@ public abstract class CallbackParent {
         this.logger = LoggerFactory.getLogger(CallbackParent.class);
     }
 
+    @Transactional
     public void handleUpdate(CallbackQuery message) {
         this.message = (Message) message.getMessage();
         try {

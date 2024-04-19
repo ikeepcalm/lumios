@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 public class QueueCommand extends CommandParent {
 
     @Override
-    @Transactional
     public void processUpdate(Message message) {
         SimpleQueue simpleQueue;
         if (!message.getText().equals("/queue") && !message.getText().equals("/queue@queueupnow_bot")) {

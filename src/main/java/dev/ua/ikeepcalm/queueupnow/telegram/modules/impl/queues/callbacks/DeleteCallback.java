@@ -16,7 +16,6 @@ import java.util.UUID;
 public class DeleteCallback extends CallbackParent {
 
     @Override
-    @Transactional
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-simple-delete", "");
         for (ChatMember chatMember : telegramClient.getChatAdministrators(String.valueOf(message.getMessage().getChatId()))) {
