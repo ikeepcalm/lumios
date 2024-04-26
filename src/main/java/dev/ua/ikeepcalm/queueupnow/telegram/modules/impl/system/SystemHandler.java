@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.system;
 
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.HandlerParent;
+import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.system.commands.AuthCommand;
 import dev.ua.ikeepcalm.queueupnow.telegram.modules.impl.system.commands.HelpCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -10,9 +11,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class SystemHandler implements HandlerParent {
 
     private final HelpCommand helpCommand;
+    private final AuthCommand authCommand;
 
-    public SystemHandler(HelpCommand helpCommand) {
+    public SystemHandler(HelpCommand helpCommand, AuthCommand authCommand) {
         this.helpCommand = helpCommand;
+        this.authCommand = authCommand;
     }
 
     public void manageCommands(Update update) {
@@ -21,8 +24,9 @@ public class SystemHandler implements HandlerParent {
         commandText = commandText.replace("@queueupnow_bot", "");
         if (commandText.equals("/help")) {
             helpCommand.handleUpdate(message);
+        } else if (commandText.equals("/auth")) {
+            authCommand.handleUpdate(message);
         }
-
     }
 
     @Override
