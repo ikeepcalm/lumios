@@ -40,4 +40,4 @@ rest.api.header = #NAME OF THE API KEY HEADER
 ```
 
 # Official Release
-An official online contribution can be found <a href="https://t.me/queueupnow_bot"> here</a>. <br> Feel free to join and try it out yourself, it's up!
+An official online contribution can be found <a href="https://t.me/lumios_bot"> here</a>. <br> Feel free to join and try it out yourself, it's up!
