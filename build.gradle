@@ -25,8 +25,8 @@ dependencies {
  }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.7.2-SNAPSHOT'
-description = 'queue-up-now'
+version = '1.7.3-SNAPSHOT'
+description = 'lumios.dev backend application'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -35,8 +35,8 @@ tasks.withType(JavaCompile).configureEach {
 graalvmNative {
     binaries {
         main {
-            imageName = "queue-up-now"
-            mainClass = "dev.ua.ikeepcalm.queueupnow.Application"
+            imageName = "lumios"
+            mainClass = "dev.ua.ikeepcalm.lumios.Application"
         }
     }
     binaries{

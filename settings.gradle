@@ -1,6 +1,6 @@
 import org.gradle.api.initialization.resolve.RepositoriesMode
 
-rootProject.name = 'queue-up-now'
+rootProject.name = 'lumios'
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
