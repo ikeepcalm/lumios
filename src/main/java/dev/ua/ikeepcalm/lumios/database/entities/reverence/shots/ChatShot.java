@@ -11,18 +11,17 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "reverence_shots")
+@Table(name = "records_chat_shot")
 public class ChatShot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
     @OneToMany
-    private List<UserShot> users;
+    private List<UserShot> userShots;
 
-    @ManyToOne
+    @OneToOne
     private ReverenceChat reverenceChat;
 
     @Column

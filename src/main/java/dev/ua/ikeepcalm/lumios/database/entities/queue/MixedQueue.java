@@ -1,5 +1,7 @@
 package dev.ua.ikeepcalm.lumios.database.entities.queue;
 
+import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.QueueWrapper;
+import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.UserWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +43,17 @@ public class MixedQueue {
     public MixedQueue(String alias) {
         this.alias = alias;
         this.id = UUID.randomUUID();
+    }
+
+    public MixedQueue(QueueWrapper queueWrapper) {
+        this.alias = queueWrapper.getAlias();
+        this.id = queueWrapper.getId();
+        this.messageId = queueWrapper.getMessageId();
+        this.chatId = queueWrapper.getChatId();
+        this.shuffled = queueWrapper.isMixed();
+        for (UserWrapper userWrapper : queueWrapper.getContents()) {
+            this.contents.add(new MixedUser(userWrapper));
+        }
     }
 
     public void shuffleContents() {

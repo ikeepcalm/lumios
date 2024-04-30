@@ -2,11 +2,12 @@ package dev.ua.ikeepcalm.lumios.database.dal.impls;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.history.MessageRecordRepository;
-import dev.ua.ikeepcalm.lumios.database.entities.history.MessageRecord;
+import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -34,8 +35,8 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
-    public List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDate startDate, LocalDate endDate) {
-        return this.messageRecordRepository.findAllByChatIdAndDateBetween(chatId, startDate, endDate);
+    public List<MessageRecord> findAllByChatAndDateBetween(ReverenceChat chat, LocalDateTime startDate, LocalDateTime endDate) {
+        return this.messageRecordRepository.findAllByChatIdAndDateBetween(chat.getChatId(), startDate, endDate);
     }
 
 }

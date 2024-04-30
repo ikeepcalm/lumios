@@ -14,10 +14,17 @@ public enum ReverenceReaction {
             return "👎";
         }
     },
-    HEART {
+
+    LOVE {
         @Override
         public String toString() {
             return "❤";
+        }
+    },
+    HEART {
+        @Override
+        public String toString() {
+            return "❤‍🔥";
         }
     },
     FIRE {
@@ -111,6 +118,12 @@ public enum ReverenceReaction {
             return "😭";
         }
     },
+    UNICORN {
+        @Override
+        public String toString() {
+            return "🦄";
+        }
+    },
     WOW {
         @Override
         public String toString() {
@@ -141,6 +154,9 @@ public enum ReverenceReaction {
             return "🐳";
         }
     },
+
+    PREMIUM,
+
     DEFAULT;
 
     public static ReverenceReaction determineReaction(String reaction) {
@@ -176,6 +192,7 @@ public enum ReverenceReaction {
         return switch (reaction) {
             case LIKE -> 5;
             case DISLIKE -> -5;
+            case LOVE -> 10;
             case HEART -> 10;
             case FIRE -> 10;
             case DEVIL -> 5;
@@ -192,11 +209,13 @@ public enum ReverenceReaction {
             case OMG -> 1;
             case LAUGH -> 5;
             case CRY -> 2;
+            case UNICORN -> 5;
             case WOW -> 5;
             case SAD -> 1;
             case HUNDRED -> 5;
             case FUCK -> -10;
             case WHALE -> 5;
+            case PREMIUM -> 10;
             case DEFAULT -> 0;
         };
     }

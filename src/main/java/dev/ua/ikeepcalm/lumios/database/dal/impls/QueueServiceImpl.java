@@ -44,6 +44,11 @@ public class QueueServiceImpl implements QueueService {
     }
 
     @Override
+    public List<MixedQueue> findAllMixedByChatId(long chatId) {
+        return mixedQueueRepository.findAllByChatId(chatId);
+    }
+
+    @Override
     public void save(MixedQueue mixedQueue) {
         for (MixedUser mixedUser : mixedQueue.getContents()) {
             mixedUser.setMixedQueue(mixedQueue);

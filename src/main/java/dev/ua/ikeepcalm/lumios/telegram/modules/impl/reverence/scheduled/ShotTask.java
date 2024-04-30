@@ -43,7 +43,7 @@ public class ShotTask {
                 userShot.setReverence(user.getReverence());
                 userShots.add(userShot);
             }
-            chatShot.setUsers(userShots);
+            chatShot.setUserShots(userShots);
             this.shotService.save(chatShot);
         }
     }

@@ -1,11 +1,11 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.history.updates;
 
-import dev.ua.ikeepcalm.lumios.database.entities.history.MessageRecord;
+import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.telegram.modules.parents.UpdateParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Component
 public class TextUpdate extends UpdateParent {
@@ -20,7 +20,7 @@ public class TextUpdate extends UpdateParent {
         messageRecord.setChatId(update.getMessage().getChatId());
         messageRecord.setMessageId(Long.valueOf(update.getMessage().getMessageId()));
         messageRecord.setUser(reverenceUser);
-        messageRecord.setDate(LocalDate.now());
+        messageRecord.setDate(LocalDateTime.now());
         recordService.save(messageRecord);
     }
 

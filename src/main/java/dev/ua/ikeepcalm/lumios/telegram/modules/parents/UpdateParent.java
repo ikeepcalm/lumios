@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.reactions.MessageReactionUpdated;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionType;
+import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeCustomEmoji;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
 
 import java.util.List;
@@ -61,14 +62,14 @@ public abstract class UpdateParent {
                         Привіт!
 
                         Дякую за те, що додали мене сюди! Коротенький список того, що я вмію:
-                                            
+                        
                         - створювати черги;
                         - записувати завдання;
                         - виводити розклад по команді;
                         - нагадувати про пару за декілька хвилин до початку
                         - відслідковувати реакції на повідомлення
                         - і ще багато чого!
-                                            
+                        
                         Щоб дізнатися більше, натисніть /help@queueupnow_bot!
                         """, update);
             }
@@ -119,9 +120,9 @@ public abstract class UpdateParent {
                     userService.save(newUser);
                     reverenceUser = newUser;
                     sendMessage("@" + message.getFrom().getUserName() + """
-                                                
+                            
                             Давай знайомитись! Мене звуть Кукує Бот, а тебе?
-                                                
+                            
                             ...зроблю вигляд, що запам'ятав. Ще побачимося!
                             """, update);
                 }
@@ -146,6 +147,8 @@ public abstract class UpdateParent {
             if (!oldList.contains(iteReaction)) {
                 if (iteReaction instanceof ReactionTypeEmoji) {
                     newReaction = ReverenceReaction.determineReaction(((ReactionTypeEmoji) iteReaction).getEmoji());
+                } else if (iteReaction instanceof ReactionTypeCustomEmoji) {
+                    newReaction = ReverenceReaction.PREMIUM;
                 }
             }
         }

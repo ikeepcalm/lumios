@@ -2,6 +2,7 @@ package dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,14 @@ public class UserWrapper {
     private Long accountId;
 
     public static UserWrapper wrapUsers(SimpleUser user) {
+        UserWrapper userWrapper = new UserWrapper();
+        userWrapper.setUsername(user.getUsername());
+        userWrapper.setName(user.getName());
+        userWrapper.setAccountId(user.getAccountId());
+        return userWrapper;
+    }
+
+    public static UserWrapper wrapUsers(MixedUser user) {
         UserWrapper userWrapper = new UserWrapper();
         userWrapper.setUsername(user.getUsername());
         userWrapper.setName(user.getName());

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.QueueWrapper;
 
@@ -18,10 +19,9 @@ public class QueueParser {
         objectMapper = new ObjectMapper().registerModule(new JavaTimeModule().addSerializer(LocalTime.class, new LocalTimeSerializer()));
     }
 
-    public static SimpleQueue parseQueueMessage(String json) throws JsonProcessingException {
+    public static QueueWrapper parseQueueMessage(String json) throws JsonProcessingException {
         ObjectReader objectReader = objectMapper.readerFor(QueueWrapper.class);
-        QueueWrapper queueWrapper = objectReader.readValue(json);
-        return new SimpleQueue(queueWrapper);
+        return objectReader.readValue(json);
     }
 
     private static class LocalTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer {

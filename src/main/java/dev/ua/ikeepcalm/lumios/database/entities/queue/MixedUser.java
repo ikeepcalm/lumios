@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.entities.queue;
 
+import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.UserWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,15 @@ public class MixedUser {
     @ManyToOne
     @JoinColumn(name = "mixedQueue")
     private MixedQueue mixedQueue;
+
+    public MixedUser() {
+    }
+
+    public MixedUser(UserWrapper userWrapper) {
+        this.username = userWrapper.getUsername();
+        this.name = userWrapper.getName();
+        this.accountId = userWrapper.getAccountId();
+    }
 
     public boolean equals(Object o) {
         if (this == o) {

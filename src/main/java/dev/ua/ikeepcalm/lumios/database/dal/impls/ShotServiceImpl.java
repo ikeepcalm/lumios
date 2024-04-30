@@ -22,7 +22,7 @@ public class ShotServiceImpl implements ShotService {
 
     @Override
     public void save(ChatShot chatShot) {
-        this.userShotRepository.saveAll(chatShot.getUsers());
+        this.userShotRepository.saveAll(chatShot.getUserShots());
         this.chatShotRepository.save(chatShot);
     }
 

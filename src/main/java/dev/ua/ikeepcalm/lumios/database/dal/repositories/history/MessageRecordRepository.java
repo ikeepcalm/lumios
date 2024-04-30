@@ -1,10 +1,10 @@
 package dev.ua.ikeepcalm.lumios.database.dal.repositories.history;
 
-import dev.ua.ikeepcalm.lumios.database.entities.history.MessageRecord;
+import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface MessageRecordRepository extends CrudRepository<MessageRecord, UUID> {
     Optional<MessageRecord> findByMessageIdAndChatId(Long id, Long chatId);
 
-    List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDate startDate, LocalDate endDate);
+    List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDateTime date, LocalDateTime date2);
 
 }
 
