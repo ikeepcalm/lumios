@@ -25,6 +25,7 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -45,8 +46,10 @@ public class TelegramClient extends OkHttpTelegramClient {
         }
     }
 
-    public List<ChatMember> getChatAdministrators(String chatId) {
-        return (List<ChatMember>) executeCommand(new GetChatAdministrators(chatId));
+    public List<ChatMember> getChatAdministrators(String chatId) throws TelegramApiException {
+        ArrayList<ChatMember> chats;
+            chats = execute(new GetChatAdministrators(chatId));
+        return chats;
     }
 
     public void sendAnswerCallbackQuery(String text, String callbackQueryId) {

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class FeedCommand extends CommandParent {
+public class EditorCommand extends CommandParent {
 
     @Override
     public void processUpdate(Message message) {
@@ -24,7 +24,7 @@ public class FeedCommand extends CommandParent {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
         InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Онлайн портал");
-        notify.setUrl("https://timetable.uaproject.xyz/timetable?chatId=" + message.getChatId());
+        notify.setUrl("www.lumios.dev" + message.getChatId());
         firstRow.add(notify);
         keyboard.add(firstRow);
         textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));

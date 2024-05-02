@@ -28,6 +28,6 @@ public class ShotServiceImpl implements ShotService {
 
     @Override
     public ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchElementException {
-        return this.chatShotRepository.findByReverenceChatIdAndDate(chatId, date).orElseThrow();
+        return this.chatShotRepository.findByReverenceChat_ChatIdAndDate(chatId, date).orElseThrow();
     }
 }

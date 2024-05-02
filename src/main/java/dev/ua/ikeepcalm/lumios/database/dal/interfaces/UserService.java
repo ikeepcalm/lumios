@@ -13,6 +13,8 @@ public interface UserService {
 
     void increaseAll();
 
+    List<ReverenceUser> findById(long id);
+
     ReverenceUser findByUsername(String var1, ReverenceChat var2);
 
     List<ReverenceUser> findAll(ReverenceChat var1);

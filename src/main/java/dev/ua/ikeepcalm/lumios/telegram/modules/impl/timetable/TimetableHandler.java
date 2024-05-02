@@ -10,20 +10,20 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 @Component
 public class TimetableHandler implements HandlerParent {
 
-    private final FeedCommand feedCommand;
+    private final EditorCommand editorCommand;
     private final TodayCommand todayCommand;
     private final WeekCommand weekCommand;
     private final NowCommand nowCommand;
     private final NextCommand nextCommand;
     private final TomorrowCommand tomorrowCommand;
 
-    public TimetableHandler(FeedCommand feedCommand,
+    public TimetableHandler(EditorCommand editorCommand,
                             TodayCommand todayCommand,
                             WeekCommand weekCommand,
                             NowCommand nowCommand,
                             NextCommand nextCommand,
                             TomorrowCommand tomorrowCommand) {
-        this.feedCommand = feedCommand;
+        this.editorCommand = editorCommand;
         this.todayCommand = todayCommand;
         this.weekCommand = weekCommand;
         this.nowCommand = nowCommand;
@@ -37,7 +37,7 @@ public class TimetableHandler implements HandlerParent {
         String commandText = message.getText();
         commandText = commandText.replace("@queueupnow_bot", "");
         switch (commandText) {
-            case "/feed" -> feedCommand.handleUpdate(message);
+            case "/editor" -> editorCommand.handleUpdate(message);
             case "/today" -> todayCommand.handleUpdate(message);
             case "/week" -> weekCommand.handleUpdate(message);
             case "/now" -> nowCommand.handleUpdate(message);

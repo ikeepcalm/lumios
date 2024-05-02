@@ -1,7 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.system;
 
 import dev.ua.ikeepcalm.lumios.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.lumios.telegram.modules.impl.system.commands.AuthCommand;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.system.commands.HelpCommand;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.system.commands.InfoCommand;
 import org.springframework.stereotype.Component;
@@ -12,12 +11,10 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 public class SystemHandler implements HandlerParent {
 
     private final HelpCommand helpCommand;
-    private final AuthCommand authCommand;
     private final InfoCommand infoCommand;
 
-    public SystemHandler(HelpCommand helpCommand, AuthCommand authCommand, InfoCommand infoCommand) {
+    public SystemHandler(HelpCommand helpCommand, InfoCommand infoCommand) {
         this.helpCommand = helpCommand;
-        this.authCommand = authCommand;
         this.infoCommand = infoCommand;
     }
 
@@ -27,7 +24,6 @@ public class SystemHandler implements HandlerParent {
         commandText = commandText.replace("@queueupnow_bot", "");
         switch (commandText) {
             case "/help" -> helpCommand.handleUpdate(message);
-            case "/auth" -> authCommand.handleUpdate(message);
             case "/info" -> infoCommand.handleUpdate(message);
         }
     }

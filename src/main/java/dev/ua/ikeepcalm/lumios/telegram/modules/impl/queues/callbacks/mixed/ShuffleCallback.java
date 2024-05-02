@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.UUID;
 
@@ -60,6 +61,6 @@ public class ShuffleCallback extends CallbackParent {
             }
         } catch (NoSuchEntityException e) {
             telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
-        }
+        } catch (TelegramApiException ignored) {}
     }
 }

@@ -83,10 +83,9 @@ public class RecordsController {
     }
 
     @GetMapping("/rating")
-    public ResponseEntity<ChatShot> getShot(
+    public ResponseEntity<List<UserShot>> getShot(
             @RequestParam("chatId") Long chatId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
-
         ChatShot chatShot;
         try {
             chatShot = shotService.findByChatIdAndDate(chatId, startDate);
@@ -94,7 +93,8 @@ public class RecordsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(chatShot);
+        System.out.println(chatShot.getUserShots().size());
+        return ResponseEntity.status(HttpStatus.OK).body(chatShot.getUserShots());
     }
 
 }

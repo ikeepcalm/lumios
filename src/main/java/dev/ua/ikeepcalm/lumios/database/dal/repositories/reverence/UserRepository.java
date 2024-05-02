@@ -7,13 +7,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 @Repository
 public interface UserRepository extends CrudRepository<ReverenceUser, Long> {
-    Optional<ReverenceUser> findReverenceUserByUserIdAndChannel(long var1, ReverenceChat var3);
-
-    ReverenceUser findReverenceUserByUsernameAndChannel(String var1, ReverenceChat var2);
-
-    List<ReverenceUser> findAllByChannel(ReverenceChat var1);
+    Optional<ReverenceUser> findReverenceUserByUserIdAndChannel(long userId, ReverenceChat channel);
+    List<ReverenceUser> findByUserId(long userId);
+    ReverenceUser findReverenceUserByUsernameAndChannel(String username, ReverenceChat channel);
+    List<ReverenceUser> findAllByChannel(ReverenceChat channel);
 }
 
