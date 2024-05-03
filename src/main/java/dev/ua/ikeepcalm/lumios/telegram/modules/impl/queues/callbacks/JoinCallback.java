@@ -28,7 +28,7 @@ public class JoinCallback extends CallbackParent {
             if (!simpleQueue.getContents().contains(simpleUser)) {
                 simpleQueue.getContents().add(simpleUser);
                 simpleQueue.setMessageId(telegramClient.sendEditMessage
-                                (QueueUpdateUtil.updateMessage((Message) message.getMessage(), simpleQueue))
+                                (QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue))
                         .getMessageId());
                 queueService.save(simpleQueue);
                 this.telegramClient.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", callbackQueryId);

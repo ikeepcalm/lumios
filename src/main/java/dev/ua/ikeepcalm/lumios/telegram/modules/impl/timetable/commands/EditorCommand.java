@@ -24,7 +24,7 @@ public class EditorCommand extends CommandParent {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
         InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Онлайн портал");
-        notify.setUrl("www.lumios.dev" + message.getChatId());
+        notify.setUrl("https://lumios.dev");
         firstRow.add(notify);
         keyboard.add(firstRow);
         textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));

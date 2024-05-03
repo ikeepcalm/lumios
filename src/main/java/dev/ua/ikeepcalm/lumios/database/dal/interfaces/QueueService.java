@@ -23,7 +23,7 @@ public interface QueueService {
     @Transactional
     void save(SimpleQueue simpleQueue);
 
-    void deleteMixedQueue(MixedQueue simpleQueue);
+    void deleteMixedQueue(MixedQueue mixedQueue);
 
     void deleteSimpleQueue(SimpleQueue simpleQueue);
 

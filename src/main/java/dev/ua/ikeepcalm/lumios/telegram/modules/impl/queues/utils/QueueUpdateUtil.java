@@ -9,9 +9,9 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 public class QueueUpdateUtil {
 
-    public static EditMessage updateMessage(Message message, SimpleQueue simpleQueue) {
+    public static EditMessage updateMessage(long chatId, SimpleQueue simpleQueue) {
         EditMessage editMessage = new EditMessage();
-        editMessage.setChatId(message.getChatId());
+        editMessage.setChatId(chatId);
         editMessage.setMessageId(simpleQueue.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(simpleQueue.getAlias()).append(" <<<\n\n");
@@ -25,9 +25,9 @@ public class QueueUpdateUtil {
         return editMessage;
     }
 
-    public static EditMessage updateMessage(Message message, MixedQueue simpleQueue) {
+    public static EditMessage updateMessage(long chatId, MixedQueue simpleQueue) {
         EditMessage editMessage = new EditMessage();
-        editMessage.setChatId(message.getChatId());
+        editMessage.setChatId(chatId);
         editMessage.setMessageId(simpleQueue.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(simpleQueue.getAlias()).append(" <<<\n\n");

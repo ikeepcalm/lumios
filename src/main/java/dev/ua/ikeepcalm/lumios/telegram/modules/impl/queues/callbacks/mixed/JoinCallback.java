@@ -20,7 +20,6 @@ public class JoinCallback extends CallbackParent {
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-mixed-join", "");
         String callbackQueryId = message.getId();
-        handleUpdate(message);
         MixedQueue mixedQueue;
         try {
             mixedQueue = queueService.findMixedById(UUID.fromString(receivedCallback));
@@ -32,7 +31,7 @@ public class JoinCallback extends CallbackParent {
 
                 mixedQueue.getContents().add(mixedUser);
                 mixedQueue.setMessageId(telegramClient.sendEditMessage
-                                (QueueUpdateUtil.updateMessage((Message) message.getMessage(), mixedQueue))
+                                (QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), mixedQueue))
                         .getMessageId());
                 queueService.save(mixedQueue);
                 this.telegramClient.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", callbackQueryId);

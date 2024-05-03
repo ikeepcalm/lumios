@@ -41,7 +41,7 @@ public class ExitCallback extends CallbackParent {
             if (lastUserInQueue.equals(simpleUser)) {
                 if (simpleQueue.flushUser(simpleUser)) {
                     queueContents.remove(simpleUser);
-                    simpleQueue.setMessageId(this.telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(super.message, simpleQueue)).getMessageId());
+                    simpleQueue.setMessageId(this.telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(super.message.getChatId(), simpleQueue)).getMessageId());
                     queueService.save(simpleQueue);
 
                     this.telegramClient.sendAnswerCallbackQuery("Йоу! Вітаю із виходои з цієї черги. Тепер можна і розслабитися...", callbackQueryId);
@@ -56,7 +56,7 @@ public class ExitCallback extends CallbackParent {
                 }
             } else if (queueContents.contains(simpleUser)) {
                 queueContents.remove(simpleUser);
-                simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(super.message, simpleQueue)).getMessageId());
+                simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(super.message.getChatId(), simpleQueue)).getMessageId());
                 queueService.save(simpleQueue);
                 telegramClient.sendAnswerCallbackQuery("Хочеш вийти? Ну добре, виходь, ніхто ж тебе тут насильно не тримає...", callbackQueryId);
             }

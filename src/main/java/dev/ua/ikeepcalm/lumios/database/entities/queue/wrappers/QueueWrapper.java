@@ -96,6 +96,19 @@ public class QueueWrapper {
         return simpleUsers;
     }
 
+
+    public List<MixedUser> unwrapMixedContents() {
+        List<MixedUser> mixedUsers = new ArrayList<>();
+        for (UserWrapper userWrapper : this.contents) {
+            MixedUser mixedUser = new MixedUser();
+            mixedUser.setUsername(userWrapper.getUsername());
+            mixedUser.setName(userWrapper.getName());
+            mixedUser.setAccountId(userWrapper.getAccountId());
+            mixedUsers.add(mixedUser);
+        }
+        return mixedUsers;
+    }
+
     public QueueWrapper() {
         this.contents = new ArrayList<>();
     }

@@ -5,13 +5,20 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.QueueService;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
+import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.QueueWrapper;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
+import dev.ua.ikeepcalm.lumios.telegram.modules.impl.queues.utils.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.queues.utils.QueueParser;
+import dev.ua.ikeepcalm.lumios.telegram.modules.impl.queues.utils.QueueUpdateUtil;
+import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
+import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.util.List;
 import java.util.Map;
@@ -23,10 +30,12 @@ public class QueuesController {
 
     private final QueueService queueService;
     private final ChatService chatService;
+    private final TelegramClient telegramClient;
 
-    public QueuesController(QueueService taskService, ChatService chatService) {
+    public QueuesController(QueueService taskService, ChatService chatService, TelegramClient telegramClient) {
         this.queueService = taskService;
         this.chatService = chatService;
+        this.telegramClient = telegramClient;
     }
 
     @GetMapping
@@ -65,6 +74,49 @@ public class QueuesController {
         }
     }
 
+    @GetMapping("/shuffle/{id}")
+    public ResponseEntity<QueueWrapper> shuffleQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
+        ReverenceChat reverenceChat;
+        try {
+            reverenceChat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
+        MixedQueue mixedQueue;
+        try {
+            mixedQueue = queueService.findMixedById(id);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+        mixedQueue.shuffleContents();
+        SimpleQueue simpleQueue = new SimpleQueue();
+        simpleQueue.setId(mixedQueue.getId());
+        simpleQueue.setMessageId(mixedQueue.getMessageId());
+        simpleQueue.setAlias(mixedQueue.getAlias());
+        simpleQueue.setChatId(mixedQueue.getChatId());
+        for (int i = 0; i < mixedQueue.getContents().size(); i++) {
+            SimpleUser simpleUser = new SimpleUser();
+            simpleUser.setName(mixedQueue.getContents().get(i).getName());
+            simpleUser.setAccountId(mixedQueue.getContents().get(i).getAccountId());
+            simpleUser.setUsername(mixedQueue.getContents().get(i).getUsername());
+            simpleQueue.getContents().add(simpleUser);
+        }
+
+        queueService.save(simpleQueue);
+        queueService.deleteMixedQueue(mixedQueue);
+
+        simpleQueue.setMessageId(telegramClient.sendEditMessage
+                        (QueueUpdateUtil.updateMessage(chatId, simpleQueue))
+                .getMessageId());
+
+        queueService.save(simpleQueue);
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(chatId);
+        textMessage.setText("Successfully shuffled queue " + simpleQueue.getAlias() + "!");
+        telegramClient.sendTextMessage(textMessage);
+        return ResponseEntity.status(HttpStatus.OK).body(QueueWrapper.wrapQueue(simpleQueue));
+    }
 
     @PostMapping
     public ResponseEntity<String> createQueue(@RequestHeader("chatId") Long chatId, @RequestBody Map<String, String> body) {
@@ -77,15 +129,29 @@ public class QueuesController {
         String name = body.get("name");
         if (Boolean.parseBoolean(body.get("mixed"))) {
             MixedQueue queue = new MixedQueue(name);
+            TextMessage queueMessage = new TextMessage();
+            queueMessage.setChatId(chatId);
+            queueMessage.setText(">>> " + name + " <<<\n\n");
+            queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queue));
+            Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
+            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+            queue.setMessageId(sendTextMessage.getMessageId());
             queue.setChatId(reverenceChat.getChatId());
             queueService.save(queue);
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
         } else {
             SimpleQueue queue = new SimpleQueue(name);
+            TextMessage queueMessage = new TextMessage();
+            queueMessage.setChatId(chatId);
+            queueMessage.setText(">>> " + name + " <<<\n\n");
+            queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queue));
+            Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
+            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+            queue.setMessageId(sendTextMessage.getMessageId());
             queue.setChatId(reverenceChat.getChatId());
             queueService.save(queue);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
     }
 
     @PutMapping
@@ -100,18 +166,32 @@ public class QueuesController {
         try {
             QueueWrapper queue = QueueParser.parseQueueMessage(json);
             if (queue.isMixed()) {
-                MixedQueue mixedQueue = new MixedQueue(queue);
-                mixedQueue.setChatId(reverenceChat.getChatId());
-                queueService.deleteMixedQueue(mixedQueue);
+                MixedQueue mixedQueue;
+                try {
+                    mixedQueue = queueService.findMixedById(queue.getId());
+                } catch (NoSuchEntityException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + queue.getId() + " is not found");
+                }
+                mixedQueue.setContents(queue.unwrapMixedContents());
+                mixedQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(reverenceChat.getChatId(), mixedQueue)).getMessageId());
                 queueService.save(mixedQueue);
             } else {
-                SimpleQueue simpleQueue = new SimpleQueue(queue);
-                simpleQueue.setChatId(reverenceChat.getChatId());
-                queueService.deleteSimpleQueue(simpleQueue);
-                queue.setChatId(reverenceChat.getChatId());
+                SimpleQueue simpleQueue;
+                try {
+                    simpleQueue = queueService.findSimpleById(queue.getId());
+                } catch (NoSuchEntityException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + queue.getId() + " is not found");
+                }
+                simpleQueue.setContents(queue.unwrapContents());
+                simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(reverenceChat.getChatId(), simpleQueue)).getMessageId());
                 queueService.save(simpleQueue);
             }
 
+            TextMessage textMessage = new TextMessage();
+            textMessage.setChatId(reverenceChat.getChatId());
+            textMessage.setMessageId(queue.getMessageId());
+            textMessage.setText("Ця черга (" + queue.getAlias() + ") щойно була оновлена!");
+            telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated queue!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
@@ -128,7 +208,13 @@ public class QueuesController {
         }
 
         try {
-            queueService.deleteSimpleQueue(queueService.findSimpleById(id));
+            SimpleQueue simpleQueue = queueService.findSimpleById(id);
+            queueService.deleteSimpleQueue(simpleQueue);
+            telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), chatId));
+            TextMessage textMessage = new TextMessage();
+            textMessage.setChatId(chatId);
+            textMessage.setText("Successfully deleted queue " + simpleQueue.getAlias() + "!");
+            telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + id + " is not found");
@@ -145,11 +231,16 @@ public class QueuesController {
         }
 
         try {
-            queueService.deleteMixedQueue(queueService.findMixedById(id));
+            MixedQueue mixedQueue = queueService.findMixedById(id);
+            queueService.deleteMixedQueue(mixedQueue);
+            telegramClient.sendRemoveMessage(new RemoveMessage(mixedQueue.getMessageId(), chatId));
+            TextMessage textMessage = new TextMessage();
+            textMessage.setChatId(chatId);
+            textMessage.setText("Черга (" + mixedQueue.getAlias() + ") щойно була видалена!");
+            telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + id + " is not found");
         }
     }
-
 }

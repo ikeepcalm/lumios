@@ -48,7 +48,7 @@ public class ShuffleCallback extends CallbackParent {
                         queueService.deleteMixedQueue(mixedQueue);
 
                         simpleQueue.setMessageId(telegramClient.sendEditMessage
-                                        (QueueUpdateUtil.updateMessage((Message) message.getMessage(), simpleQueue))
+                                        (QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue))
                                 .getMessageId());
 
                         queueService.save(simpleQueue);
