@@ -61,5 +61,16 @@ public class MixedQueue {
         this.shuffled = true;
     }
 
+    @Override
+    public String toString() {
+        return "MixedQueue{" +
+               "id=" + id +
+               ", alias='" + alias + '\'' +
+               ", messageId=" + messageId +
+               ", chatId=" + chatId +
+               ", shuffled=" + shuffled +
+               ", contents=" + contents +
+               '}';
+    }
 }
 

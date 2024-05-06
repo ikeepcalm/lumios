@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.lumios.web;
+package dev.ua.ikeepcalm.lumios.web.endpoints;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;

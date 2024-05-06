@@ -56,6 +56,7 @@ public abstract class UpdateParent {
             } catch (NoSuchEntityException e) {
                 ReverenceChat newChat = new ReverenceChat();
                 newChat.setChatId(message.getChat().getId());
+                newChat.setName(message.getChat().getTitle());
                 this.chatService.save(newChat);
                 this.reverenceChat = newChat;
                 sendMessage("""
@@ -70,7 +71,7 @@ public abstract class UpdateParent {
                         - відслідковувати реакції на повідомлення
                         - і ще багато чого!
                         
-                        Щоб дізнатися більше, натисніть /help@queueupnow_bot!
+                        Щоб дізнатися більше, натисніть /help@lumios_bot!
                         """, update);
             }
 
@@ -121,7 +122,7 @@ public abstract class UpdateParent {
                     reverenceUser = newUser;
                     sendMessage("@" + message.getFrom().getUserName() + """
                             
-                            Давай знайомитись! Мене звуть Кукує Бот, а тебе?
+                            Давай знайомитись! Мене звуть Люміос, а тебе?
                             
                             ...зроблю вигляд, що запам'ятав. Ще побачимося!
                             """, update);

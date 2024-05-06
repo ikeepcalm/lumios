@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
@@ -20,6 +22,8 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -50,6 +54,24 @@ public class TelegramClient extends OkHttpTelegramClient {
         ArrayList<ChatMember> chats;
             chats = execute(new GetChatAdministrators(chatId));
         return chats;
+    }
+
+    public Chat getChat(String chatId) throws TelegramApiException{
+        try {
+            return execute(new GetChat(chatId));
+        } catch (TelegramApiException e) {
+            LOGGER.error("Failed to get chat", e);
+            throw new TelegramApiException(e);
+        }
+    }
+
+    public File getFile(String fileId) {
+        try {
+            return execute(new GetFile(fileId));
+        } catch (TelegramApiException e) {
+            LOGGER.error("Failed to get file", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void sendAnswerCallbackQuery(String text, String callbackQueryId) {

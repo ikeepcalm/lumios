@@ -57,9 +57,11 @@ public abstract class CallbackParent {
         this.message = (Message) message.getMessage();
         try {
             this.reverenceChat = chatService.findByChatId(message.getMessage().getChatId());
+            this.reverenceChat.setName(message.getMessage().getChat().getTitle());
         } catch (NoSuchEntityException e) {
             ReverenceChat newChat = new ReverenceChat();
             newChat.setChatId(message.getMessage().getChatId());
+            newChat.setName(message.getMessage().getChat().getTitle());
             this.chatService.save(newChat);
             this.reverenceChat = newChat;
             return;

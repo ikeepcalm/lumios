@@ -56,12 +56,13 @@ public abstract class CommandParent {
     @Transactional
     public void handleUpdate(Message message) {
         this.message = message;
-
         try {
             this.reverenceChat = chatService.findByChatId(message.getChatId());
+            this.reverenceChat.setName(message.getChat().getTitle());
         } catch (NoSuchEntityException e) {
             ReverenceChat newChat = new ReverenceChat();
             newChat.setChatId(message.getChatId());
+            newChat.setName(message.getChat().getTitle());
             this.chatService.save(newChat);
             this.reverenceChat = newChat;
             return;

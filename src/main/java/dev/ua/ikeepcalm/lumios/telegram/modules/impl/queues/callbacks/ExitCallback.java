@@ -36,7 +36,7 @@ public class ExitCallback extends CallbackParent {
                 return;
             }
 
-            SimpleUser lastUserInQueue = queueContents.get(queueContents.size() - 1);
+            SimpleUser lastUserInQueue = queueContents.getFirst();
 
             if (lastUserInQueue.equals(simpleUser)) {
                 if (simpleQueue.flushUser(simpleUser)) {

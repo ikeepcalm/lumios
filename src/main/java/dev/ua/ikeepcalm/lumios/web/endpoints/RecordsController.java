@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.lumios.web;
+package dev.ua.ikeepcalm.lumios.web.endpoints;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;

@@ -42,7 +42,7 @@ public class NowCommand extends CommandParent {
             }
 
             if (!isClassNow) {
-                sendMessage("Наразі жодної пари за розкладом не проходиь!");
+                sendMessage("Наразі жодної пари за розкладом не проходить!");
             }
         } catch (NoSuchEntityException e) {
             sendMessage("Не знайдено розкладу на даний момент! Ви точно все налаштували?");

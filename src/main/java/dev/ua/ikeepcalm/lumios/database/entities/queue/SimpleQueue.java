@@ -45,10 +45,22 @@ public class SimpleQueue {
         this.messageId = queueWrapper.getMessageId();
         this.id = queueWrapper.getId();
         this.contents = queueWrapper.unwrapContents();
+        this.chatId = queueWrapper.getChatId();
     }
 
     public boolean flushUser(SimpleUser simpleUser) {
         return this.contents.getFirst().equals(simpleUser);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleQueue{" +
+               "id=" + id +
+               ", alias='" + alias + '\'' +
+               ", messageId=" + messageId +
+               ", chatId=" + chatId +
+               ", contents=" + contents +
+               '}';
     }
 }
 

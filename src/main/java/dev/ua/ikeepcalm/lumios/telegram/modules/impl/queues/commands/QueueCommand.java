@@ -14,9 +14,9 @@ public class QueueCommand extends CommandParent {
     @Override
     public void processUpdate(Message message) {
         SimpleQueue simpleQueue;
-        if (!message.getText().equals("/queue") && !message.getText().equals("/queue@queueupnow_bot")) {
+        if (!message.getText().equals("/queue") && !message.getText().equals("/queue@lumios_bot")) {
             String alias = message.getText()
-                    .replace("/queue@queueupnow_bot ", "")
+                    .replace("/queue@lumios_bot ", "")
                     .replace("/queue ", "")
                     .toUpperCase();
             simpleQueue = new SimpleQueue(alias);

@@ -52,7 +52,7 @@ public class QueueHandler implements HandlerParent {
         if (commandText != null && commandText.startsWith("/")) {
             String[] parts = commandText.split("\\s+", 10);
             String command = parts[0];
-            command = command.replace("@queueupnow_bot", "");
+            command = command.replace("@lumios_bot", "");
             if (command.equals("/queue")) {
                 queueCommand.handleUpdate(message);
             } else if (command.equals("/mixed")) {

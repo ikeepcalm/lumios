@@ -21,7 +21,7 @@ public class ChatShot {
     @OneToMany
     private List<UserShot> userShots;
 
-    @OneToOne
+    @ManyToOne
     private ReverenceChat reverenceChat;
 
     @Column

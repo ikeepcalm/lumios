@@ -27,7 +27,7 @@ public class TasksHandler implements HandlerParent {
         String commandText = message.getText();
         String[] parts = commandText.split("\\s+", 2);
         String command = parts[0];
-        command = command.replace("@queueupnow_bot", "");
+        command = command.replace("@lumios_bot", "");
         switch (command) {
             case "/task" -> taskCreationCommand.handleUpdate(message);
             case "/edit" -> taskEditingCommand.handleUpdate(message);

@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.lumios.web;
+package dev.ua.ikeepcalm.lumios.web.endpoints;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
@@ -28,15 +28,16 @@ import java.util.UUID;
 @RequestMapping("/queues")
 public class QueuesController {
 
-    private final QueueService queueService;
     private final ChatService chatService;
+    private final QueueService queueService;
     private final TelegramClient telegramClient;
 
-    public QueuesController(QueueService taskService, ChatService chatService, TelegramClient telegramClient) {
-        this.queueService = taskService;
+    public QueuesController(ChatService chatService, QueueService queueService, TelegramClient telegramClient) {
         this.chatService = chatService;
+        this.queueService = queueService;
         this.telegramClient = telegramClient;
     }
+
 
     @GetMapping
     public ResponseEntity<List<QueueWrapper>> getQueues(@RequestHeader("chatId") Long chatId) {
@@ -74,7 +75,7 @@ public class QueuesController {
         }
     }
 
-    @GetMapping("/shuffle/{id}")
+    @PostMapping("/shuffle/{id}")
     public ResponseEntity<QueueWrapper> shuffleQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
         ReverenceChat reverenceChat;
         try {
@@ -166,23 +167,13 @@ public class QueuesController {
         try {
             QueueWrapper queue = QueueParser.parseQueueMessage(json);
             if (queue.isMixed()) {
-                MixedQueue mixedQueue;
-                try {
-                    mixedQueue = queueService.findMixedById(queue.getId());
-                } catch (NoSuchEntityException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + queue.getId() + " is not found");
-                }
-                mixedQueue.setContents(queue.unwrapMixedContents());
+                MixedQueue mixedQueue = new MixedQueue(queue);
+                queueService.deleteMixedQueue(mixedQueue);
                 mixedQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(reverenceChat.getChatId(), mixedQueue)).getMessageId());
                 queueService.save(mixedQueue);
             } else {
-                SimpleQueue simpleQueue;
-                try {
-                    simpleQueue = queueService.findSimpleById(queue.getId());
-                } catch (NoSuchEntityException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + queue.getId() + " is not found");
-                }
-                simpleQueue.setContents(queue.unwrapContents());
+                SimpleQueue simpleQueue = new SimpleQueue(queue);
+                queueService.deleteSimpleQueue(simpleQueue);
                 simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(reverenceChat.getChatId(), simpleQueue)).getMessageId());
                 queueService.save(simpleQueue);
             }
@@ -213,7 +204,7 @@ public class QueuesController {
             telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), chatId));
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(chatId);
-            textMessage.setText("Successfully deleted queue " + simpleQueue.getAlias() + "!");
+            textMessage.setText("Черга (" + simpleQueue.getAlias() + ") щойно була видалена!");
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException e) {

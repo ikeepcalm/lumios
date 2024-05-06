@@ -35,7 +35,7 @@ public class TimetableHandler implements HandlerParent {
     public void manageCommands(Update update) {
         Message message = update.getMessage();
         String commandText = message.getText();
-        commandText = commandText.replace("@queueupnow_bot", "");
+        commandText = commandText.replace("@lumios_bot", "");
         switch (commandText) {
             case "/editor" -> editorCommand.handleUpdate(message);
             case "/today" -> todayCommand.handleUpdate(message);

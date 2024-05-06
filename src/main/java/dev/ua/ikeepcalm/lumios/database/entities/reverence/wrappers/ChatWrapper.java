@@ -16,4 +16,10 @@ public class ChatWrapper {
     @JsonProperty
     private boolean admin;
 
+    @JsonProperty
+    private String name;
+
+    @JsonProperty
+    private String description;
+
 }

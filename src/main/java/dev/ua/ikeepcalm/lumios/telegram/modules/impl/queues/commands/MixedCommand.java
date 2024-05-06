@@ -14,9 +14,9 @@ public class MixedCommand extends CommandParent {
     @Override
     public void processUpdate(Message message) {
         MixedQueue mixedQueue;
-        if (!message.getText().equals("/mixed") && !message.getText().equals("/mixed@queueupnow_bot")) {
+        if (!message.getText().equals("/mixed") && !message.getText().equals("/mixed@lumios_bot")) {
             String alias = message.getText()
-                    .replace("/mixed@queueupnow_bot ", "")
+                    .replace("/mixed@lumios_bot ", "")
                     .replace("/mixed ", "")
                     .toUpperCase();
             mixedQueue = new MixedQueue(alias);

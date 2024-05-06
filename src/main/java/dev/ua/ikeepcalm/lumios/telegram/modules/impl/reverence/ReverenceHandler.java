@@ -45,7 +45,7 @@ public class ReverenceHandler implements HandlerParent {
             String commandText = update.getMessage().getText();
             String[] parts = commandText.split("\\s+", 2);
             String command = parts[0].toLowerCase();
-            command = command.replace("@queueupnow_bot", "");
+            command = command.replace("@lumios_bot", "");
             switch (command) {
                 case "/me" -> meCommand.handleUpdate(update.getMessage());
                 case "/stats", "/rating" -> statsCommand.handleUpdate(update.getMessage());

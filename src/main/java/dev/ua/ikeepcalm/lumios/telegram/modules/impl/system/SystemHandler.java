@@ -21,7 +21,7 @@ public class SystemHandler implements HandlerParent {
     public void manageCommands(Update update) {
         Message message = update.getMessage();
         String commandText = message.getText();
-        commandText = commandText.replace("@queueupnow_bot", "");
+        commandText = commandText.replace("@lumios_bot", "");
         switch (commandText) {
             case "/help" -> helpCommand.handleUpdate(message);
             case "/info" -> infoCommand.handleUpdate(message);
