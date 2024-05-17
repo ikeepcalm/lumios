@@ -30,12 +30,7 @@ public class TaskWrapper {
     public static List<TaskWrapper> wrapTasks(List<DueTask> tasks) {
         List<TaskWrapper> taskWrappers = new LinkedList<>();
         for (DueTask task : tasks) {
-            TaskWrapper taskWrapper = new TaskWrapper();
-            taskWrapper.setId(task.getId());
-            taskWrapper.setDueDate(task.getDueDate());
-            taskWrapper.setDueTime(task.getDueTime());
-            taskWrapper.setTaskName(task.getTaskName());
-            taskWrapper.setUrl(task.getUrl());
+            TaskWrapper taskWrapper = wrapTask(task);
             taskWrappers.add(taskWrapper);
         }
         return taskWrappers;

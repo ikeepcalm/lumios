@@ -21,11 +21,12 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     implementation 'com.auth0:java-jwt:4.4.0'
     compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+    implementation 'org.json:json:20240303'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
  }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.7.8-SNAPSHOT'
+version = '1.8.1-SNAPSHOT'
 description = 'lumios.dev backend application'
 
 tasks.withType(JavaCompile).configureEach {

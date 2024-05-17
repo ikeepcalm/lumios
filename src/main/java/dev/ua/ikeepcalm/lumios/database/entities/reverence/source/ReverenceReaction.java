@@ -190,32 +190,13 @@ public enum ReverenceReaction {
 
     public static int determineReactionValue(ReverenceReaction reaction) {
         return switch (reaction) {
-            case LIKE -> 5;
-            case DISLIKE -> -5;
-            case LOVE -> 10;
-            case HEART -> 10;
-            case FIRE -> 10;
-            case DEVIL -> 5;
-            case UFO -> 5;
-            case PUMPKIN -> 5;
-            case STRAWBERRY -> 5;
-            case EWW -> -5;
-            case BANANA -> 5;
-            case ANGRY -> -5;
-            case CLOWN -> -10;
+            case LIKE, WHALE, HUNDRED, WOW, UNICORN, LAUGH, LIGHTNING, BANANA, STRAWBERRY, PUMPKIN, UFO, DEVIL -> 5;
+            case DISLIKE, SLAYER, ANGRY, EWW -> -5;
+            case LOVE, PREMIUM, FIRE, HEART -> 10;
+            case CLOWN, FUCK -> -10;
             case NERD -> -7;
-            case SLAYER -> -5;
-            case LIGHTNING -> 5;
-            case OMG -> 1;
-            case LAUGH -> 5;
+            case OMG, SAD -> 1;
             case CRY -> 2;
-            case UNICORN -> 5;
-            case WOW -> 5;
-            case SAD -> 1;
-            case HUNDRED -> 5;
-            case FUCK -> -10;
-            case WHALE -> 5;
-            case PREMIUM -> 10;
             case DEFAULT -> 0;
         };
     }

@@ -1,9 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram;
 
-import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
-import dev.ua.ikeepcalm.lumios.telegram.wrappers.ReactionMessage;
-import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
-import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
+import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +14,7 @@ import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
@@ -45,24 +43,32 @@ public class TelegramClient extends OkHttpTelegramClient {
         try {
             return execute(command);
         } catch (TelegramApiException e) {
-            LOGGER.error("Failed to execute " + command.getClass(), e);
+            LOGGER.error("Failed to execute {}", command.getClass(), e);
             throw new RuntimeException(e);
         }
     }
 
     public List<ChatMember> getChatAdministrators(String chatId) throws TelegramApiException {
         ArrayList<ChatMember> chats;
-            chats = execute(new GetChatAdministrators(chatId));
+        chats = execute(new GetChatAdministrators(chatId));
         return chats;
     }
 
-    public Chat getChat(String chatId) throws TelegramApiException{
+    public Message sendAnimation(MediaMessage mediaMessage) {
         try {
-            return execute(new GetChat(chatId));
+            return execute(SendAnimation.builder()
+                    .animation(mediaMessage.getMedia())
+                    .chatId(mediaMessage.getChatId())
+                    .caption(mediaMessage.getLabel())
+                    .replyToMessageId(mediaMessage.getMessageId())
+                    .build());
         } catch (TelegramApiException e) {
-            LOGGER.error("Failed to get chat", e);
-            throw new TelegramApiException(e);
+            throw new RuntimeException(e);
         }
+    }
+
+    public Chat getChat(String chatId) throws TelegramApiException {
+        return execute(new GetChat(chatId));
     }
 
     public File getFile(String fileId) {
@@ -82,20 +88,11 @@ public class TelegramClient extends OkHttpTelegramClient {
     }
 
     public Message sendEditMessage(EditMessage editMessage) {
-        if (editMessage.getFilePath() == null && editMessage.getText() == null) {
-            return (Message) executeCommand(EditMessageReplyMarkup.builder()
-                    .messageId(editMessage.getMessageId())
-                    .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
-                    .chatId(editMessage.getChatId())
-                    .build());
-        } else if (editMessage.getFilePath() == null) {
-            return (Message) executeCommand(EditMessageText.builder()
-                    .text(editMessage.getText())
-                    .messageId(editMessage.getMessageId())
-                    .chatId(editMessage.getChatId())
-                    .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
-                    .build());
-        } else {
+        return sendEditMessage(editMessage, false);
+    }
+
+    public Message sendEditMessage(EditMessage editMessage, boolean isCaption) {
+        if (isCaption) {
             return (Message) executeCommand(EditMessageCaption.builder()
                     .messageId(editMessage.getMessageId())
                     .caption(editMessage.getText())
@@ -103,6 +100,30 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                     .chatId(editMessage.getChatId())
                     .build());
+        } else {
+
+            if (editMessage.getFilePath() == null && editMessage.getText() == null) {
+                return (Message) executeCommand(EditMessageReplyMarkup.builder()
+                        .messageId(editMessage.getMessageId())
+                        .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
+                        .chatId(editMessage.getChatId())
+                        .build());
+            } else if (editMessage.getFilePath() == null) {
+                return (Message) executeCommand(EditMessageText.builder()
+                        .text(editMessage.getText())
+                        .messageId(editMessage.getMessageId())
+                        .chatId(editMessage.getChatId())
+                        .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
+                        .build());
+            } else {
+                return (Message) executeCommand(EditMessageCaption.builder()
+                        .messageId(editMessage.getMessageId())
+                        .caption(editMessage.getText())
+                        .parseMode(editMessage.getParseMode())
+                        .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
+                        .chatId(editMessage.getChatId())
+                        .build());
+            }
         }
     }
 

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,13 +54,16 @@ public class UsersController {
         userWrapper.setAccountId(users.getFirst().getUserId());
 
         for (ReverenceUser iteUser : users) {
+            if (iteUser.getUserId().equals(iteUser.getChannel().getChatId())){
+                continue;
+            }
             ChatWrapper chatWrapper = new ChatWrapper();
             chatWrapper.setId(iteUser.getChannel().getChatId());
             chatWrapper.setName(iteUser.getChannel().getName());
             try {
                 Chat chat = telegramClient.getChat(String.valueOf(iteUser.getChannel().getChatId()));
                 chatWrapper.setDescription(chat.getDescription());
-            } catch (TelegramApiException e) {
+            } catch (TelegramApiException ignored) {
                 continue;
             }
             if (iteUser.getUserId().equals(iteUser.getChannel().getChatId())) {
@@ -89,14 +93,16 @@ public class UsersController {
     public ResponseEntity<byte[]> getPhoto(@PathVariable String id) {
         try {
             Chat chat = telegramClient.getChat(id);
+            if (chat.getPhoto() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
             File photoFile = telegramClient.downloadFile(telegramClient.getFile(chat.getPhoto().getBigFileId()));
             byte[] photoBytes = Files.readAllBytes(photoFile.toPath());
             return ResponseEntity.status(HttpStatus.OK)
                     .contentType(MediaType.IMAGE_JPEG)
                     .body(photoBytes);
         } catch (IOException | TelegramApiException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 

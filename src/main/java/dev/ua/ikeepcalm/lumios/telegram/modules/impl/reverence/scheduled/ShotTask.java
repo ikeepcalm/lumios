@@ -31,12 +31,6 @@ public class ShotTask {
     public void executeUpdateTask() {
         Iterable<ReverenceChat> chats = this.chatService.findAll();
         for (ReverenceChat chat : chats) {
-//            try {
-//                ChatShot chatShot = shotService.findByChatIdAndDate(chat.getChatId(), LocalDate.now());
-//                if (chatShot != null) {
-//                    continue;
-//                }
-//            } catch (NoSuchElementException ignored) {}
             Set<ReverenceUser> users = chat.getUsers();
             ChatShot chatShot = new ChatShot();
             chatShot.setReverenceChat(chat);

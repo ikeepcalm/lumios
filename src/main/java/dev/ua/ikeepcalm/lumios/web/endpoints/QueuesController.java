@@ -61,7 +61,7 @@ public class QueuesController {
     public ResponseEntity<QueueWrapper> getQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
         ReverenceChat reverenceChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -79,7 +79,7 @@ public class QueuesController {
     public ResponseEntity<QueueWrapper> shuffleQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
         ReverenceChat reverenceChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -193,7 +193,7 @@ public class QueuesController {
     public ResponseEntity<String> deleteSimpleQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
         ReverenceChat reverenceChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }
@@ -216,7 +216,7 @@ public class QueuesController {
     public ResponseEntity<String> deleteMixedQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
         ReverenceChat reverenceChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }

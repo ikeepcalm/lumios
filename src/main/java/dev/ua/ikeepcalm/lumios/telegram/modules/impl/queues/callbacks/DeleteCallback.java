@@ -21,7 +21,7 @@ public class DeleteCallback extends CallbackParent {
         try {
             for (ChatMember chatMember : telegramClient.getChatAdministrators(String.valueOf(message.getMessage().getChatId()))) {
                 if (chatMember.getUser().getId().equals(message.getFrom().getId()) || message.getFrom().getUserName().equals("ikeepcalm")) {
-                    SimpleQueue simpleQueue = null;
+                    SimpleQueue simpleQueue;
                     try {
                         simpleQueue = queueService.findSimpleById(UUID.fromString(receivedCallback));
                         queueService.deleteSimpleQueue(simpleQueue);

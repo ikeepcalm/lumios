@@ -2,7 +2,6 @@ package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceBind;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
-import jakarta.transaction.Transactional;
 
 public interface BindService {
 

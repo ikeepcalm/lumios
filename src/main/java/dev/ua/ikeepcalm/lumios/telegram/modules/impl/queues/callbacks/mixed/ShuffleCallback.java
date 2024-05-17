@@ -10,7 +10,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.UUID;
@@ -23,7 +22,7 @@ public class ShuffleCallback extends CallbackParent {
     public void processUpdate(CallbackQuery message) {
         String receivedCallback = message.getData().replace("-mixed-shuffle", "");
         String callbackQueryId = message.getId();
-        MixedQueue mixedQueue = null;
+        MixedQueue mixedQueue;
         try {
             mixedQueue = queueService.findMixedById(UUID.fromString(receivedCallback));
             for (ChatMember chatMember : telegramClient.getChatAdministrators(String.valueOf(message.getMessage().getChatId()))) {
@@ -41,6 +40,9 @@ public class ShuffleCallback extends CallbackParent {
                             simpleUser.setName(mixedQueue.getContents().get(i).getName());
                             simpleUser.setAccountId(mixedQueue.getContents().get(i).getAccountId());
                             simpleUser.setUsername(mixedQueue.getContents().get(i).getUsername());
+                            if (simpleQueue.getContents().contains(simpleUser)){
+                                continue;
+                            }
                             simpleQueue.getContents().add(simpleUser);
                         }
 

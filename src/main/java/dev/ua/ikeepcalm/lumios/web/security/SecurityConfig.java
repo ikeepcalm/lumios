@@ -55,7 +55,8 @@ public class SecurityConfig {
                         .requestMatchers("/timetables/**").permitAll()
                         .requestMatchers("/queues/**").permitAll()
                         .requestMatchers("/tasks/**").permitAll()
-                        .requestMatchers("/statistics/**").permitAll()
+                        .requestMatchers("/records/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session

@@ -8,7 +8,6 @@ import dev.ua.ikeepcalm.lumios.telegram.modules.parents.CallbackParent;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.util.UUID;
 

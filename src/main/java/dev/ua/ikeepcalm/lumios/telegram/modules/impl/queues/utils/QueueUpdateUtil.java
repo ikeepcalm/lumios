@@ -5,7 +5,6 @@ import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 public class QueueUpdateUtil {
 

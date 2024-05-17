@@ -14,7 +14,6 @@ import java.util.List;
 public class QueueMarkupUtil {
 
     public static InlineKeyboardMarkup createMarkup(SimpleQueue simpleQueue) {
-        ;
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
         InlineKeyboardRow secondRow = new InlineKeyboardRow();
@@ -62,7 +61,7 @@ public class QueueMarkupUtil {
     }
 
     public static TextMessage createNotification(long chatId, SimpleQueue simpleQueue) {
-        SimpleUser simpleUser = simpleQueue.getContents().get(0);
+        SimpleUser simpleUser = simpleQueue.getContents().getFirst();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
         textMessage.setMessageId(simpleQueue.getMessageId());

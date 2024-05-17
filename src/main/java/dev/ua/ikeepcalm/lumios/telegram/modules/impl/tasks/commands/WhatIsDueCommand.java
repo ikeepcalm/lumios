@@ -38,7 +38,7 @@ public class WhatIsDueCommand extends CommandParent {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
 
-            DateTimeFormatter dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEEE", new Locale("uk"));
+            DateTimeFormatter dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.of("uk"));
             StringBuilder messageBuilder = new StringBuilder();
 
             for (LocalDate dueDate : sortedTasks.keySet()) {
