@@ -2,6 +2,7 @@ package dev.ua.ikeepcalm.lumios.telegram.modules.impl.reverence;
 
 import dev.ua.ikeepcalm.lumios.telegram.modules.HandlerParent;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.reverence.commands.MeCommand;
+import dev.ua.ikeepcalm.lumios.telegram.modules.impl.reverence.commands.ResetCommand;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.reverence.commands.StatsCommand;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.reverence.updates.AddReactionUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.reverence.updates.RemoveReactionUpdate;
@@ -16,14 +17,16 @@ public class ReverenceHandler implements HandlerParent {
     private final RemoveReactionUpdate removeReactionUpdate;
     private final MeCommand meCommand;
     private final StatsCommand statsCommand;
+    private final ResetCommand resetCommand;
 
     public ReverenceHandler(AddReactionUpdate addReactionUpdate,
                             RemoveReactionUpdate removeReactionUpdate,
-                            MeCommand meCommand, StatsCommand statsCommand) {
+                            MeCommand meCommand, StatsCommand statsCommand, ResetCommand resetCommand) {
         this.addReactionUpdate = addReactionUpdate;
         this.removeReactionUpdate = removeReactionUpdate;
         this.meCommand = meCommand;
         this.statsCommand = statsCommand;
+        this.resetCommand = resetCommand;
     }
 
 
@@ -49,6 +52,7 @@ public class ReverenceHandler implements HandlerParent {
             switch (command) {
                 case "/me" -> meCommand.handleUpdate(update.getMessage());
                 case "/stats", "/rating" -> statsCommand.handleUpdate(update.getMessage());
+                case "/reset" -> resetCommand.handleUpdate(update.getMessage());
             }
         }
     }
