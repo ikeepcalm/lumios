@@ -51,6 +51,7 @@ public class RecordsController {
         }
 
         List<MessageRecord> messageRecords = recordService.findAllByChatAndDateBetween(chat, startDate.atStartOfDay(), endDate.atStartOfDay());
+        messageRecords.removeIf(messageRecord -> !messageRecord.getChatId().equals(chatId));
         List<MessageWrapper> messageWrappers = MessageWrapper.wrapperList(messageRecords);
 
         return ResponseEntity.status(HttpStatus.OK).body(messageWrappers);

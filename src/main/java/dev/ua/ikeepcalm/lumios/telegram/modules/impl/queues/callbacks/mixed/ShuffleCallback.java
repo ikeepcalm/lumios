@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.queues.callbacks.mixed;
 
 import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
+import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
@@ -35,24 +36,17 @@ public class ShuffleCallback extends CallbackParent {
                         simpleQueue.setMessageId(mixedQueue.getMessageId());
                         simpleQueue.setAlias(mixedQueue.getAlias());
                         simpleQueue.setChatId(mixedQueue.getChatId());
-                        for (int i = 0; i < mixedQueue.getContents().size(); i++) {
+                        for (MixedUser mixedUser : mixedQueue.getContents()) {
                             SimpleUser simpleUser = new SimpleUser();
-                            simpleUser.setName(mixedQueue.getContents().get(i).getName());
-                            simpleUser.setAccountId(mixedQueue.getContents().get(i).getAccountId());
-                            simpleUser.setUsername(mixedQueue.getContents().get(i).getUsername());
-                            if (simpleQueue.getContents().contains(simpleUser)){
-                                continue;
-                            }
+                            simpleUser.setId(mixedUser.getId());
+                            simpleUser.setName(mixedUser.getName());
+                            simpleUser.setUsername(mixedUser.getUsername());
+                            simpleUser.setAccountId(mixedUser.getAccountId());
+                            simpleUser.setSimpleQueue(simpleQueue);
                             simpleQueue.getContents().add(simpleUser);
                         }
-
-                        queueService.save(simpleQueue);
                         queueService.deleteMixedQueue(mixedQueue);
-
-                        simpleQueue.setMessageId(telegramClient.sendEditMessage
-                                        (QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue))
-                                .getMessageId());
-
+                        simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue)).getMessageId());
                         queueService.save(simpleQueue);
                         this.telegramClient.sendAnswerCallbackQuery("Успішно перемішано цю чергу!", callbackQueryId);
                     } else {
@@ -63,6 +57,7 @@ public class ShuffleCallback extends CallbackParent {
             }
         } catch (NoSuchEntityException e) {
             telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
-        } catch (TelegramApiException ignored) {}
+        } catch (TelegramApiException ignored) {
+        }
     }
 }

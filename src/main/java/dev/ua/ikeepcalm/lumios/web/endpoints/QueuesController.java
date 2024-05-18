@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.QueueService;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
+import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.QueueWrapper;
@@ -96,21 +97,17 @@ public class QueuesController {
         simpleQueue.setMessageId(mixedQueue.getMessageId());
         simpleQueue.setAlias(mixedQueue.getAlias());
         simpleQueue.setChatId(mixedQueue.getChatId());
-        for (int i = 0; i < mixedQueue.getContents().size(); i++) {
+        for (MixedUser mixedUser : mixedQueue.getContents()) {
             SimpleUser simpleUser = new SimpleUser();
-            simpleUser.setName(mixedQueue.getContents().get(i).getName());
-            simpleUser.setAccountId(mixedQueue.getContents().get(i).getAccountId());
-            simpleUser.setUsername(mixedQueue.getContents().get(i).getUsername());
+            simpleUser.setId(mixedUser.getId());
+            simpleUser.setName(mixedUser.getName());
+            simpleUser.setUsername(mixedUser.getUsername());
+            simpleUser.setAccountId(mixedUser.getAccountId());
+            simpleUser.setSimpleQueue(simpleQueue);
             simpleQueue.getContents().add(simpleUser);
         }
-
-        queueService.save(simpleQueue);
         queueService.deleteMixedQueue(mixedQueue);
-
-        simpleQueue.setMessageId(telegramClient.sendEditMessage
-                        (QueueUpdateUtil.updateMessage(chatId, simpleQueue))
-                .getMessageId());
-
+        simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(chatId, simpleQueue)).getMessageId());
         queueService.save(simpleQueue);
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);

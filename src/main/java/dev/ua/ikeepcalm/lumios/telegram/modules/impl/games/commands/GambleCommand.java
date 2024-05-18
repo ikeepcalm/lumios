@@ -7,7 +7,6 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.MediaMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
@@ -19,11 +18,11 @@ import java.util.Random;
 import java.util.Timer;
 
 @Component
-public class SoloGambleCommand extends CommandParent {
+public class GambleCommand extends CommandParent {
 
     private final TenorUtil tenorUtil;
 
-    public SoloGambleCommand(TenorUtil tenorUtil) {
+    public GambleCommand(TenorUtil tenorUtil) {
         this.tenorUtil = tenorUtil;
     }
 
@@ -35,7 +34,7 @@ public class SoloGambleCommand extends CommandParent {
         try {
             betAmount = Integer.parseInt(parts[1]);
             if (betAmount > reverenceUser.getReverence() * 0.3) {
-                sendMessage("Стривай-но! Ти не можеш грати на суму більше 40% від свого рівня поваги. Спробуй ще раз");
+                sendMessage("Стривай-но! Ти не можеш грати на суму більше ніж 30% від свого рівня поваги. Спробуй ще раз");
                 return;
             }
         } catch (NumberFormatException e) {
@@ -105,15 +104,19 @@ public class SoloGambleCommand extends CommandParent {
             newReverence = 0;
         }
         Message sent;
+        boolean isCaption;
         try {
             sent = telegramClient.sendAnimation(new MediaMessage(message.getMessageId(), message.getChatId(), null, animation));
+            isCaption = true;
         } catch (RuntimeException e) {
-            sent = telegramClient.sendTextMessage(new TextMessage("Mercury snake biting its tail... Кручу колесо, кидаю кубики...", message.getChatId(), message.getMessageId(), ParseMode.MARKDOWNV2, null, null));
+            sent = telegramClient.sendTextMessage(new TextMessage("Mercury snake biting its tail... Кручу колесо, кидаю кубики...", message.getChatId(), message.getMessageId(), null, null, null));
+            isCaption = false;
         }
 
         reverenceUser.setReverence(newReverence);
         String finalResultMessage = resultMessage;
         Message finalSent = sent;
+        boolean finalIsCaption = isCaption;
         new Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
@@ -122,7 +125,7 @@ public class SoloGambleCommand extends CommandParent {
                         editMessage.setMessageId(finalSent.getMessageId());
                         editMessage.setChatId(finalSent.getChatId());
                         editMessage.setText(finalResultMessage);
-                        telegramClient.sendEditMessage(editMessage, true);
+                        telegramClient.sendEditMessage(editMessage, finalIsCaption);
                     }
                 }, 8000);
     }
@@ -184,7 +187,7 @@ public class SoloGambleCommand extends CommandParent {
                 "Anime",
                 "TBATE",
                 "The Beginning after The End",
-                "Fuckup"
+                "Fuck up"
         };
         return randomMessage(messages);
     }

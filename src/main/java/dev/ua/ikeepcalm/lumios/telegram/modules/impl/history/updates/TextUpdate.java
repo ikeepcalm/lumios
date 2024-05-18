@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.history.updates;
 
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.modules.parents.UpdateParent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -19,7 +20,11 @@ public class TextUpdate extends UpdateParent {
             messageRecord.setText(update.getMessage().getText());
         messageRecord.setChatId(update.getMessage().getChatId());
         messageRecord.setMessageId(Long.valueOf(update.getMessage().getMessageId()));
-        messageRecord.setUser(reverenceUser);
+        try {
+            messageRecord.setUser(userService.findById(update.getMessage().getFrom().getId(), chatService.findByChatId(update.getMessage().getChatId())));
+        } catch (NoSuchEntityException ignored) {
+            return;
+        }
         messageRecord.setDate(LocalDateTime.now());
         recordService.save(messageRecord);
     }

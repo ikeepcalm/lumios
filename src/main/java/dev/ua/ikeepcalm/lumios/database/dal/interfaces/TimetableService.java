@@ -12,6 +12,7 @@ public interface TimetableService {
     void save(TimetableEntry timetableEntry);
 
     void delete(TimetableEntry timetableEntry);
+    void deleteAll(List<TimetableEntry> timetableEntries);
 
     TimetableEntry findByChatIdAndWeekType(Long chatId, WeekType weekType) throws NoSuchEntityException;
 

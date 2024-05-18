@@ -1,17 +1,17 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.games;
 
 import dev.ua.ikeepcalm.lumios.telegram.modules.HandlerParent;
-import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.commands.SoloGambleCommand;
+import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.commands.GambleCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class GamesHandler implements HandlerParent {
 
-    private final SoloGambleCommand soloGambleCommand;
+    private final GambleCommand gambleCommand;
 
-    public GamesHandler(SoloGambleCommand soloGambleCommand) {
-        this.soloGambleCommand = soloGambleCommand;
+    public GamesHandler(GambleCommand gambleCommand) {
+        this.gambleCommand = gambleCommand;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class GamesHandler implements HandlerParent {
         String command = parts[0].toLowerCase();
         command = command.replace("@lumios_bot", "");
         switch (command) {
-            case "/gamble" -> soloGambleCommand.handleUpdate(update.getMessage());
+            case "/gamble" -> gambleCommand.handleUpdate(update.getMessage());
         }
     }
 

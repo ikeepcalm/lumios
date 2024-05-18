@@ -108,4 +108,15 @@ public class TimetablesController {
         }
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteTimetable(@RequestHeader("chatId") Long chatId) {
+        try {
+            List<TimetableEntry> timetableEntry = timetableService.findAllByChatId(chatId);
+            timetableService.deleteAll(timetableEntry);
+            return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted timetable for chat with ID: " + chatId);
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Timetable for chat with ID: " + chatId + " is not found");
+        }
+    }
+
 }
