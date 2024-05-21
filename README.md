@@ -94,7 +94,7 @@ Optional: Create an Issue on the same project page, where you describe new featu
 
 ## License
 
-Lumios is licensed under the [CC BY-NC 4.0 Deed](LICENSE).
+Lumios is licensed under the [CC BY-NC 4.0 Deed](https://creativecommons.org/licenses/by-nc/4.0/deed.uk).
 
 ---
 
