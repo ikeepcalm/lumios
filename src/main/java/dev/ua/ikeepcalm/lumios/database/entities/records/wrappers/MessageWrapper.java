@@ -20,7 +20,7 @@ import java.util.Map;
 public class MessageWrapper {
 
     @JsonProperty("username")
-   private String username;
+    private String username;
 
     @JsonProperty("messages")
     private long messagesCount;
@@ -40,10 +40,13 @@ public class MessageWrapper {
         this.averageDailyMessages = new HashMap<>();
     }
 
-    public static List<MessageWrapper> wrapperList( List<MessageRecord> messageRecords) {
+    public static List<MessageWrapper> wrapperList(List<MessageRecord> messageRecords) {
         HashMap<String, MessageWrapper> wrappersMap = new HashMap<>();
 
         for (MessageRecord record : messageRecords) {
+            if (record.getUser() == null) {
+                continue;
+            }
             String user = record.getUser().getUsername();
             MessageWrapper wrapper = wrappersMap.getOrDefault(user, new MessageWrapper());
             wrapper.setUsername(user);
@@ -64,10 +67,8 @@ public class MessageWrapper {
         for (MessageWrapper wrapper : wrappersMap.values()) {
             for (Map.Entry<LocalDate, HashMap<Integer, Integer>> entry : wrapper.getHourlyMessages().entrySet()) {
                 LocalDate date = entry.getKey();
-                HashMap<Integer, Integer> hourly = entry.getValue();
-                int sum = hourly.values().stream().mapToInt(Integer::intValue).sum();
-                int average = sum / hourly.size();
-                wrapper.getAverageDailyMessages().put(LocalDateTime.of(date, LocalTime.MIDNIGHT), average);
+                int sum = entry.getValue().values().stream().mapToInt(Integer::intValue).sum();
+                wrapper.getAverageDailyMessages().put(LocalDateTime.of(date, LocalTime.MIDNIGHT), sum / entry.getValue().size());
             }
         }
 

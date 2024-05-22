@@ -4,10 +4,10 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ShotService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.reverence.ChatShotRepository;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.reverence.UserShotRepository;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.NoSuchElementException;
 
 @Component
 public class ShotServiceImpl implements ShotService {
@@ -27,7 +27,7 @@ public class ShotServiceImpl implements ShotService {
     }
 
     @Override
-    public ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchElementException {
-        return this.chatShotRepository.findByReverenceChat_ChatIdAndDate(chatId, date).orElseThrow();
+    public ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchEntityException {
+        return this.chatShotRepository.findByReverenceChat_ChatIdAndDate(chatId, date).orElseThrow(NoSuchEntityException::new);
     }
 }

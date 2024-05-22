@@ -24,7 +24,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
-import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultPhoto;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -168,7 +167,11 @@ public class TelegramClient extends OkHttpTelegramClient {
     }
 
     public void sendAnswerInlineQuery(AnswerInlineQuery answerInlineQuery) {
-        executeCommand(answerInlineQuery);
+        try {
+            execute(answerInlineQuery);
+        } catch (TelegramApiException e) {
+            LOGGER.error("Failed to send answer inline query", e);
+        }
     }
 }
 

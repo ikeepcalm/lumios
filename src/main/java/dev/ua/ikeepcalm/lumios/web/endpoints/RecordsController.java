@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/records")
@@ -38,11 +37,7 @@ public class RecordsController {
     }
 
     @GetMapping("/messages")
-    public ResponseEntity<List<MessageWrapper>> getMessages(
-            @RequestParam("chatId") Long chatId,
-            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-
+    public ResponseEntity<List<MessageWrapper>> getMessages(@RequestParam("chatId") Long chatId, @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         ReverenceChat chat;
         try {
             chat = chatService.findByChatId(chatId);
@@ -58,18 +53,27 @@ public class RecordsController {
     }
 
     @GetMapping("/ratings")
-    public ResponseEntity<List<DifferenceWrapper>> getShots(
-            @RequestParam("chatId") Long chatId,
-            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    public ResponseEntity<List<DifferenceWrapper>> getShots(@RequestParam("chatId") Long chatId, @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        ChatShot startShot = null;
+        ChatShot endShot = null;
+        LocalDate tempStartDate = startDate;
 
-        ChatShot startShot;
-        ChatShot endShot;
+        while (startShot == null) {
+            try {
+                startShot = shotService.findByChatIdAndDate(chatId, tempStartDate);
+            } catch (NoSuchEntityException e) {
+                tempStartDate = tempStartDate.minusDays(1);
+            }
+        }
+
         try {
-            startShot = shotService.findByChatIdAndDate(chatId, startDate);
             endShot = shotService.findByChatIdAndDate(chatId, endDate);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (NoSuchEntityException e) {
+            try {
+                endShot = createChatShot(chatService.findByChatId(chatId), endDate);
+            } catch (NoSuchEntityException ex) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
         }
 
         List<DifferenceWrapper> wrappers = new ArrayList<>();
@@ -84,18 +88,33 @@ public class RecordsController {
     }
 
     @GetMapping("/rating")
-    public ResponseEntity<List<UserShot>> getShot(
-            @RequestParam("chatId") Long chatId,
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
+    public ResponseEntity<List<UserShot>> getShot(@RequestParam("chatId") Long chatId, @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
         ChatShot chatShot;
         try {
             chatShot = shotService.findByChatIdAndDate(chatId, startDate);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (NoSuchEntityException e) {
+            try {
+                chatShot = createChatShot(chatService.findByChatId(chatId), startDate);
+            } catch (NoSuchEntityException ex) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
         }
-
-        System.out.println(chatShot.getUserShots().size());
         return ResponseEntity.status(HttpStatus.OK).body(chatShot.getUserShots());
     }
 
+    private ChatShot createChatShot(ReverenceChat chat, LocalDate date) {
+        ChatShot chatShot = new ChatShot();
+        chatShot.setReverenceChat(chat);
+        chatShot.setDate(date);
+        List<UserShot> userShots = new ArrayList<>();
+        chat.getUsers().forEach(user -> {
+            UserShot userShot = new UserShot();
+            userShot.setUserId(user.getUserId());
+            userShot.setUsername(user.getUsername());
+            userShot.setReverence(user.getReverence());
+            userShots.add(userShot);
+        });
+        chatShot.setUserShots(userShots);
+        return chatShot;
+    }
 }

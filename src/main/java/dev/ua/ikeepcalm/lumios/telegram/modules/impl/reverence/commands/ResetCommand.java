@@ -36,7 +36,13 @@ public class ResetCommand extends CommandParent {
         }
         if (message.getFrom().getUserName().equals("ikeepcalm")) {
             sendMessage("Відновлення даних за датою " + date);
-            ChatShot chatShot = shotService.findByChatIdAndDate(reverenceChat.getChatId(), date);
+            ChatShot chatShot = null;
+            try {
+                chatShot = shotService.findByChatIdAndDate(reverenceChat.getChatId(), date);
+            } catch (NoSuchEntityException e) {
+                sendMessage("Дані за цю дату відсутні.");
+                return;
+            }
             for (UserShot user : chatShot.getUserShots()) {
                 try {
                     ReverenceUser reverenceUser = userService.findById(user.getUserId(), reverenceChat);

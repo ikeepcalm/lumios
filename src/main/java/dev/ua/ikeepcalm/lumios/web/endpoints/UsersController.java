@@ -168,7 +168,6 @@ public class UsersController {
         return new BindResult(user, chat);
     }
 
-    private record BindResult(ReverenceUser user, ReverenceChat chat) {
-    }
+    private record BindResult(ReverenceUser user, ReverenceChat chat) {}
 
 }

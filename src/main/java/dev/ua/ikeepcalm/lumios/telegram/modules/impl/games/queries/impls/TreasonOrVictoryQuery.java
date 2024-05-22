@@ -1,6 +1,6 @@
-package dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.inlines.impls;
+package dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.queries.impls;
 
-import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.inlines.InlineQuery;
+import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.queries.InlineQuery;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
@@ -11,7 +11,17 @@ import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQuery
 public class TreasonOrVictoryQuery implements InlineQuery {
 
     public InlineQueryResult processUpdate(Update update) {
-        String[] options = {"Це повна зрада!", "Невже перемога? Перемога буде, люди!"};
+        String[] options = {
+                "Це повна зрада!",
+                "Невже перемога? Перемога буде, люди!",
+                "Боротьба триває!",
+                "Ганебна зрада!",
+                "Перемога наша!",
+                "Зрада, зрада, зрада!",
+                "Перемога наша, браття!",
+                "Зрада, руки опускаються...",
+                "Пес Патрон, Пес Патрон, таких нам треба батальйон!",
+                ""};
         return InlineQueryResultArticle.builder()
                 .id("treason_or_victory")
                 .thumbnailUrl("https://mil.co.ua/wp-content/uploads/2023/06/27_main_9_500x317.jpg")

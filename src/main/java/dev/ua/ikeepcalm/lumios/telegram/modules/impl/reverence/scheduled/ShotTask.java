@@ -6,6 +6,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.UserShot;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,13 +29,19 @@ public class ShotTask {
 
     @Transactional
     @Scheduled(cron = "0 0 22 * * *")
-    public void executeUpdateTask() {
+    public void executeShotTask() {
         Iterable<ReverenceChat> chats = this.chatService.findAll();
         for (ReverenceChat chat : chats) {
+            ChatShot chatShot;
+            try {
+                chatShot = shotService.findByChatIdAndDate(chat.getChatId(), LocalDate.now());
+            } catch (NoSuchEntityException e) {
+                chatShot = new ChatShot();
+                chatShot.setReverenceChat(chat);
+                chatShot.setDate(LocalDate.now());
+            }
+
             Set<ReverenceUser> users = chat.getUsers();
-            ChatShot chatShot = new ChatShot();
-            chatShot.setReverenceChat(chat);
-            chatShot.setDate(LocalDate.now());
             List<UserShot> userShots = new ArrayList<>();
             for (ReverenceUser user : users) {
                 UserShot userShot = new UserShot();

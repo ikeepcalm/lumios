@@ -3,12 +3,14 @@ package dev.ua.ikeepcalm.lumios.web.endpoints;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.QueueService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.wrappers.QueueWrapper;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.queues.utils.QueueMarkupUtil;
@@ -30,15 +32,16 @@ import java.util.UUID;
 public class QueuesController {
 
     private final ChatService chatService;
+    private final UserService userService;
     private final QueueService queueService;
     private final TelegramClient telegramClient;
 
-    public QueuesController(ChatService chatService, QueueService queueService, TelegramClient telegramClient) {
+    public QueuesController(ChatService chatService, UserService userService, QueueService queueService, TelegramClient telegramClient) {
         this.chatService = chatService;
+        this.userService = userService;
         this.queueService = queueService;
         this.telegramClient = telegramClient;
     }
-
 
     @GetMapping
     public ResponseEntity<List<QueueWrapper>> getQueues(@RequestHeader("chatId") Long chatId) {
@@ -136,7 +139,6 @@ public class QueuesController {
             queue.setMessageId(sendTextMessage.getMessageId());
             queue.setChatId(reverenceChat.getChatId());
             queueService.save(queue);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
         } else {
             SimpleQueue queue = new SimpleQueue(name);
             TextMessage queueMessage = new TextMessage();
@@ -148,17 +150,19 @@ public class QueuesController {
             queue.setMessageId(sendTextMessage.getMessageId());
             queue.setChatId(reverenceChat.getChatId());
             queueService.save(queue);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
         }
+        return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved given queue!");
     }
 
     @PutMapping
-    public ResponseEntity<String> updateQueue(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
+    public ResponseEntity<String> updateQueue(@RequestBody String json, @RequestHeader("chatId") Long chatId, @RequestHeader("userId") Long userId) {
         ReverenceChat reverenceChat;
+        ReverenceUser reverenceUser;
         try {
             reverenceChat = chatService.findByChatId(chatId);
+            reverenceUser = userService.findById(userId, reverenceChat);
         } catch (NoSuchEntityException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat or User with ID: " + chatId + " is not registered in the system");
         }
 
         try {
@@ -178,7 +182,7 @@ public class QueuesController {
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(reverenceChat.getChatId());
             textMessage.setMessageId(queue.getMessageId());
-            textMessage.setText("Ця черга (" + queue.getAlias() + ") щойно була оновлена!");
+            textMessage.setText("Ця черга (" + queue.getAlias() + ") щойно була оновлена @" + reverenceUser.getUsername() + "!");
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated queue!");
         } catch (JsonProcessingException e) {
@@ -187,12 +191,14 @@ public class QueuesController {
     }
 
     @DeleteMapping("/simple/{id}")
-    public ResponseEntity<String> deleteSimpleQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
+    public ResponseEntity<String> deleteSimpleQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id, @RequestHeader("userId") Long userId) {
         ReverenceChat reverenceChat;
+        ReverenceUser reverenceUser;
         try {
-            chatService.findByChatId(chatId);
+            reverenceChat = chatService.findByChatId(chatId);
+            reverenceUser = userService.findById(userId, reverenceChat);
         } catch (NoSuchEntityException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat or User with ID: " + chatId + " is not registered in the system");
         }
 
         try {
@@ -201,7 +207,7 @@ public class QueuesController {
             telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), chatId));
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(chatId);
-            textMessage.setText("Черга (" + simpleQueue.getAlias() + ") щойно була видалена!");
+            textMessage.setText("Черга (" + simpleQueue.getAlias() + ") щойно була видалена @" + reverenceUser.getUsername() + "!");
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException e) {
@@ -210,12 +216,14 @@ public class QueuesController {
     }
 
     @DeleteMapping("/mixed/{id}")
-    public ResponseEntity<String> deleteMixedQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id) {
+    public ResponseEntity<String> deleteMixedQueue(@RequestHeader("chatId") Long chatId, @PathVariable UUID id, @RequestHeader("userId") Long userId) {
         ReverenceChat reverenceChat;
+        ReverenceUser reverenceUser;
         try {
-            chatService.findByChatId(chatId);
+            reverenceChat = chatService.findByChatId(chatId);
+            reverenceUser = userService.findById(userId, reverenceChat);
         } catch (NoSuchEntityException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat or User with ID: " + chatId + " is not registered in the system");
         }
 
         try {
@@ -224,7 +232,7 @@ public class QueuesController {
             telegramClient.sendRemoveMessage(new RemoveMessage(mixedQueue.getMessageId(), chatId));
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(chatId);
-            textMessage.setText("Черга (" + mixedQueue.getAlias() + ") щойно була видалена!");
+            textMessage.setText("Черга (" + mixedQueue.getAlias() + ") щойно була видалена @" + reverenceUser.getUsername() + "!");
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException e) {

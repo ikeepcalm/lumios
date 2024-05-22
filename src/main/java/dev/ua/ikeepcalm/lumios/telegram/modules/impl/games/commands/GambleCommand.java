@@ -63,9 +63,9 @@ public class GambleCommand extends CommandParent {
         InputFile animation;
         if (win) {
             if (betAmount == reverenceUser.getReverence()) {
-                newReverence = (int) (reverenceUser.getReverence() * 1.1);
+                newReverence = (int) (reverenceUser.getReverence() * 1.4);
             } else {
-                newReverence = (int) (reverenceUser.getReverence() + (betAmount * 0.2));
+                newReverence = (int) (reverenceUser.getReverence() + (betAmount * 0.5));
             }
             resultMessage = resultMessage + generateWinMessage(betAmount, newReverence);
             JSONObject winGifs = tenorUtil.getSearchResults(generateWinKeyword(), 10);
@@ -82,9 +82,9 @@ public class GambleCommand extends CommandParent {
             }
         } else {
             if (betAmount == reverenceUser.getReverence()) {
-                newReverence = (int) (reverenceUser.getReverence() * 0.8);
+                newReverence = (int) (reverenceUser.getReverence() * 0.5);
             } else {
-                newReverence = (int) (reverenceUser.getReverence() - (betAmount * 0.3));
+                newReverence = (int) (reverenceUser.getReverence() - (betAmount * 0.6));
             }
             resultMessage = resultMessage + generateLoseMessage(betAmount, newReverence);
             JSONObject loseGifs = tenorUtil.getSearchResults(generateLoseKeyword(), 10);
@@ -143,6 +143,7 @@ public class GambleCommand extends CommandParent {
                 "Коли він народився, увесь світ прошептав його ім'я - переможець! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
                 "Хакарі б пишався тобою! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
                 "Зажди! Навчи мене! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
+                "Ти виграв, ти великий, ти найкращий! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
         };
         return randomMessage(messages);
     }
@@ -158,7 +159,9 @@ public class GambleCommand extends CommandParent {
                 "Сьогодні не твій день. Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
                 "ХАХВАХВХАХАВХ ЦЕ Ж ТИ? Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
                 "ЯКЕ ЖАЛЮГІДНЕ! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Ти програв, ти в нуліну, твоя мама тебе не любить, твій тато тебе не любить, твої друзі тебе не люблять, твій кіт тебе не любить, твій сусід тебе не любить, твій бос тебе не любить! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!"
+                "Ти програв, ти в нуліну, твоя мама тебе не любить, твій тато тебе не любить, твої друзі тебе не люблять, твій кіт тебе не любить, твій сусід тебе не любить, твій бос тебе не любить! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
+                "Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
+                "Лісова мавпа... Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!"
         };
         return randomMessage(messages);
     }
