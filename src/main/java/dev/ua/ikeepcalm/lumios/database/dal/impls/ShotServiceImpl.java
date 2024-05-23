@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class ShotServiceImpl implements ShotService {
@@ -28,6 +29,20 @@ public class ShotServiceImpl implements ShotService {
 
     @Override
     public ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchEntityException {
-        return this.chatShotRepository.findByReverenceChat_ChatIdAndDate(chatId, date).orElseThrow(NoSuchEntityException::new);
+        List<ChatShot> chatShots = this.chatShotRepository.findAllByReverenceChat_ChatIdAndDate(chatId, date);
+        if (chatShots.isEmpty()) {
+            throw new NoSuchEntityException("ChatShot not found");
+        }
+
+        if (chatShots.size() > 1) {
+            chatShotRepository.delete(chatShots.get(1));
+        }
+
+        return chatShots.get(0);
+    }
+
+    @Override
+    public void delete(ChatShot chatShot) {
+        this.chatShotRepository.delete(chatShot);
     }
 }

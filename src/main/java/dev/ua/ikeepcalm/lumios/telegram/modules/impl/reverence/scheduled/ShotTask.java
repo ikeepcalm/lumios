@@ -35,12 +35,13 @@ public class ShotTask {
             ChatShot chatShot;
             try {
                 chatShot = shotService.findByChatIdAndDate(chat.getChatId(), LocalDate.now());
+                shotService.delete(chatShot);
             } catch (NoSuchEntityException e) {
                 chatShot = new ChatShot();
-                chatShot.setReverenceChat(chat);
-                chatShot.setDate(LocalDate.now());
             }
 
+            chatShot.setReverenceChat(chat);
+            chatShot.setDate(LocalDate.now());
             Set<ReverenceUser> users = chat.getUsers();
             List<UserShot> userShots = new ArrayList<>();
             for (ReverenceUser user : users) {

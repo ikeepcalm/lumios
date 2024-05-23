@@ -11,4 +11,6 @@ public interface ShotService {
     void save(ChatShot chatShot);
 
     ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchEntityException;
+
+    void delete(ChatShot chatShot);
 }
