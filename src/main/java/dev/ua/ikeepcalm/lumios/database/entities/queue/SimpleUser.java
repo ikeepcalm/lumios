@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@Entity(name = "simple_users")
+@Entity(name = "simpleUsers")
 public class SimpleUser {
 
     @Id

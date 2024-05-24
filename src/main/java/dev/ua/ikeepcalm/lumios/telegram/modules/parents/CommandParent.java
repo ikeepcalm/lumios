@@ -13,9 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMemberRestricted;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionType;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +59,14 @@ public abstract class CommandParent {
     @Transactional
     public void handleUpdate(Message message) {
         this.message = message;
+        ChatMember chatMember = telegramClient.getChatMember(message.getChatId(), message.getFrom().getId());
+        if (chatMember.getStatus().equals(ChatMemberRestricted.STATUS)) {
+            return;
+        }
         try {
             this.reverenceChat = chatService.findByChatId(message.getChatId());
             this.reverenceChat.setName(message.getChat().getTitle());
+            this.reverenceChat.setDescription(message.getChat().getDescription());
         } catch (NoSuchEntityException e) {
             ReverenceChat newChat = new ReverenceChat();
             newChat.setChatId(message.getChatId());
@@ -80,7 +88,7 @@ public abstract class CommandParent {
                 newUser.setUsername(message.getFrom().getUserName());
                 newUser.setCredits(100);
                 newUser.setSustainable(100);
-                newUser.setChannel(reverenceChat);
+                newUser.setChat(reverenceChat);
                 userService.save(newUser);
                 reverenceUser = newUser;
             }
@@ -128,10 +136,6 @@ public abstract class CommandParent {
         telegramClient.sendReaction(reactionMessage);
     }
 
-    protected void sendForwardMessage(Long chatId, Long fromChatId, int messageId) {
-        telegramClient.sendForwardMessage(chatId, fromChatId, messageId);
-    }
-
     private void logInteraction() {
         logger.info("Command: [{}]: {}",
                 message.getFrom().getUserName(),
@@ -144,7 +148,11 @@ public abstract class CommandParent {
                     @Override
                     public void run() {
                         RemoveMessage removeMessage = new RemoveMessage(message.getMessageId(), message.getChatId());
-                        telegramClient.sendRemoveMessage(removeMessage);
+                        try {
+                            telegramClient.sendRemoveMessage(removeMessage);
+                        } catch (TelegramApiException e) {
+                            logger.error("Failed to delete message: {}", message.getMessageId());
+                        }
                     }
                 }, 300000);
     }

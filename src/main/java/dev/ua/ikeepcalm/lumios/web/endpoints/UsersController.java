@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,24 +53,24 @@ public class UsersController {
         userWrapper.setAccountId(users.getFirst().getUserId());
 
         for (ReverenceUser iteUser : users) {
-            if (iteUser.getUserId().equals(iteUser.getChannel().getChatId())){
+            if (iteUser.getUserId().equals(iteUser.getChat().getChatId())){
                 continue;
             }
             ChatWrapper chatWrapper = new ChatWrapper();
-            chatWrapper.setId(iteUser.getChannel().getChatId());
-            chatWrapper.setName(iteUser.getChannel().getName());
+            chatWrapper.setId(iteUser.getChat().getChatId());
+            chatWrapper.setName(iteUser.getChat().getName());
             try {
-                Chat chat = telegramClient.getChat(String.valueOf(iteUser.getChannel().getChatId()));
+                Chat chat = telegramClient.getChat(String.valueOf(iteUser.getChat().getChatId()));
                 chatWrapper.setDescription(chat.getDescription());
             } catch (TelegramApiException ignored) {
                 continue;
             }
-            if (iteUser.getUserId().equals(iteUser.getChannel().getChatId())) {
+            if (iteUser.getUserId().equals(iteUser.getChat().getChatId())) {
                 chatWrapper.setAdmin(true);
             } else {
                 List<ChatMember> telegramUsers;
                 try {
-                    telegramUsers = telegramClient.getChatAdministrators(String.valueOf(iteUser.getChannel().getChatId()));
+                    telegramUsers = telegramClient.getChatAdministrators(String.valueOf(iteUser.getChat().getChatId()));
                 } catch (TelegramApiException e) {
                     continue;
                 }

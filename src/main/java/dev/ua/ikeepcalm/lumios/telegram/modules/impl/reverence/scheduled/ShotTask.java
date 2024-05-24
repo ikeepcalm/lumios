@@ -40,7 +40,7 @@ public class ShotTask {
                 chatShot = new ChatShot();
             }
 
-            chatShot.setReverenceChat(chat);
+            chatShot.setChat(chat);
             chatShot.setDate(LocalDate.now());
             Set<ReverenceUser> users = chat.getUsers();
             List<UserShot> userShots = new ArrayList<>();

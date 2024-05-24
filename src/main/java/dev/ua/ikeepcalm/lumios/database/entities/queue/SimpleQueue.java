@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "simple_queues")
+@Entity(name = "simpleQueues")
 public class SimpleQueue {
 
     @Id

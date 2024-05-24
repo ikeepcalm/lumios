@@ -35,6 +35,11 @@ public class TaskServiceImpl
     }
 
     @Override
+    public void deleteAllByChat(ReverenceChat chat) {
+        taskRepository.deleteAllByChat(chat);
+    }
+
+    @Override
     public boolean existsByChatAndTaskName(ReverenceChat chat, String taskName) {
         return taskRepository.existsByChatAndTaskName(chat, taskName);
     }

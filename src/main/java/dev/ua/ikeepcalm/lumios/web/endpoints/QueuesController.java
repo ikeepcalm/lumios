@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 import java.util.Map;
@@ -135,7 +136,14 @@ public class QueuesController {
             queueMessage.setText(">>> " + name + " <<<\n\n");
             queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queue));
             Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
-            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+            try {
+                this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+            } catch (TelegramApiException e) {
+                TextMessage textMessage = new TextMessage();
+                textMessage.setChatId(chatId);
+                textMessage.setText("Якщо ви хочете, щоб ця черга була закріплена, надайте боту відповідні права!");
+                telegramClient.sendTextMessage(textMessage);
+            }
             queue.setMessageId(sendTextMessage.getMessageId());
             queue.setChatId(reverenceChat.getChatId());
             queueService.save(queue);
@@ -146,7 +154,14 @@ public class QueuesController {
             queueMessage.setText(">>> " + name + " <<<\n\n");
             queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(queue));
             Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
-            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+            try {
+                this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+            } catch (TelegramApiException e) {
+                TextMessage textMessage = new TextMessage();
+                textMessage.setChatId(chatId);
+                textMessage.setText("Якщо ви хочете, щоб ця черга була закріплена, надайте боту відповідні права!");
+                telegramClient.sendTextMessage(textMessage);
+            }
             queue.setMessageId(sendTextMessage.getMessageId());
             queue.setChatId(reverenceChat.getChatId());
             queueService.save(queue);
@@ -204,7 +219,11 @@ public class QueuesController {
         try {
             SimpleQueue simpleQueue = queueService.findSimpleById(id);
             queueService.deleteSimpleQueue(simpleQueue);
-            telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), chatId));
+            try {
+                telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), chatId));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(chatId);
             textMessage.setText("Черга (" + simpleQueue.getAlias() + ") щойно була видалена @" + reverenceUser.getUsername() + "!");
@@ -237,6 +256,8 @@ public class QueuesController {
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Queue with ID: " + id + " is not found");
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
         }
     }
 }

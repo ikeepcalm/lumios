@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Entity(name = "message_records")
+@Entity(name = "messageRecords")
 public class MessageRecord {
 
     @Id
@@ -32,6 +32,6 @@ public class MessageRecord {
     private LocalDateTime date;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user")
     private ReverenceUser user;
 }

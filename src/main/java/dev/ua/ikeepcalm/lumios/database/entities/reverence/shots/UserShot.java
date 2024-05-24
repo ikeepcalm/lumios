@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Entity(name = "records_user_shot")
+@Entity(name = "userShots")
 public class UserShot {
 
     @Id

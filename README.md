@@ -56,7 +56,7 @@ The project is entirely made using the Java Telegram API Wrapper Library from ru
 ---
 
 ## Installation
-In order to successfully set up the application and launch it in order to somehow enhance the bot, you should specify credentials for your Telegram bot retrieved via BotFather in Telegram in file named ```application.properties``` located in resources folder, and not only. To clone and start the the project you have to:
+In order to successfully set up the application and launch it in order to somehow enhance the bot, you should specify credentials for your Telegram bot retrieved via BotFather in Telegram in file named ```application.properties``` located in resources folder, and not only. To clone and start the project you have to:
 
 1. Clone the repository: `git clone https://github.com/ikeepcalm/lumios.git`
 2. Navigate to the project directory: `cd lumios`
@@ -75,7 +75,7 @@ spring.datasource.password = #PASSWORD OF THE DB USER
 #other APIs
 tenor.api.key = #TENOR API KEY, IF I'D LIKE TO USE IT
 ```
-5. Build the fat-jar using: `gradle clean bootJar`
+1. Build the fat-jar using: `gradle clean bootJar`
 
 ---
 

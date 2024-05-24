@@ -10,9 +10,12 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends CrudRepository<ReverenceUser, Long> {
-    Optional<ReverenceUser> findReverenceUserByUserIdAndChannel(long userId, ReverenceChat channel);
+    Optional<ReverenceUser> findReverenceUserByUserIdAndChat(long userId, ReverenceChat channel);
+
     List<ReverenceUser> findByUserId(long userId);
-    ReverenceUser findReverenceUserByUsernameAndChannel(String username, ReverenceChat channel);
-    List<ReverenceUser> findAllByChannel(ReverenceChat channel);
+
+    ReverenceUser findReverenceUserByUsernameAndChat(String username, ReverenceChat channel);
+
+    List<ReverenceUser> findAllByChat(ReverenceChat channel);
 }
 

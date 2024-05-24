@@ -7,6 +7,7 @@ import dev.ua.ikeepcalm.lumios.telegram.modules.parents.CommandParent;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 public class QueueCommand extends CommandParent {
@@ -43,7 +44,11 @@ public class QueueCommand extends CommandParent {
         queueMessage.setText(stringBuilder.toString());
         queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(simpleQueue));
         Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
-        this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+        try {
+            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+        } catch (TelegramApiException e) {
+            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено, додайте мене до адміністраторів чату!");
+        }
         simpleQueue.setMessageId(sendTextMessage.getMessageId());
         simpleQueue.setChatId(message.getChatId());
         queueService.save(simpleQueue);

@@ -11,7 +11,7 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-@Entity(name = "due_tasks")
+@Entity(name = "dueTasks")
 public class DueTask {
 
     @Id

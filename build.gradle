@@ -25,7 +25,7 @@ dependencies {
 }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.8.5-SNAPSHOT'
+version = '1.8.6-SNAPSHOT'
 description = 'lumios.dev backend application'
 
 tasks.withType(JavaCompile).configureEach {

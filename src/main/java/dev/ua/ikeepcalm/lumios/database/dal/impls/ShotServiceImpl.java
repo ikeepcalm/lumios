@@ -29,7 +29,7 @@ public class ShotServiceImpl implements ShotService {
 
     @Override
     public ChatShot findByChatIdAndDate(Long chatId, LocalDate date) throws NoSuchEntityException {
-        List<ChatShot> chatShots = this.chatShotRepository.findAllByReverenceChat_ChatIdAndDate(chatId, date);
+        List<ChatShot> chatShots = this.chatShotRepository.findAllByChat_ChatIdAndDate(chatId, date);
         if (chatShots.isEmpty()) {
             throw new NoSuchEntityException("ChatShot not found");
         }

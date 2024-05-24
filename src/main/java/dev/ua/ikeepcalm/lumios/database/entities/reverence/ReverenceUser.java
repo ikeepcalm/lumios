@@ -1,13 +1,16 @@
 package dev.ua.ikeepcalm.lumios.database.entities.reverence;
 
+import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "reverence_users")
+@Table(name = "reverenceUsers")
 public class ReverenceUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +28,8 @@ public class ReverenceUser {
     @Column(columnDefinition = "integer default 0")
     private int balance;
     @ManyToOne
-    private ReverenceChat channel;
-
+    private ReverenceChat chat;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MessageRecord> messages;
 }
 

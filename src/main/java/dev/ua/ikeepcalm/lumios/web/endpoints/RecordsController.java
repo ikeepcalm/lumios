@@ -55,7 +55,7 @@ public class RecordsController {
     @GetMapping("/ratings")
     public ResponseEntity<List<DifferenceWrapper>> getShots(@RequestParam("chatId") Long chatId, @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         ChatShot startShot = null;
-        ChatShot endShot = null;
+        ChatShot endShot;
         LocalDate tempStartDate = startDate;
 
         while (startShot == null) {
@@ -104,7 +104,7 @@ public class RecordsController {
 
     private ChatShot createChatShot(ReverenceChat chat, LocalDate date) {
         ChatShot chatShot = new ChatShot();
-        chatShot.setReverenceChat(chat);
+        chatShot.setChat(chat);
         chatShot.setDate(date);
         List<UserShot> userShots = new ArrayList<>();
         chat.getUsers().forEach(user -> {

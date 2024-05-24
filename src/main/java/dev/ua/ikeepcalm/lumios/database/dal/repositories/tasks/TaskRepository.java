@@ -14,7 +14,10 @@ public interface TaskRepository extends CrudRepository<DueTask, Long> {
 
     Optional<DueTask> findByChatAndId(ReverenceChat chat, Long id);
 
+    void deleteAllByChat(ReverenceChat chat);
+
     boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);
+
 
 }
 

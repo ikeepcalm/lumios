@@ -4,7 +4,6 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 
 import java.time.LocalDate;
-import java.util.NoSuchElementException;
 
 public interface ShotService {
 

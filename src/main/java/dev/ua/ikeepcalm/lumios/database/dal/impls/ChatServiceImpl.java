@@ -1,6 +1,8 @@
 package dev.ua.ikeepcalm.lumios.database.dal.impls;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
+import dev.ua.ikeepcalm.lumios.database.dal.repositories.history.MessageRecordRepository;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.reverence.ChatRepository;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
@@ -11,9 +13,13 @@ import java.util.Optional;
 @Service
 public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
+    private final UserService userService;
+    private final MessageRecordRepository messageRecordRepository;
 
-    public ChatServiceImpl(ChatRepository chatRepository) {
+    public ChatServiceImpl(ChatRepository chatRepository, UserService userService, MessageRecordRepository messageRecordRepository) {
         this.chatRepository = chatRepository;
+        this.userService = userService;
+        this.messageRecordRepository = messageRecordRepository;
     }
 
     @Override
@@ -33,7 +39,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void delete(ReverenceChat chat) {
-        this.chatRepository.save(chat);
+        this.chatRepository.delete(chat);
     }
 
     @Override

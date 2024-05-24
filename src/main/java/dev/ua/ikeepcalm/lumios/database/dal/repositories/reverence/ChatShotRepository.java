@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface ChatShotRepository extends CrudRepository<ChatShot, Long> {
-    Optional<ChatShot> findByReverenceChat(ReverenceChat reverenceChat);
+    Optional<ChatShot> findByChat(ReverenceChat reverenceChat);
 
-    List<ChatShot> findAllByReverenceChat_ChatIdAndDate(Long chatId, LocalDate date);
+    List<ChatShot> findAllByChat_ChatIdAndDate(Long chatId, LocalDate date);
 }

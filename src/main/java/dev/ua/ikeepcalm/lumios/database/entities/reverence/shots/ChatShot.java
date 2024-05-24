@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "records_chat_shot")
+@Table(name = "chatShots")
 public class ChatShot {
 
     @Id
@@ -22,7 +22,7 @@ public class ChatShot {
     private List<UserShot> userShots;
 
     @ManyToOne
-    private ReverenceChat reverenceChat;
+    private ReverenceChat chat;
 
     @Column
     private LocalDate date;

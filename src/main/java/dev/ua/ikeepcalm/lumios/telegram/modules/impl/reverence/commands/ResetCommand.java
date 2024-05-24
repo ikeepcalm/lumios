@@ -36,7 +36,7 @@ public class ResetCommand extends CommandParent {
         }
         if (message.getFrom().getUserName().equals("ikeepcalm")) {
             sendMessage("Відновлення даних за датою " + date);
-            ChatShot chatShot = null;
+            ChatShot chatShot;
             try {
                 chatShot = shotService.findByChatIdAndDate(reverenceChat.getChatId(), date);
             } catch (NoSuchEntityException e) {
@@ -49,7 +49,6 @@ public class ResetCommand extends CommandParent {
                     reverenceUser.setReverence(user.getReverence());
                     userService.save(reverenceUser);
                 } catch (NoSuchEntityException e) {
-                    continue;
                 }
             }
         } else {

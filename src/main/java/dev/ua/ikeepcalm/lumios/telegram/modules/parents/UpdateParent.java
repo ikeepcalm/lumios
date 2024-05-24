@@ -57,20 +57,21 @@ public abstract class UpdateParent {
                 ReverenceChat newChat = new ReverenceChat();
                 newChat.setChatId(message.getChat().getId());
                 newChat.setName(message.getChat().getTitle());
+                newChat.setDescription(message.getChat().getDescription());
                 this.chatService.save(newChat);
                 this.reverenceChat = newChat;
                 sendMessage("""
                         Привіт!
 
                         Дякую за те, що додали мене сюди! Коротенький список того, що я вмію:
-                        
+                                                
                         - створювати черги;
                         - записувати завдання;
                         - виводити розклад по команді;
                         - нагадувати про пару за декілька хвилин до початку
                         - відслідковувати реакції на повідомлення
                         - і ще багато чого!
-                        
+                                                
                         Щоб дізнатися більше, натисніть /help@lumios_bot!
                         """, update);
             }
@@ -88,7 +89,7 @@ public abstract class UpdateParent {
                     newUser.setUsername(message.getUser().getUserName());
                     newUser.setCredits(100);
                     newUser.setSustainable(100);
-                    newUser.setChannel(reverenceChat);
+                    newUser.setChat(reverenceChat);
                     userService.save(newUser);
                     reverenceUser = newUser;
                 }
@@ -117,13 +118,13 @@ public abstract class UpdateParent {
                     newUser.setUsername(message.getFrom().getUserName());
                     newUser.setCredits(100);
                     newUser.setSustainable(100);
-                    newUser.setChannel(reverenceChat);
+                    newUser.setChat(reverenceChat);
                     userService.save(newUser);
                     reverenceUser = newUser;
                     sendMessage("@" + message.getFrom().getUserName() + """
-                            
+                                                        
                             Давай знайомитись! Мене звуть Люміос, а тебе?
-                            
+                                                        
                             ...зроблю вигляд, що запам'ятав. Ще побачимося!
                             """, update);
                 }

@@ -10,9 +10,16 @@ public class MeCommand extends CommandParent {
 
     @Override
     public void processUpdate(Message message) {
-        sendMessage("```Власна-статистика" +
-                " ◈ Рейтинг: " + reverenceUser.getReverence() + "\n" +
-                " ◈ Кредити: " + reverenceUser.getCredits() + "\n" +
-                " ◈ Оновлення: " + reverenceUser.getSustainable() + "```\n", ParseMode.MARKDOWN);
+        if (reverenceUser.getReverence() < 0) {
+            sendMessage("```Власна-статистика" +
+                        " ◈ Рейтинг: " + reverenceUser.getReverence() + "\n\n"
+                        + "Допоки ви знаходитесь у від'ємному секторі поваги, для вас недоступний певний функціонал!```\n", ParseMode.MARKDOWN
+            );
+        } else {
+            sendMessage("```Власна-статистика" +
+                        " ◈ Рейтинг: " + reverenceUser.getReverence() + "\n" +
+                        " ◈ Кредити: " + reverenceUser.getCredits() + "\n" +
+                        " ◈ Оновлення: " + reverenceUser.getSustainable() + "```\n", ParseMode.MARKDOWN);
+        }
     }
 }

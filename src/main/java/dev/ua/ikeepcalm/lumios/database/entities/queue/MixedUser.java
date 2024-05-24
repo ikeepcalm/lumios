@@ -9,7 +9,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@Entity(name = "mixed_users")
+@Entity(name = "mixedUsers")
 public class MixedUser {
 
     @Id

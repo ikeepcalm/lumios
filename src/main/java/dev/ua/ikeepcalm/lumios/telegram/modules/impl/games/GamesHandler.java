@@ -23,8 +23,8 @@ public class GamesHandler implements HandlerParent {
         String[] parts = commandText.split("\\s+", 2);
         String command = parts[0].toLowerCase();
         command = command.replace("@lumios_bot", "");
-        switch (command) {
-            case "/gamble" -> gambleCommand.handleUpdate(update.getMessage());
+        if (command.equals("/gamble")) {
+            gambleCommand.handleUpdate(update.getMessage());
         }
     }
 

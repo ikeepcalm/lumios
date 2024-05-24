@@ -15,7 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMemberRestricted;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.Timer;
 import java.util.UUID;
@@ -55,6 +58,10 @@ public abstract class CallbackParent {
     @Transactional
     public void handleUpdate(CallbackQuery message) {
         this.message = (Message) message.getMessage();
+        ChatMember chatMember = telegramClient.getChatMember(message.getMessage().getChatId(), message.getFrom().getId());
+        if (chatMember.getStatus().equals(ChatMemberRestricted.STATUS)) {
+            telegramClient.sendAnswerCallbackQuery("На жаль, ви не можете використовувати бота!", message.getId());
+        }
         try {
             this.reverenceChat = chatService.findByChatId(message.getMessage().getChatId());
             this.reverenceChat.setName(message.getMessage().getChat().getTitle());
@@ -76,7 +83,7 @@ public abstract class CallbackParent {
                 newUser.setUsername(message.getFrom().getUserName());
                 newUser.setCredits(100);
                 newUser.setSustainable(100);
-                newUser.setChannel(reverenceChat);
+                newUser.setChat(reverenceChat);
                 userService.save(newUser);
                 this.userService.save(newUser);
                 this.reverenceUser = newUser;
@@ -181,7 +188,11 @@ public abstract class CallbackParent {
                     @Override
                     public void run() {
                         RemoveMessage removeMessage = new RemoveMessage(message.getMessageId(), message.getChatId());
-                        telegramClient.sendRemoveMessage(removeMessage);
+                        try {
+                            telegramClient.sendRemoveMessage(removeMessage);
+                        } catch (TelegramApiException e) {
+                            logger.error("Failed to delete message: {}", message.getMessageId());
+                        }
                     }
                 }, 300000);
     }

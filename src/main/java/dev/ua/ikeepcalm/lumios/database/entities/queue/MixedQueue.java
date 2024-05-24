@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "mixed_queues")
+@Entity(name = "mixedQueues")
 public class MixedQueue {
 
     @Id

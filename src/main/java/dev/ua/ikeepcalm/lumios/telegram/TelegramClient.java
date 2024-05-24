@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
@@ -27,6 +28,7 @@ import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +42,15 @@ public class TelegramClient extends OkHttpTelegramClient {
         super(botToken);
     }
 
-    private Object executeCommand(BotApiMethod<?> command) {
+    private Object executeCommand(BotApiMethod<?> command) throws TelegramApiException {
         try {
             return execute(command);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Failed to execute {}", command.getClass(), e);
-            throw new RuntimeException(e);
+        } catch (TelegramApiRequestException e) {
+            if (e.getErrorCode() == 400 || e.getErrorCode() == 403) {
+                LOGGER.error("Failed to execute {}", command.getMethod());
+                LOGGER.error("Error code: {}", e.getErrorCode());
+            }
+            throw new TelegramApiException(e);
         }
     }
 
@@ -53,6 +58,15 @@ public class TelegramClient extends OkHttpTelegramClient {
         ArrayList<ChatMember> chats;
         chats = execute(new GetChatAdministrators(chatId));
         return chats;
+    }
+
+    public ChatMember getChatMember(long chatId, long userId) {
+        try {
+            return execute(new GetChatMember(String.valueOf(chatId), userId));
+        } catch (TelegramApiException e) {
+            LOGGER.error("Failed to get chat member", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public Message sendAnimation(MediaMessage mediaMessage) {
@@ -82,10 +96,14 @@ public class TelegramClient extends OkHttpTelegramClient {
     }
 
     public void sendAnswerCallbackQuery(String text, String callbackQueryId) {
-        executeCommand(AnswerCallbackQuery.builder()
-                .text(text)
-                .callbackQueryId(callbackQueryId)
-                .build());
+        try {
+            executeCommand(AnswerCallbackQuery.builder()
+                    .text(text)
+                    .callbackQueryId(callbackQueryId)
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Message sendEditMessage(EditMessage editMessage) {
@@ -94,29 +112,7 @@ public class TelegramClient extends OkHttpTelegramClient {
 
     public Message sendEditMessage(EditMessage editMessage, boolean isCaption) {
         if (isCaption) {
-            return (Message) executeCommand(EditMessageCaption.builder()
-                    .messageId(editMessage.getMessageId())
-                    .caption(editMessage.getText())
-                    .parseMode(editMessage.getParseMode())
-                    .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
-                    .chatId(editMessage.getChatId())
-                    .build());
-        } else {
-
-            if (editMessage.getFilePath() == null && editMessage.getText() == null) {
-                return (Message) executeCommand(EditMessageReplyMarkup.builder()
-                        .messageId(editMessage.getMessageId())
-                        .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
-                        .chatId(editMessage.getChatId())
-                        .build());
-            } else if (editMessage.getFilePath() == null) {
-                return (Message) executeCommand(EditMessageText.builder()
-                        .text(editMessage.getText())
-                        .messageId(editMessage.getMessageId())
-                        .chatId(editMessage.getChatId())
-                        .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
-                        .build());
-            } else {
+            try {
                 return (Message) executeCommand(EditMessageCaption.builder()
                         .messageId(editMessage.getMessageId())
                         .caption(editMessage.getText())
@@ -124,46 +120,122 @@ public class TelegramClient extends OkHttpTelegramClient {
                         .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                         .chatId(editMessage.getChatId())
                         .build());
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+
+            if (editMessage.getFilePath() == null && editMessage.getText() == null) {
+                try {
+                    return (Message) executeCommand(EditMessageReplyMarkup.builder()
+                            .messageId(editMessage.getMessageId())
+                            .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
+                            .chatId(editMessage.getChatId())
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (editMessage.getFilePath() == null) {
+                try {
+                    return (Message) executeCommand(EditMessageText.builder()
+                            .text(editMessage.getText())
+                            .messageId(editMessage.getMessageId())
+                            .chatId(editMessage.getChatId())
+                            .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                try {
+                    return (Message) executeCommand(EditMessageCaption.builder()
+                            .messageId(editMessage.getMessageId())
+                            .caption(editMessage.getText())
+                            .parseMode(editMessage.getParseMode())
+                            .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
+                            .chatId(editMessage.getChatId())
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
 
-    public void pinChatMessage(long chatId, long messageId) {
-        executeCommand(PinChatMessage.builder()
-                .chatId(chatId)
-                .messageId((int) messageId)
-                .build());
+    public void pinChatMessage(long chatId, long messageId) throws TelegramApiException {
+        try {
+            executeCommand(PinChatMessage.builder()
+                    .chatId(chatId)
+                    .messageId((int) messageId)
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new TelegramApiException(e);
+        }
+    }
+
+    public Message sendTextMessage(TextMessage textMessage, boolean shouldHandleExceptions) throws TelegramApiException {
+        if (!shouldHandleExceptions) {
+            return sendTextMessage(textMessage);
+        } else {
+            try {
+                return (Message) executeCommand(SendMessage.builder()
+                        .text(textMessage.getText())
+                        .chatId(textMessage.getChatId())
+                        .parseMode(textMessage.getParseMode())
+                        .replyMarkup(textMessage.getReplyKeyboard())
+                        .replyToMessageId(textMessage.getMessageId())
+                        .build());
+            } catch (TelegramApiException e) {
+                throw new TelegramApiException(e);
+            }
+        }
     }
 
     public Message sendTextMessage(TextMessage textMessage) {
-        return (Message) executeCommand(SendMessage.builder()
-                .text(textMessage.getText())
-                .chatId(textMessage.getChatId())
-                .parseMode(textMessage.getParseMode())
-                .replyMarkup(textMessage.getReplyKeyboard())
-                .replyToMessageId(textMessage.getMessageId())
-                .build());
+        try {
+            return (Message) executeCommand(SendMessage.builder()
+                    .text(textMessage.getText())
+                    .chatId(textMessage.getChatId())
+                    .parseMode(textMessage.getParseMode())
+                    .replyMarkup(textMessage.getReplyKeyboard())
+                    .replyToMessageId(textMessage.getMessageId())
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void sendRemoveMessage(RemoveMessage removeMessage) {
-        executeCommand(DeleteMessage.builder()
-                .chatId(removeMessage.getChatId())
-                .messageId(removeMessage.getMessageId())
-                .build());
+    public void sendRemoveMessage(RemoveMessage removeMessage) throws TelegramApiException {
+        try {
+            executeCommand(DeleteMessage.builder()
+                    .chatId(removeMessage.getChatId())
+                    .messageId(removeMessage.getMessageId())
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new TelegramApiException(e);
+        }
     }
 
     public void sendReaction(ReactionMessage reactionMessage) {
-        executeCommand(SetMessageReaction.builder()
-                .chatId(reactionMessage.getChatId())
-                .messageId(reactionMessage.getMessageId())
-                .reactionTypes(reactionMessage.getReactionTypes())
-                .build());
+        try {
+            executeCommand(SetMessageReaction.builder()
+                    .chatId(reactionMessage.getChatId())
+                    .messageId(reactionMessage.getMessageId())
+                    .reactionTypes(reactionMessage.getReactionTypes())
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void sendForwardMessage(long chatId, long fromChatId, int messageId) {
+    public void sendForwardMessage(long chatId, long fromChatId, int messageId) throws TelegramApiException {
         ForwardMessage forwardMessage = new ForwardMessage(String.valueOf(chatId), String.valueOf(fromChatId), messageId);
         forwardMessage.setProtectContent(true);
-        executeCommand(forwardMessage);
+        try {
+            executeCommand(forwardMessage);
+        } catch (TelegramApiRequestException e) {
+            throw new TelegramApiException(e);
+        }
     }
 
     public void sendAnswerInlineQuery(AnswerInlineQuery answerInlineQuery) {

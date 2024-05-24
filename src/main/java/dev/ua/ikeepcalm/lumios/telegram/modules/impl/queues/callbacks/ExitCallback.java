@@ -9,6 +9,7 @@ import dev.ua.ikeepcalm.lumios.telegram.modules.parents.CallbackParent;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,11 +45,15 @@ public class ExitCallback extends CallbackParent {
                     simpleQueue.setMessageId(this.telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(super.message.getChatId(), simpleQueue)).getMessageId());
                     queueService.save(simpleQueue);
 
-                    this.telegramClient.sendAnswerCallbackQuery("Йоу! Вітаю із виходои з цієї черги. Тепер можна і розслабитися...", callbackQueryId);
+                    this.telegramClient.sendAnswerCallbackQuery("Йоу! Вітаю із виходом з цієї черги. Тепер можна і розслабитися...", callbackQueryId);
 
                     if (queueContents.isEmpty()) {
                         RemoveMessage removeMessage = new RemoveMessage(simpleQueue.getMessageId(), super.message.getChatId());
-                        this.telegramClient.sendRemoveMessage(removeMessage);
+                        try {
+                            this.telegramClient.sendRemoveMessage(removeMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
                         queueService.deleteSimpleQueue(simpleQueue);
                     } else {
                         this.telegramClient.sendTextMessage(QueueMarkupUtil.createNotification(super.message.getChatId(), simpleQueue));

@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ReverenceUser findById(long userId, ReverenceChat reverenceChat) throws NoSuchEntityException {
-        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChannel(userId, reverenceChat);
+        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChat(userId, reverenceChat);
         if (reverenceUser.isPresent()) {
             return reverenceUser.get();
         } else {
@@ -57,12 +57,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ReverenceUser findByUsername(String username, ReverenceChat reverenceChat) {
-        return this.userRepository.findReverenceUserByUsernameAndChannel(username, reverenceChat);
+        return this.userRepository.findReverenceUserByUsernameAndChat(username, reverenceChat);
     }
 
     @Override
     public List<ReverenceUser> findAll(ReverenceChat reverenceChat) {
-        return this.userRepository.findAllByChannel(reverenceChat);
+        return this.userRepository.findAllByChat(reverenceChat);
     }
 
     @Override
@@ -77,13 +77,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean checkIfUserExists(long userId, ReverenceChat reverenceChat) {
-        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChannel(userId, reverenceChat);
+        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChat(userId, reverenceChat);
         return reverenceUser.isPresent();
     }
 
     @Override
     public boolean checkIfMentionedUserExists(String username, ReverenceChat reverenceChat) {
-        ReverenceUser reverenceUser = userRepository.findReverenceUserByUsernameAndChannel(username, reverenceChat);
+        ReverenceUser reverenceUser = userRepository.findReverenceUserByUsernameAndChat(username, reverenceChat);
         return reverenceUser != null;
     }
 }
