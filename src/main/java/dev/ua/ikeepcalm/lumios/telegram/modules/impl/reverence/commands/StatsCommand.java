@@ -23,10 +23,14 @@ public class StatsCommand extends CommandParent {
                 .sorted((user1, user2) -> Integer.compare(user2.getReverence(), user1.getReverence()))
                 .toList();
 
+        int maxReverence = sortedUsers.getFirst().getReverence();
+
         StringBuilder builder = new StringBuilder("```Загальна-статистика");
 
         for (ReverenceUser user : sortedUsers) {
-            builder.append(" ▻ ").append(user.getUsername()).append(": ").append(user.getReverence()).append("\n");
+            if (user.getReverence() >= maxReverence * 0.01) {
+                builder.append(" ▻ ").append(user.getUsername()).append(": ").append(user.getReverence()).append("\n");
+            }
         }
 
         builder.append("```");

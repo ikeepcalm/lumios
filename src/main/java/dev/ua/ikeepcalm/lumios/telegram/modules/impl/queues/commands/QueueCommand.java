@@ -27,7 +27,11 @@ public class QueueCommand extends CommandParent {
         SimpleUser simpleUser = new SimpleUser();
         simpleUser.setName(message.getFrom().getFirstName());
         simpleUser.setAccountId(message.getFrom().getId());
-        simpleUser.setUsername(message.getFrom().getUserName());
+        if (message.getFrom().getUserName() == null) {
+            simpleUser.setUsername("ukhilyant");
+        } else {
+            simpleUser.setUsername(message.getFrom().getUserName());
+        }
         simpleQueue.getContents().add(simpleUser);
         TextMessage queueMessage = new TextMessage();
         queueMessage.setChatId(message.getChatId());
@@ -47,7 +51,7 @@ public class QueueCommand extends CommandParent {
         try {
             this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         } catch (TelegramApiException e) {
-            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено, додайте мене до адміністраторів чату!");
+            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено автоматично, надайте мені необхідні дозволи!");
         }
         simpleQueue.setMessageId(sendTextMessage.getMessageId());
         simpleQueue.setChatId(message.getChatId());

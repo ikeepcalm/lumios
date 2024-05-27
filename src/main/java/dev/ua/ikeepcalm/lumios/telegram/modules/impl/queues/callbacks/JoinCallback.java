@@ -23,7 +23,11 @@ public class JoinCallback extends CallbackParent {
             SimpleUser simpleUser = new SimpleUser();
             simpleUser.setName(message.getFrom().getFirstName());
             simpleUser.setAccountId(message.getFrom().getId());
-            simpleUser.setUsername(message.getFrom().getUserName());
+            if (message.getFrom().getUserName() == null) {
+                simpleUser.setUsername("ukhilyant");
+            } else {
+                simpleUser.setUsername(message.getFrom().getUserName());
+            }
             if (!simpleQueue.getContents().contains(simpleUser)) {
                 simpleQueue.getContents().add(simpleUser);
                 simpleQueue.setMessageId(telegramClient.sendEditMessage

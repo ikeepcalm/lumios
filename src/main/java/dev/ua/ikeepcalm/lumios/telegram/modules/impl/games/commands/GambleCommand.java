@@ -4,11 +4,15 @@ import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.utils.TenorUtil;
 import dev.ua.ikeepcalm.lumios.telegram.modules.parents.CommandParent;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.MediaMessage;
+import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +24,7 @@ import java.util.Timer;
 @Component
 public class GambleCommand extends CommandParent {
 
+    private static final Logger log = LoggerFactory.getLogger(GambleCommand.class);
     private final TenorUtil tenorUtil;
 
     public GambleCommand(TenorUtil tenorUtil) {
@@ -125,7 +130,19 @@ public class GambleCommand extends CommandParent {
                         editMessage.setMessageId(finalSent.getMessageId());
                         editMessage.setChatId(finalSent.getChatId());
                         editMessage.setText(finalResultMessage);
-                        telegramClient.sendEditMessage(editMessage, finalIsCaption);
+                        Message sentMessage = telegramClient.sendEditMessage(editMessage, finalIsCaption);
+                        new Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            telegramClient.sendRemoveMessage(new RemoveMessage(sentMessage.getMessageId(), sentMessage.getChatId()));
+                                            telegramClient.sendRemoveMessage(new RemoveMessage(message.getMessageId(), message.getChatId()));
+                                        } catch (TelegramApiException e) {
+                                            log.error("Failed to delete message: {}", sentMessage.getText());
+                                        }
+                                    }
+                                }, 300000);
                     }
                 }, 8000);
     }
@@ -170,6 +187,9 @@ public class GambleCommand extends CommandParent {
         String[] messages = {
                 "Jackpot",
                 "Casino",
+                "Luck",
+                "Lucky",
+                "Gamble",
                 "Rich",
                 "Royal Flush",
                 "JJK",
@@ -189,6 +209,7 @@ public class GambleCommand extends CommandParent {
                 "JJK",
                 "Anime",
                 "TBATE",
+                "Kaiju No. 8",
                 "The Beginning after The End",
                 "Fuck up"
         };

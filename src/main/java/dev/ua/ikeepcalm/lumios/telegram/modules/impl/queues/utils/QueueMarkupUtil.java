@@ -4,6 +4,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -67,7 +68,16 @@ public class QueueMarkupUtil {
         textMessage.setMessageId(simpleQueue.getMessageId());
 
         if (simpleUser != null) {
-            textMessage.setText(simpleUser.getName() + " (@" + simpleUser.getUsername() + "), твоя черга відповідати у " + simpleQueue.getAlias() + "!");
+            String username = simpleUser.getUsername();
+
+            if (username.equals("ukhilyant")) {
+                username = "[" + simpleUser.getName() + "]" + "(" + "tg://user?id=" + simpleUser.getAccountId() + ")";
+                textMessage.setParseMode(ParseMode.MARKDOWN);
+            } else {
+                username = "@" + username;
+            }
+
+            textMessage.setText(simpleUser.getName() + " (" + username + "), твоя черга відповідати у " + simpleQueue.getAlias() + "!");
         }
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();

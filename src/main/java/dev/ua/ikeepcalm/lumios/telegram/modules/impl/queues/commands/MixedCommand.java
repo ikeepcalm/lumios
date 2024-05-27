@@ -27,7 +27,11 @@ public class MixedCommand extends CommandParent {
         MixedUser mixedUser = new MixedUser();
         mixedUser.setName(message.getFrom().getFirstName());
         mixedUser.setAccountId(message.getFrom().getId());
-        mixedUser.setUsername(message.getFrom().getUserName());
+        if (message.getFrom().getUserName() == null) {
+            mixedUser.setUsername("ukhilyant");
+        } else {
+            mixedUser.setUsername(message.getFrom().getUserName());
+        }
         mixedQueue.getContents().add(mixedUser);
         TextMessage queueMessage = new TextMessage();
         queueMessage.setChatId(message.getChatId());
@@ -44,7 +48,7 @@ public class MixedCommand extends CommandParent {
         try {
             this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         } catch (TelegramApiException e) {
-            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено, додайте мене до адміністраторів чату!");
+            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено автоматично, надайте мені необхідні дозволи!");
         }
         mixedQueue.setMessageId(sendTextMessage.getMessageId());
         mixedQueue.setChatId(message.getChatId());

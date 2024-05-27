@@ -25,7 +25,11 @@ public class JoinCallback extends CallbackParent {
             MixedUser mixedUser = new MixedUser();
             mixedUser.setName(message.getFrom().getFirstName());
             mixedUser.setAccountId(message.getFrom().getId());
-            mixedUser.setUsername(message.getFrom().getUserName());
+            if (message.getFrom().getUserName() == null) {
+                mixedUser.setUsername("ukhilyant");
+            } else {
+                mixedUser.setUsername(message.getFrom().getUserName());
+            }
             if (!mixedQueue.getContents().contains(mixedUser)) {
 
                 mixedQueue.getContents().add(mixedUser);
