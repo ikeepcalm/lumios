@@ -23,7 +23,7 @@ public class SystemHandler implements HandlerParent {
         String commandText = message.getText();
         commandText = commandText.replace("@lumios_bot", "");
         switch (commandText) {
-            case "/help" -> helpCommand.handleUpdate(message);
+            case "/help", "start" -> helpCommand.handleUpdate(message);
             case "/info" -> infoCommand.handleUpdate(message);
         }
     }

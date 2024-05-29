@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
@@ -25,6 +26,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeAllGroupChats;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeAllPrivateChats;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -36,10 +40,42 @@ import java.util.List;
 @Service
 public class TelegramClient extends OkHttpTelegramClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TelegramClient.class);
+    private static final Logger log = LoggerFactory.getLogger(TelegramClient.class);
 
     public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken) {
         super(botToken);
+        try {
+            executeCommand(setBotCommands());
+            log.info("Bot commands set successfully");
+        } catch (TelegramApiException e) {
+            log.error("Failed to set bot commands", e);
+        }
+    }
+
+    private SetMyCommands setBotCommands() {
+        return SetMyCommands.builder()
+                .commands(
+                        new ArrayList<>(List.of(
+                                new BotCommand("help", "Відкрити довідку користувача"),
+                                new BotCommand("task", "Створити заплановане завдання"),
+                                new BotCommand("edit", "Редагувати заплановане завдання"),
+                                new BotCommand("due", "Переглянути список завдань")
+                        ))).scope(BotCommandScopeAllPrivateChats.builder().build())
+                .commands(
+                        new ArrayList<>(List.of(
+                                new BotCommand("queue", "Створити просту нумеровану чергу"),
+                                new BotCommand("mixed", "Створити мішану (випадкову) чергу"),
+                                new BotCommand("editor", "Налаштувати розклад для чату"),
+                                new BotCommand("today", "Показати розклад на сьогодні"),
+                                new BotCommand("tomorrow", "Показати розклад на завтра"),
+                                new BotCommand("now", "Посмлання на заняття, яке йде зараз"),
+                                new BotCommand("next", "Посмлання на наступне заняття"),
+                                new BotCommand("week", "Показати розклад тижня"),
+                                new BotCommand("me", "Подивитися персональну статистику"),
+                                new BotCommand("stats", "Подивитися загальну статистику"),
+                                new BotCommand("gamble", "Команда для лудоманів"),
+                                new BotCommand("wheel", "Щоденне колесо фортуни")))
+                ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }
 
     private Object executeCommand(BotApiMethod<?> command) throws TelegramApiException {
@@ -47,8 +83,8 @@ public class TelegramClient extends OkHttpTelegramClient {
             return execute(command);
         } catch (TelegramApiRequestException e) {
             if (e.getErrorCode() == 400 || e.getErrorCode() == 403) {
-                LOGGER.error("Failed to execute {}", command.getMethod());
-                LOGGER.error("Error code: {}", e.getErrorCode());
+                log.error("Failed to execute {}", command.getMethod());
+                log.error("Error code: {}", e.getErrorCode());
             }
             throw new TelegramApiException(e);
         }
@@ -64,7 +100,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         try {
             return execute(new GetChatMember(String.valueOf(chatId), userId));
         } catch (TelegramApiException e) {
-            LOGGER.error("Failed to get chat member", e);
+            log.error("Failed to get chat member", e);
             throw new RuntimeException(e);
         }
     }
@@ -90,7 +126,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         try {
             return execute(new GetFile(fileId));
         } catch (TelegramApiException e) {
-            LOGGER.error("Failed to get file", e);
+            log.error("Failed to get file", e);
             throw new RuntimeException(e);
         }
     }
@@ -242,7 +278,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         try {
             execute(answerInlineQuery);
         } catch (TelegramApiException e) {
-            LOGGER.error("Failed to send answer inline query", e);
+            log.error("Failed to send answer inline query", e);
         }
     }
 }

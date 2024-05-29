@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Random;
-import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class GambleCommand extends CommandParent {
 
     private static final Logger log = LoggerFactory.getLogger(GambleCommand.class);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final TenorUtil tenorUtil;
 
     public GambleCommand(TenorUtil tenorUtil) {
@@ -122,29 +125,21 @@ public class GambleCommand extends CommandParent {
         String finalResultMessage = resultMessage;
         Message finalSent = sent;
         boolean finalIsCaption = isCaption;
-        new Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        EditMessage editMessage = new EditMessage();
-                        editMessage.setMessageId(finalSent.getMessageId());
-                        editMessage.setChatId(finalSent.getChatId());
-                        editMessage.setText(finalResultMessage);
-                        Message sentMessage = telegramClient.sendEditMessage(editMessage, finalIsCaption);
-                        new Timer().schedule(
-                                new java.util.TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            telegramClient.sendRemoveMessage(new RemoveMessage(sentMessage.getMessageId(), sentMessage.getChatId()));
-                                            telegramClient.sendRemoveMessage(new RemoveMessage(message.getMessageId(), message.getChatId()));
-                                        } catch (TelegramApiException e) {
-                                            log.error("Failed to delete message: {}", sentMessage.getText());
-                                        }
-                                    }
-                                }, 300000);
-                    }
-                }, 8000);
+        scheduler.schedule(() -> {
+            EditMessage editMessage = new EditMessage();
+            editMessage.setMessageId(finalSent.getMessageId());
+            editMessage.setChatId(finalSent.getChatId());
+            editMessage.setText(finalResultMessage);
+            Message sentMessage = telegramClient.sendEditMessage(editMessage, finalIsCaption);
+            scheduler.schedule(() -> {
+                try {
+                    telegramClient.sendRemoveMessage(new RemoveMessage(sentMessage.getMessageId(), sentMessage.getChatId()));
+                    telegramClient.sendRemoveMessage(new RemoveMessage(message.getMessageId(), message.getChatId()));
+                } catch (TelegramApiException e) {
+                    log.error("Failed to delete message: {}", sentMessage.getText());
+                }
+            }, 5, TimeUnit.MINUTES);
+        }, 8, TimeUnit.SECONDS);
     }
 
     private String generateWinMessage(int betAmount, int newReverence) {
@@ -194,7 +189,10 @@ public class GambleCommand extends CommandParent {
                 "Royal Flush",
                 "JJK",
                 "Anime",
-                "Lord of The Mysteries"
+                "Amon",
+                "Mahoraga",
+                "With this treasure I summon",
+                "Honored one"
         };
         return randomMessage(messages);
     }
@@ -208,9 +206,8 @@ public class GambleCommand extends CommandParent {
                 "Elden Ring",
                 "JJK",
                 "Anime",
-                "TBATE",
+                "Tokyo Ghoul",
                 "Kaiju No. 8",
-                "The Beginning after The End",
                 "Fuck up"
         };
         return randomMessage(messages);

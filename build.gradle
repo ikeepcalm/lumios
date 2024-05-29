@@ -4,7 +4,6 @@ plugins {
     id 'maven-publish'
     id 'org.graalvm.buildtools.native' version '0.9.28'
     id 'org.springframework.boot' version '3.2.5'
-//    id 'org.springframework.boot.experimental.thin-launcher' version '1.0.31.RELEASE'
 }
 
 dependencies {
@@ -25,34 +24,25 @@ dependencies {
 }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.8.7-SNAPSHOT'
+version = '1.8.9-SNAPSHOT'
 description = 'lumios.dev backend application'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-//publishing {
-//    publications {
-//        maven(MavenPublication) {
-//            from components.java
-//        }
-//    }
-//}
-
 graalvmNative {
     binaries {
         main {
             imageName = "lumios"
             mainClass = "dev.ua.ikeepcalm.lumios.Application"
-        }
-    }
-    binaries {
-        configureEach {
+            useFatJar = true
+            resources {
+                autodetect()
+            }
             buildArgs.add("--verbose")
         }
-        main {
-            useFatJar = true
-        }
     }
+    toolchainDetection = false
 }
+

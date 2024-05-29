@@ -34,7 +34,7 @@ public class InlineHandler implements HandlerParent {
                 .cacheTime(0)
                 .build();
         telegramClient.sendAnswerInlineQuery(answerInlineQuery);
-        if (update.getInlineQuery().getQuery().isBlank()) {
+        if (update.getInlineQuery().getQuery().length() < 5) {
             log.info("Empty query from user: {}", update.getInlineQuery().getFrom().getUserName());
         }
         log.info("Query: {}, User: {}", update.getInlineQuery().getQuery(), update.getInlineQuery().getFrom().getUserName());

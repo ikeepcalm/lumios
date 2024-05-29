@@ -23,7 +23,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public abstract class CommandParent {
@@ -35,9 +37,9 @@ public abstract class CommandParent {
     protected ChatService chatService;
     protected UserService userService;
     protected TaskService taskService;
-
     protected TimetableService timetableService;
     protected QueueService queueService;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private Logger logger;
 
     @Autowired
@@ -143,18 +145,14 @@ public abstract class CommandParent {
     }
 
     private void scheduleMessageToDelete(Message message) {
-        new Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        RemoveMessage removeMessage = new RemoveMessage(message.getMessageId(), message.getChatId());
-                        try {
-                            telegramClient.sendRemoveMessage(removeMessage);
-                        } catch (TelegramApiException e) {
-                            logger.error("Failed to delete message: {}", message.getMessageId());
-                        }
-                    }
-                }, 300000);
+        scheduler.schedule(() -> {
+            RemoveMessage removeMessage = new RemoveMessage(message.getMessageId(), message.getChatId());
+            try {
+                telegramClient.sendRemoveMessage(removeMessage);
+            } catch (TelegramApiException e) {
+                logger.error("Failed to delete message: {}", message.getMessageId());
+            }
+        }, 5, TimeUnit.MINUTES);
     }
 
 }

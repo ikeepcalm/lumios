@@ -2,6 +2,7 @@ package dev.ua.ikeepcalm.lumios.telegram.modules.impl.games;
 
 import dev.ua.ikeepcalm.lumios.telegram.modules.HandlerParent;
 import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.commands.GambleCommand;
+import dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.commands.WheelCommand;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -9,9 +10,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class GamesHandler implements HandlerParent {
 
     private final GambleCommand gambleCommand;
+    private final WheelCommand wheelCommand;
 
-    public GamesHandler(GambleCommand gambleCommand) {
+    public GamesHandler(GambleCommand gambleCommand, WheelCommand wheelCommand) {
         this.gambleCommand = gambleCommand;
+        this.wheelCommand = wheelCommand;
     }
 
     @Override
@@ -25,9 +28,10 @@ public class GamesHandler implements HandlerParent {
         command = command.replace("@lumios_bot", "");
         if (command.equals("/gamble")) {
             gambleCommand.handleUpdate(update.getMessage());
+        } else if (command.equals("/wheel")) {
+            wheelCommand.handleUpdate(update.getMessage());
         }
     }
-
 
     @Override
     public boolean supports(Update update) {
