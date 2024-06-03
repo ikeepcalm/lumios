@@ -49,4 +49,14 @@ public class ClassEntry {
     public ClassEntry() {
 
     }
+
+    @Override
+    public String toString() {
+        return "ClassEntry{" +
+               "name='" + name + '\'' +
+               ", url='" + url + '\'' +
+               ", startTime=" + startTime +
+               ", endTime=" + endTime +
+               '}';
+    }
 }

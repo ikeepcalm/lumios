@@ -42,7 +42,11 @@ public class TaskWrapper {
         taskWrapper.setDueDate(task.getDueDate());
         taskWrapper.setDueTime(task.getDueTime());
         taskWrapper.setTaskName(task.getTaskName());
-        taskWrapper.setUrl(task.getUrl());
+        if (task.getUrl() == null) {
+            taskWrapper.setUrl("");
+        } else {
+            taskWrapper.setUrl(task.getUrl());
+        }
         return taskWrapper;
     }
 
