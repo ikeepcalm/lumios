@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
@@ -64,14 +63,14 @@ public class HelpCommand extends CommandParent {
         } else {
             String helpText = """
                     *Привіт, шкіряний мішок!*
-                    
+                                        
                     Я можу допомогти тобі з кількома речами:
                     - Керування чергами
                     - Керування розкладом
                     - Керування завданнями
                     - Керування повагою
                     - Певні веселощі
-                    
+                                        
                     Щоб дізнатися більше, використай цю ж команду у ПП зі мною
                     Якщо тобі подобається інший підхід, зазирни у довідку на сайті
                     """;

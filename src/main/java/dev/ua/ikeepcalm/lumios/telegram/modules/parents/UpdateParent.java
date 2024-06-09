@@ -60,20 +60,6 @@ public abstract class UpdateParent {
                 newChat.setDescription(message.getChat().getDescription());
                 this.chatService.save(newChat);
                 this.reverenceChat = newChat;
-                sendMessage("""
-                        Привіт!
-
-                        Дякую за те, що додали мене сюди! Коротенький список того, що я вмію:
-                                                
-                        - створювати черги;
-                        - записувати завдання;
-                        - виводити розклад по команді;
-                        - нагадувати про пару за декілька хвилин до початку
-                        - відслідковувати реакції на повідомлення
-                        - і ще багато чого!
-                                                
-                        Щоб дізнатися більше, натисніть /help@lumios_bot!
-                        """, update);
             }
 
             if (!message.getUser().getIsBot()) {
@@ -104,7 +90,6 @@ public abstract class UpdateParent {
                 this.chatService.save(newChat);
                 this.reverenceChat = newChat;
             }
-
             if (!message.getFrom().getIsBot()) {
                 try {
                     this.reverenceUser = this.userService.findById(message.getFrom().getId(), reverenceChat);
@@ -121,12 +106,6 @@ public abstract class UpdateParent {
                     newUser.setChat(reverenceChat);
                     userService.save(newUser);
                     reverenceUser = newUser;
-                    sendMessage("@" + message.getFrom().getUserName() + """
-                                                        
-                            Давай знайомитись! Мене звуть Люміос, а тебе?
-                                                        
-                            ...зроблю вигляд, що запам'ятав. Ще побачимося!
-                            """, update);
                 }
             }
         }

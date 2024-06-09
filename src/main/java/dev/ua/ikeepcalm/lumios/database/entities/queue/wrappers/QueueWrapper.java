@@ -31,6 +31,10 @@ public class QueueWrapper {
     @JsonProperty("isMixed")
     private boolean isMixed;
 
+    public QueueWrapper() {
+        this.contents = new ArrayList<>();
+    }
+
     public static List<QueueWrapper> wrapSimpleQueues(List<SimpleQueue> queues) {
         List<QueueWrapper> queueWrappers = new ArrayList<>();
         for (SimpleQueue queue : queues) {
@@ -96,7 +100,6 @@ public class QueueWrapper {
         return simpleUsers;
     }
 
-
     public List<MixedUser> unwrapMixedContents() {
         List<MixedUser> mixedUsers = new ArrayList<>();
         for (UserWrapper userWrapper : this.contents) {
@@ -107,9 +110,5 @@ public class QueueWrapper {
             mixedUsers.add(mixedUser);
         }
         return mixedUsers;
-    }
-
-    public QueueWrapper() {
-        this.contents = new ArrayList<>();
     }
 }

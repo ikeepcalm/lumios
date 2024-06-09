@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public abstract class CommandParent {
 
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     protected Message message;
     protected TelegramClient telegramClient;
     protected ReverenceChat reverenceChat;
@@ -39,7 +40,6 @@ public abstract class CommandParent {
     protected TaskService taskService;
     protected TimetableService timetableService;
     protected QueueService queueService;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private Logger logger;
 
     @Autowired

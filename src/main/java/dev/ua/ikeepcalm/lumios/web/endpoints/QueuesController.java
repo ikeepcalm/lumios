@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -56,7 +57,7 @@ public class QueuesController {
         List<SimpleQueue> queues = queueService.findAllSimpleByChatId(reverenceChat.getChatId());
         List<MixedQueue> mixedQueues = queueService.findAllMixedByChatId(reverenceChat.getChatId());
         if (queues.isEmpty() && mixedQueues.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.OK).body(null);
+            return ResponseEntity.status(HttpStatus.OK).body(new ArrayList<>());
         }
         List<QueueWrapper> timetableWrappers = QueueWrapper.wrapQueues(queues, mixedQueues);
         return ResponseEntity.status(HttpStatus.OK).body(timetableWrappers);
@@ -185,11 +186,13 @@ public class QueuesController {
             if (queue.isMixed()) {
                 MixedQueue mixedQueue = new MixedQueue(queue);
                 queueService.deleteMixedQueue(mixedQueue);
+                mixedQueue.setChatId(chatId);
                 mixedQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(reverenceChat.getChatId(), mixedQueue)).getMessageId());
                 queueService.save(mixedQueue);
             } else {
                 SimpleQueue simpleQueue = new SimpleQueue(queue);
                 queueService.deleteSimpleQueue(simpleQueue);
+                simpleQueue.setChatId(chatId);
                 simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(reverenceChat.getChatId(), simpleQueue)).getMessageId());
                 queueService.save(simpleQueue);
             }

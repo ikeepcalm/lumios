@@ -26,7 +26,7 @@ public class WhatIsDueCommand extends CommandParent {
         LocalDate maxDueDate = today.plusDays(14);
         List<DueTask> filteredTasks = tasks.stream()
                 .filter(task -> !task.getDueDate().isBefore(today) && !task.getDueDate().isAfter(maxDueDate)
-                        && !(task.getDueDate().isEqual(today) && task.getDueTime().isBefore(LocalTime.now())))
+                                && !(task.getDueDate().isEqual(today) && task.getDueTime().isBefore(LocalTime.now())))
                 .toList();
 
         if (!filteredTasks.isEmpty()) {

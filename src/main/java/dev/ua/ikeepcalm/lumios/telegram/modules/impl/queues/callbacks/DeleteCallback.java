@@ -36,7 +36,8 @@ public class DeleteCallback extends CallbackParent {
                     }
                 }
             }
-        } catch (TelegramApiException ignored) {}
+        } catch (TelegramApiException ignored) {
+        }
     }
 }
 

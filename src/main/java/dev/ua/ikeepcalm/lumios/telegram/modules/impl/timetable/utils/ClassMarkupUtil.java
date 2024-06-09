@@ -17,9 +17,9 @@ public class ClassMarkupUtil {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
         textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                + "Шановне панство, незабаром почнеться / вже проходить пара: \n"
-                + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
-                + "Посилання на конференцію ⬇️"
+                            + "Шановне панство, незабаром почнеться / вже проходить пара: \n"
+                            + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
+                            + "Посилання на конференцію ⬇️"
         );
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
@@ -38,9 +38,9 @@ public class ClassMarkupUtil {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
         textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                + "Наступна пара починається о " + classEntry.getStartTime() + " і має назву:" + "\n"
-                + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
-                + "Посилання на конференцію ⬇️"
+                            + "Наступна пара починається о " + classEntry.getStartTime() + " і має назву:" + "\n"
+                            + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
+                            + "Посилання на конференцію ⬇️"
         );
 
 

@@ -8,7 +8,9 @@ import java.util.Optional;
 public interface BindRepository extends CrudRepository<ReverenceBind, Long> {
 
     Optional<ReverenceBind> findByChatId(Long chatId);
+
     Optional<ReverenceBind> findByUserId(Long userId);
+
     void deleteByUserId(Long userId);
 
 }

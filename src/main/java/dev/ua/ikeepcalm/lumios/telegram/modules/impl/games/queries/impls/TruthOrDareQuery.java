@@ -35,11 +35,10 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 public class TruthOrDareQuery implements InlineQuery {
 
+    private static final Logger log = LoggerFactory.getLogger(TruthOrDareQuery.class);
     private final BindService bindService;
     private final ChatService chatService;
     private final UserService userService;
-
-    private static final Logger log = LoggerFactory.getLogger(TruthOrDareQuery.class);
 
     public TruthOrDareQuery(BindService bindService, ChatService chatService, UserService userService) {
         this.bindService = bindService;

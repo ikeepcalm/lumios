@@ -11,6 +11,7 @@ public interface TaskService {
     void save(DueTask dueTask);
 
     void delete(DueTask dueTask);
+
     void deleteAllByChat(ReverenceChat chat);
 
     boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);

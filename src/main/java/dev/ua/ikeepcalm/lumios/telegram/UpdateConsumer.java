@@ -50,10 +50,10 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private static class UserActivity {
-        private long lastRequestTime;
-        private int requestCount;
         private final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
         private final int MAX_REQUESTS_PER_INTERVAL = 5;
+        private long lastRequestTime;
+        private int requestCount;
 
         boolean isRateLimited(long currentTime) {
             if (currentTime - lastRequestTime > RATE_LIMIT_INTERVAL_MS) {

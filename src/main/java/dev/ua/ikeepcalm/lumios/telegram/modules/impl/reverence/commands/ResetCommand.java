@@ -48,7 +48,8 @@ public class ResetCommand extends CommandParent {
                     ReverenceUser reverenceUser = userService.findById(user.getUserId(), reverenceChat);
                     reverenceUser.setReverence(user.getReverence());
                     userService.save(reverenceUser);
-                } catch (NoSuchEntityException ignored) {}
+                } catch (NoSuchEntityException ignored) {
+                }
             }
         } else {
             sendMessage("Ти не маєш прав на відновлення даних!");

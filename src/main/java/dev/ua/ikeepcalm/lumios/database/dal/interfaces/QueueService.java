@@ -15,6 +15,7 @@ public interface QueueService {
     SimpleQueue findSimpleById(UUID id) throws NoSuchEntityException;
 
     List<SimpleQueue> findAllSimpleByChatId(long chatId);
+
     List<MixedQueue> findAllMixedByChatId(long chatId);
 
     @Transactional

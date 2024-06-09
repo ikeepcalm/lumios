@@ -9,6 +9,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Optional;
 

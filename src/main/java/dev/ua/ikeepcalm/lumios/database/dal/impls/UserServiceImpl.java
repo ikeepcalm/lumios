@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<ReverenceUser> findById(long id){
+    public List<ReverenceUser> findById(long id) {
         return this.userRepository.findByUserId(id);
     }
 

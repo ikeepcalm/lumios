@@ -13,7 +13,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("public-api")
                 .pathsToMatch("/**")
-                .displayName("Lumios API v. 1.8.0")
+                .displayName("Lumios API")
                 .build();
     }
 

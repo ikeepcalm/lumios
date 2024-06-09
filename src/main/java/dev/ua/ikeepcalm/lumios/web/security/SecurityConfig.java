@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/queues/**").permitAll()
                         .requestMatchers("/tasks/**").permitAll()
                         .requestMatchers("/records/**").permitAll()
+                        .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())

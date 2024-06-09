@@ -1,8 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.games.commands;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
-import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.modules.parents.CommandParent;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -35,18 +33,18 @@ public class WheelCommand extends CommandParent {
             Set<ReverenceUser> reverenceUsers = reverenceChat.getUsers();
             Random random = new Random();
             ReverenceUser winner = List.copyOf(reverenceUsers).get(random.nextInt(reverenceUsers.size()));
-            int[] values = {-1000, -500, -100, -10, 0, 10, 100, 500, 1000};
-            int winAmount = values[random.nextInt(values.length)];
+
+            int winAmount = random.nextInt(1000);
             winner.setReverence(winner.getReverence() + winAmount);
             userService.save(winner);
             reverenceChat.setLastWheelDate(now);
             chatService.save(reverenceChat);
             String text = """
                     *КОЛЕСО ФОРТУНИ 🎡*
-                                    
+                    
                     🎉 Переможець: %s
                     💰 Виграш: __ %d __
-                                    
+                    
                     _Не розказуйте нікому про це!_
                     """.formatted(winner.getUsername(), winAmount);
             sendMessage(text, ParseMode.MARKDOWN);

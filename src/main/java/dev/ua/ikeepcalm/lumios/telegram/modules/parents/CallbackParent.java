@@ -28,20 +28,17 @@ import java.util.concurrent.TimeUnit;
 @Component
 public abstract class CallbackParent {
 
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     protected Message message;
     protected TelegramClient telegramClient;
-
     protected ReverenceChat reverenceChat;
     protected ReverenceUser reverenceUser;
-
     protected ChatService chatService;
     protected UserService userService;
     protected TaskService taskService;
     protected TimetableService timetableService;
     protected QueueService queueService;
-
     private Logger logger;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Autowired
     private void setupDependencies(TelegramClient telegramClient,
@@ -177,7 +174,6 @@ public abstract class CallbackParent {
         if (data != null) {
             String[] suffixes = {"-simple-delete", "-simple-exit", "-simple-flush", "-simple-join", "-simple-notify",
                     "-mixed-join", "-mixed-shuffle"};
-
             for (String suffix : suffixes) {
                 data = data.replace(suffix, "");
             }

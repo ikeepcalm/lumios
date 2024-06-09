@@ -53,7 +53,7 @@ public class UsersController {
         userWrapper.setAccountId(users.getFirst().getUserId());
 
         for (ReverenceUser iteUser : users) {
-            if (iteUser.getUserId().equals(iteUser.getChat().getChatId())){
+            if (iteUser.getUserId().equals(iteUser.getChat().getChatId())) {
                 continue;
             }
             ChatWrapper chatWrapper = new ChatWrapper();
@@ -167,6 +167,7 @@ public class UsersController {
         return new BindResult(user, chat);
     }
 
-    private record BindResult(ReverenceUser user, ReverenceChat chat) {}
+    private record BindResult(ReverenceUser user, ReverenceChat chat) {
+    }
 
 }
