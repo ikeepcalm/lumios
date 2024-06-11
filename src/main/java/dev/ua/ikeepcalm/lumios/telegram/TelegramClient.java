@@ -25,6 +25,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageRe
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeAllGroupChats;
@@ -63,6 +64,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                         ))).scope(BotCommandScopeAllPrivateChats.builder().build())
                 .commands(
                         new ArrayList<>(List.of(
+                                new BotCommand("settings", "Відкрити налаштування бота"),
                                 new BotCommand("queue", "Створити просту нумеровану чергу"),
                                 new BotCommand("mixed", "Створити мішану (випадкову) чергу"),
                                 new BotCommand("editor", "Налаштувати розклад для чату"),
@@ -118,7 +120,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         }
     }
 
-    public Chat getChat(String chatId) throws TelegramApiException {
+    public ChatFullInfo getChat(String chatId) throws TelegramApiException {
         return execute(new GetChat(chatId));
     }
 

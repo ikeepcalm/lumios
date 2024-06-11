@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.lumios.telegram.modules.impl.timetable.schedules;
 
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.ClassEntryRepository;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
@@ -40,7 +41,10 @@ public class ClassNotification {
         List<ClassEntry> upcomingClasses = classEntryRepository.findUpcomingClasses(now, nextMinute, today);
         for (ClassEntry classEntry : upcomingClasses) {
             if (classEntry.getDayEntry().getTimetableEntry().getWeekType().equals(weekType)) {
-                telegramClient.sendTextMessage(ClassMarkupUtil.createNowNotification(classEntry, classEntry.getDayEntry().getTimetableEntry().getChat().getChatId()));
+                ReverenceChat chat = classEntry.getDayEntry().getTimetableEntry().getChat();
+                if (chat.isTimetableEnabled()) {
+                    telegramClient.sendTextMessage(ClassMarkupUtil.createNowNotification(classEntry, chat.getChatId()));
+                }
             }
         }
         log.debug("Checked for upcoming classes");

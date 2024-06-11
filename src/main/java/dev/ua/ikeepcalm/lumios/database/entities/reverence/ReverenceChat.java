@@ -33,6 +33,9 @@ public class ReverenceChat {
     @Column
     private LocalDateTime lastWheelDate;
 
+    @Column(columnDefinition = "boolean default true")
+    private boolean isTimetableEnabled;
+
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ReverenceUser> users;
 

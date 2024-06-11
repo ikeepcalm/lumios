@@ -57,7 +57,6 @@ public abstract class UpdateParent {
                 ReverenceChat newChat = new ReverenceChat();
                 newChat.setChatId(message.getChat().getId());
                 newChat.setName(message.getChat().getTitle());
-                newChat.setDescription(message.getChat().getDescription());
                 this.chatService.save(newChat);
                 this.reverenceChat = newChat;
             }

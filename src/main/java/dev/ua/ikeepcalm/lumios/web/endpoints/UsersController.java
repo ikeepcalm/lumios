@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -60,7 +60,7 @@ public class UsersController {
             chatWrapper.setId(iteUser.getChat().getChatId());
             chatWrapper.setName(iteUser.getChat().getName());
             try {
-                Chat chat = telegramClient.getChat(String.valueOf(iteUser.getChat().getChatId()));
+                ChatFullInfo chat = telegramClient.getChat(String.valueOf(iteUser.getChat().getChatId()));
                 chatWrapper.setDescription(chat.getDescription());
             } catch (TelegramApiException ignored) {
                 continue;
@@ -91,7 +91,7 @@ public class UsersController {
     @GetMapping("/photo/{id}")
     public ResponseEntity<byte[]> getPhoto(@PathVariable String id) {
         try {
-            Chat chat = telegramClient.getChat(id);
+            ChatFullInfo chat = telegramClient.getChat(id);
             if (chat.getPhoto() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }

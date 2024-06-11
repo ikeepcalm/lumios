@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMemberRestricted;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -68,7 +69,6 @@ public abstract class CommandParent {
         try {
             this.reverenceChat = chatService.findByChatId(message.getChatId());
             this.reverenceChat.setName(message.getChat().getTitle());
-            this.reverenceChat.setDescription(message.getChat().getDescription());
         } catch (NoSuchEntityException e) {
             ReverenceChat newChat = new ReverenceChat();
             newChat.setChatId(message.getChatId());

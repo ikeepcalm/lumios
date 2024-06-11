@@ -129,7 +129,7 @@ public abstract class CallbackParent {
     }
 
     private void logInteraction(CallbackQuery message) {
-        if (message == null || message.getData() == null || message.getData().startsWith("shop")) {
+        if (message == null || message.getData() == null || message.getData().startsWith("settings-")) {
             return;
         }
 

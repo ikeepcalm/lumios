@@ -52,11 +52,6 @@ public class ClassEntry {
 
     @Override
     public String toString() {
-        return "ClassEntry{" +
-               "name='" + name + '\'' +
-               ", url='" + url + '\'' +
-               ", startTime=" + startTime +
-               ", endTime=" + endTime +
-               '}';
+        return "Scheduled class: " + name + " at " + startTime + " - " + endTime + " URL: " + url + " Type: " + classType + " Day: " + dayEntry.getDayName() + " Week: " + dayEntry.getTimetableEntry().getWeekType();
     }
 }
