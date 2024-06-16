@@ -26,7 +26,7 @@ public class GamesHandler implements HandlerParent {
         String[] parts = commandText.split("\\s+", 2);
         String command = parts[0].toLowerCase();
         command = command.replace("@lumios_bot", "");
-        if (command.equals("/gamble")) {
+        if (command.equals("/gamble") || command.equals("/gamble_all")) {
             gambleCommand.handleUpdate(update.getMessage());
         } else if (command.equals("/wheel")) {
             wheelCommand.handleUpdate(update.getMessage());

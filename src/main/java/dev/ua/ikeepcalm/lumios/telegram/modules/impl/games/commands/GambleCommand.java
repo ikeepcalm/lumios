@@ -46,7 +46,7 @@ public class GambleCommand extends CommandParent {
                 return;
             }
         } catch (NumberFormatException e) {
-            if (parts[1].equals("all")) {
+            if (parts[1].equals("all") || parts[0].equals("/gamble_all")) {
                 betAmount = reverenceUser.getReverence();
             } else {
                 sendMessage("Хіба це схоже на число? Спробуй ще раз. Наприклад: /gamble 100");
