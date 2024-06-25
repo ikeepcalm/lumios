@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.lumios.database.dal.repositories.history;
 
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +16,7 @@ public interface MessageRecordRepository extends CrudRepository<MessageRecord, U
 
     List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDateTime date, LocalDateTime date2);
 
-    void deleteAllByUser(ReverenceUser user);
+    void deleteAllByUser(LumiosUser user);
 
 }
 

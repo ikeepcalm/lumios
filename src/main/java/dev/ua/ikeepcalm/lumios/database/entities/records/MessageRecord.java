@@ -1,6 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.entities.records;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,5 +33,5 @@ public class MessageRecord {
 
     @ManyToOne
     @JoinColumn(name = "user")
-    private ReverenceUser user;
+    private LumiosUser user;
 }

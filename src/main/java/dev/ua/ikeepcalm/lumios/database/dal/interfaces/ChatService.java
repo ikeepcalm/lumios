@@ -1,15 +1,15 @@
 package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 
 public interface ChatService {
-    ReverenceChat findByChatId(long chatId) throws NoSuchEntityException;
+    LumiosChat findByChatId(long chatId) throws NoSuchEntityException;
 
-    void save(ReverenceChat chat);
+    void save(LumiosChat chat);
 
-    void delete(ReverenceChat chat);
+    void delete(LumiosChat chat);
 
-    Iterable<ReverenceChat> findAll();
+    Iterable<LumiosChat> findAll();
 }
 

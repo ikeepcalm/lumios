@@ -3,11 +3,11 @@ package dev.ua.ikeepcalm.lumios.web.endpoints;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TaskService;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.wrappers.TaskWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.lumios.telegram.modules.impl.tasks.utils.TaskParser;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TaskParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,30 +29,30 @@ public class TasksController {
 
     @GetMapping
     public ResponseEntity<List<TaskWrapper>> getTasks(@RequestHeader("chatId") Long chatId) {
-        ReverenceChat reverenceChat;
+        LumiosChat lumiosChat;
 
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            lumiosChat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        List<DueTask> tasks = taskService.getTasksForCurrentChat(reverenceChat);
+        List<DueTask> tasks = taskService.getTasksForCurrentChat(lumiosChat);
         return ResponseEntity.status(HttpStatus.OK).body(TaskWrapper.wrapTasks(tasks));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskWrapper> getTask(@RequestHeader("chatId") Long chatId, @PathVariable Long id) {
-        ReverenceChat reverenceChat;
+        LumiosChat lumiosChat;
 
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            lumiosChat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
         try {
-            DueTask task = taskService.findTaskById(reverenceChat.getChatId(), id);
+            DueTask task = taskService.findTaskById(lumiosChat.getChatId(), id);
             return ResponseEntity.status(HttpStatus.OK).body(TaskWrapper.wrapTask(task));
         } catch (InputMismatchException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -62,9 +62,9 @@ public class TasksController {
 
     @PutMapping
     public ResponseEntity<String> updateTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId, @RequestHeader("taskId") Long taskId) {
-        ReverenceChat reverenceChat;
+        LumiosChat lumiosChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            lumiosChat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }
@@ -72,7 +72,7 @@ public class TasksController {
         try {
             DueTask task = TaskParser.parseTaskMessage(json);
 
-            DueTask existingTask = taskService.findTaskById(reverenceChat.getChatId(), taskId);
+            DueTask existingTask = taskService.findTaskById(lumiosChat.getChatId(), taskId);
             existingTask.setTaskName(task.getTaskName());
             existingTask.setDueDate(task.getDueDate());
             existingTask.setDueTime(task.getDueTime());
@@ -87,16 +87,16 @@ public class TasksController {
 
     @PostMapping
     public ResponseEntity<String> createTasks(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
-        ReverenceChat reverenceChat;
+        LumiosChat lumiosChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            lumiosChat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }
 
         try {
             DueTask task = TaskParser.parseTaskMessage(json);
-            task.setChat(reverenceChat);
+            task.setChat(lumiosChat);
             taskService.save(task);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully created given task!");
@@ -107,15 +107,15 @@ public class TasksController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTask(@RequestHeader("chatId") Long chatId, @PathVariable("id") Long taskId) {
-        ReverenceChat reverenceChat;
+        LumiosChat lumiosChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            lumiosChat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }
 
         try {
-            DueTask task = taskService.findTaskById(reverenceChat.getChatId(), taskId);
+            DueTask task = taskService.findTaskById(lumiosChat.getChatId(), taskId);
             taskService.delete(task);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted task with ID: " + taskId);
         } catch (InputMismatchException e) {

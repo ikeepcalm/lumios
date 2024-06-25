@@ -5,7 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ShotService;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.records.wrappers.MessageWrapper;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.UserShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.wrappers.DifferenceWrapper;
@@ -38,7 +38,7 @@ public class RecordsController {
 
     @GetMapping("/messages")
     public ResponseEntity<List<MessageWrapper>> getMessages(@RequestParam("chatId") Long chatId, @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        ReverenceChat chat;
+        LumiosChat chat;
         try {
             chat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
@@ -102,7 +102,7 @@ public class RecordsController {
         return ResponseEntity.status(HttpStatus.OK).body(chatShot.getUserShots());
     }
 
-    private ChatShot createChatShot(ReverenceChat chat, LocalDate date) {
+    private ChatShot createChatShot(LumiosChat chat, LocalDate date) {
         ChatShot chatShot = new ChatShot();
         chatShot.setChat(chat);
         chatShot.setDate(date);

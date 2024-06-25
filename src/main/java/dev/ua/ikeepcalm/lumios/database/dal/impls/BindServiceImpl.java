@@ -2,7 +2,7 @@ package dev.ua.ikeepcalm.lumios.database.dal.impls;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.BindService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.reverence.BindRepository;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceBind;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosBind;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +16,17 @@ public class BindServiceImpl implements BindService {
     }
 
     @Override
-    public void save(ReverenceBind reverenceBind) {
-        bindRepository.save(reverenceBind);
+    public void save(LumiosBind lumiosBind) {
+        bindRepository.save(lumiosBind);
     }
 
     @Override
-    public ReverenceBind findByChatId(Long chatId) throws NoSuchEntityException {
+    public LumiosBind findByChatId(Long chatId) throws NoSuchEntityException {
         return bindRepository.findByChatId(chatId).orElseThrow(NoSuchEntityException::new);
     }
 
     @Override
-    public ReverenceBind findByUserId(Long userId) throws NoSuchEntityException {
+    public LumiosBind findByUserId(Long userId) throws NoSuchEntityException {
         return bindRepository.findByUserId(userId).orElseThrow(NoSuchEntityException::new);
     }
 

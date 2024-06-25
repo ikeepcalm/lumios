@@ -4,7 +4,7 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.history.MessageRecordRepository;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.reverence.ChatRepository;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +23,8 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public ReverenceChat findByChatId(long chatId) throws NoSuchEntityException {
-        Optional<ReverenceChat> reverenceChat = this.chatRepository.findByChatId(chatId);
+    public LumiosChat findByChatId(long chatId) throws NoSuchEntityException {
+        Optional<LumiosChat> reverenceChat = this.chatRepository.findByChatId(chatId);
         if (reverenceChat.isPresent()) {
             return reverenceChat.get();
         } else {
@@ -33,17 +33,17 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void save(ReverenceChat chat) {
+    public void save(LumiosChat chat) {
         this.chatRepository.save(chat);
     }
 
     @Override
-    public void delete(ReverenceChat chat) {
+    public void delete(LumiosChat chat) {
         this.chatRepository.delete(chat);
     }
 
     @Override
-    public Iterable<ReverenceChat> findAll() {
+    public Iterable<LumiosChat> findAll() {
         return chatRepository.findAll();
     }
 }

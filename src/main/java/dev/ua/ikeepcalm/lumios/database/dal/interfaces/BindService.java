@@ -1,15 +1,15 @@
 package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceBind;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosBind;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 
 public interface BindService {
 
-    void save(ReverenceBind reverenceBind);
+    void save(LumiosBind lumiosBind);
 
-    ReverenceBind findByChatId(Long chatId) throws NoSuchEntityException;
+    LumiosBind findByChatId(Long chatId) throws NoSuchEntityException;
 
-    ReverenceBind findByUserId(Long userId) throws NoSuchEntityException;
+    LumiosBind findByUserId(Long userId) throws NoSuchEntityException;
 
     void deleteByUserId(Long userId);
 

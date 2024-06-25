@@ -1,30 +1,30 @@
 package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 
 import java.util.List;
 
 public interface UserService {
-    ReverenceUser findById(long userId, ReverenceChat chat) throws NoSuchEntityException;
+    LumiosUser findById(long userId, LumiosChat chat) throws NoSuchEntityException;
 
     void updateAll();
 
     void increaseAll();
 
-    List<ReverenceUser> findById(long id);
+    List<LumiosUser> findById(long id);
 
-    ReverenceUser findByUsername(String var1, ReverenceChat var2);
+    LumiosUser findByUsername(String var1, LumiosChat var2);
 
-    List<ReverenceUser> findAll(ReverenceChat var1);
+    List<LumiosUser> findAll(LumiosChat var1);
 
-    void save(ReverenceUser var1);
+    void save(LumiosUser var1);
 
-    void delete(ReverenceUser var1);
+    void delete(LumiosUser var1);
 
-    boolean checkIfUserExists(long var1, ReverenceChat var3);
+    boolean checkIfUserExists(long var1, LumiosChat var3);
 
-    boolean checkIfMentionedUserExists(String var1, ReverenceChat var2);
+    boolean checkIfMentionedUserExists(String var1, LumiosChat var2);
 }
 

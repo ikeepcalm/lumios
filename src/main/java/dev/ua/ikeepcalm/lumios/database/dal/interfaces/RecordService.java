@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 
 import java.time.LocalDateTime;
@@ -15,5 +15,5 @@ public interface RecordService {
 
     MessageRecord findByMessageIdAndChatId(Long id, Long chatId) throws NoSuchEntityException;
 
-    List<MessageRecord> findAllByChatAndDateBetween(ReverenceChat chat, LocalDateTime startDate, LocalDateTime endDate);
+    List<MessageRecord> findAllByChatAndDateBetween(LumiosChat chat, LocalDateTime startDate, LocalDateTime endDate);
 }

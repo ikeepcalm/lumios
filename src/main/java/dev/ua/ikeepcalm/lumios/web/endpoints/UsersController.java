@@ -3,9 +3,9 @@ package dev.ua.ikeepcalm.lumios.web.endpoints;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.BindService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceBind;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosBind;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.wrappers.ChatWrapper;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.wrappers.UserWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoBindSpecifiedException;
@@ -43,7 +43,7 @@ public class UsersController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<UserWrapper> getUser(@PathVariable long id) {
-        List<ReverenceUser> users = userService.findById(id);
+        List<LumiosUser> users = userService.findById(id);
         if (users.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -52,7 +52,7 @@ public class UsersController {
         userWrapper.setUsername(users.getFirst().getUsername());
         userWrapper.setAccountId(users.getFirst().getUserId());
 
-        for (ReverenceUser iteUser : users) {
+        for (LumiosUser iteUser : users) {
             if (iteUser.getUserId().equals(iteUser.getChat().getChatId())) {
                 continue;
             }
@@ -118,14 +118,14 @@ public class UsersController {
     @Transactional
     @PostMapping("/bind/{id}")
     public ResponseEntity<String> bindUser(@PathVariable long id, @RequestHeader("chatId") long chatId) {
-        ReverenceChat chat;
+        LumiosChat chat;
         try {
             chat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat not found");
         }
 
-        ReverenceUser user;
+        LumiosUser user;
         try {
             user = userService.findById(id, chat);
         } catch (NoSuchEntityException e) {
@@ -133,16 +133,16 @@ public class UsersController {
         }
 
         bindService.deleteByUserId(id);
-        ReverenceBind reverenceBind = new ReverenceBind();
-        reverenceBind.setChatId(chat.getChatId());
-        reverenceBind.setUserId(user.getUserId());
-        bindService.save(reverenceBind);
+        LumiosBind lumiosBind = new LumiosBind();
+        lumiosBind.setChatId(chat.getChatId());
+        lumiosBind.setUserId(user.getUserId());
+        bindService.save(lumiosBind);
 
         return ResponseEntity.status(HttpStatus.OK).body("User bound!");
     }
 
     private BindResult retrieveBind(long userId) throws NoBindSpecifiedException {
-        ReverenceBind bind;
+        LumiosBind bind;
 
         try {
             bind = bindService.findByUserId(userId);
@@ -150,14 +150,14 @@ public class UsersController {
             throw new NoBindSpecifiedException("No bind specified for user " + userId);
         }
 
-        ReverenceChat chat;
+        LumiosChat chat;
         try {
             chat = chatService.findByChatId(bind.getChatId());
         } catch (NoSuchEntityException e) {
             throw new NoBindSpecifiedException("No chat specified for user bind " + bind.getUserId());
         }
 
-        ReverenceUser user;
+        LumiosUser user;
         try {
             user = userService.findById(userId, chat);
         } catch (NoSuchEntityException e) {
@@ -167,7 +167,7 @@ public class UsersController {
         return new BindResult(user, chat);
     }
 
-    private record BindResult(ReverenceUser user, ReverenceChat chat) {
+    private record BindResult(LumiosUser user, LumiosChat chat) {
     }
 
 }

@@ -2,8 +2,8 @@ package dev.ua.ikeepcalm.lumios.database.dal.impls;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.reverence.UserRepository;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +19,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ReverenceUser findById(long userId, ReverenceChat reverenceChat) throws NoSuchEntityException {
-        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChat(userId, reverenceChat);
+    public LumiosUser findById(long userId, LumiosChat lumiosChat) throws NoSuchEntityException {
+        Optional<LumiosUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChat(userId, lumiosChat);
         if (reverenceUser.isPresent()) {
             return reverenceUser.get();
         } else {
@@ -30,8 +30,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateAll() {
-        Iterable<ReverenceUser> list = userRepository.findAll();
-        for (ReverenceUser user : list) {
+        Iterable<LumiosUser> list = userRepository.findAll();
+        for (LumiosUser user : list) {
             user.setCredits(user.getSustainable());
             if (user.getReverence() > 0) {
                 user.setBalance((int) (user.getBalance() + Math.sqrt(user.getReverence())));
@@ -42,8 +42,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void increaseAll() {
-        Iterable<ReverenceUser> list = userRepository.findAll();
-        for (ReverenceUser user : list) {
+        Iterable<LumiosUser> list = userRepository.findAll();
+        for (LumiosUser user : list) {
             user.setSustainable((int) (user.getSustainable() + Math.sqrt(user.getBalance())));
             user.setBalance(0);
             this.userRepository.save(user);
@@ -51,40 +51,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<ReverenceUser> findById(long id) {
+    public List<LumiosUser> findById(long id) {
         return this.userRepository.findByUserId(id);
     }
 
     @Override
-    public ReverenceUser findByUsername(String username, ReverenceChat reverenceChat) {
-        return this.userRepository.findReverenceUserByUsernameAndChat(username, reverenceChat);
+    public LumiosUser findByUsername(String username, LumiosChat lumiosChat) {
+        return this.userRepository.findReverenceUserByUsernameAndChat(username, lumiosChat);
     }
 
     @Override
-    public List<ReverenceUser> findAll(ReverenceChat reverenceChat) {
-        return this.userRepository.findAllByChat(reverenceChat);
+    public List<LumiosUser> findAll(LumiosChat lumiosChat) {
+        return this.userRepository.findAllByChat(lumiosChat);
     }
 
     @Override
-    public void save(ReverenceUser reverenceUser) {
-        this.userRepository.save(reverenceUser);
+    public void save(LumiosUser lumiosUser) {
+        this.userRepository.save(lumiosUser);
     }
 
     @Override
-    public void delete(ReverenceUser reverenceUser) {
-        this.userRepository.delete(reverenceUser);
+    public void delete(LumiosUser lumiosUser) {
+        this.userRepository.delete(lumiosUser);
     }
 
     @Override
-    public boolean checkIfUserExists(long userId, ReverenceChat reverenceChat) {
-        Optional<ReverenceUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChat(userId, reverenceChat);
+    public boolean checkIfUserExists(long userId, LumiosChat lumiosChat) {
+        Optional<LumiosUser> reverenceUser = this.userRepository.findReverenceUserByUserIdAndChat(userId, lumiosChat);
         return reverenceUser.isPresent();
     }
 
     @Override
-    public boolean checkIfMentionedUserExists(String username, ReverenceChat reverenceChat) {
-        ReverenceUser reverenceUser = userRepository.findReverenceUserByUsernameAndChat(username, reverenceChat);
-        return reverenceUser != null;
+    public boolean checkIfMentionedUserExists(String username, LumiosChat lumiosChat) {
+        LumiosUser lumiosUser = userRepository.findReverenceUserByUsernameAndChat(username, lumiosChat);
+        return lumiosUser != null;
     }
 }
 

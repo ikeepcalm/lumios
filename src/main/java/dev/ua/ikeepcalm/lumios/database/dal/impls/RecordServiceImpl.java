@@ -3,7 +3,7 @@ package dev.ua.ikeepcalm.lumios.database.dal.impls;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.history.MessageRecordRepository;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +35,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
-    public List<MessageRecord> findAllByChatAndDateBetween(ReverenceChat chat, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<MessageRecord> findAllByChatAndDateBetween(LumiosChat chat, LocalDateTime startDate, LocalDateTime endDate) {
         return this.messageRecordRepository.findAllByChatIdAndDateBetween(chat.getChatId(), startDate, endDate);
     }
 

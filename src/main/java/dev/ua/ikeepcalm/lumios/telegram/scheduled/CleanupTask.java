@@ -1,0 +1,66 @@
+package dev.ua.ikeepcalm.lumios.telegram.scheduled;
+
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ShotService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.UserShot;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.wrappers.DifferenceWrapper;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+
+@Component
+public class CleanupTask {
+
+    static {
+        LoggerFactory.getLogger(CleanupTask.class);
+    }
+
+    private final ShotService shotService;
+    private final UserService userService;
+    private final ChatService chatService;
+
+    public CleanupTask(ShotService shotService, UserService userService, ChatService chatService) {
+        this.shotService = shotService;
+        this.userService = userService;
+        this.chatService = chatService;
+    }
+
+    @Scheduled(cron = "0 0 12 */7 * ?")
+    public void executeUsersCleanupTask() {
+        Iterable<LumiosChat> chats = chatService.findAll();
+        for (LumiosChat chat : chats) {
+            try {
+                ChatShot startShot = shotService.findByChatIdAndDate(chat.getChatId(), LocalDate.now().minusDays(1));
+                ChatShot endShot = shotService.findByChatIdAndDate(chat.getChatId(), LocalDate.now().minusDays(14));
+                for (LumiosUser user : chat.getUsers()) {
+                    UserShot startUserShot = startShot.getUserShots().stream().filter(userShot -> userShot.getUserId().equals(user.getUserId())).findFirst().orElseThrow(NoSuchEntityException::new);
+                    UserShot endUserShot = endShot.getUserShots().stream().filter(userShot -> userShot.getUserId().equals(user.getUserId())).findFirst().orElseThrow(NoSuchEntityException::new);
+                    DifferenceWrapper differenceWrapper = new DifferenceWrapper(startUserShot, endUserShot);
+                    if (differenceWrapper.getReverence() > 0) {
+                        userService.delete(user);
+                    }
+                }
+            } catch (NoSuchEntityException e) {
+                return;
+            }
+        }
+    }
+
+    @Scheduled(cron = "0 0 12 */7 * ?")
+    public void executeChatsCleanupTask() {
+        Iterable<LumiosChat> chats = chatService.findAll();
+        for (LumiosChat chat : chats) {
+            if (chat.getName() == null) {
+                chatService.delete(chat);
+            }
+        }
+    }
+
+}

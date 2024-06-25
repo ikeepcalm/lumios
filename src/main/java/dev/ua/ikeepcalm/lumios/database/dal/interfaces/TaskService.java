@@ -1,6 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 
 import java.util.InputMismatchException;
@@ -12,11 +12,11 @@ public interface TaskService {
 
     void delete(DueTask dueTask);
 
-    void deleteAllByChat(ReverenceChat chat);
+    void deleteAllByChat(LumiosChat chat);
 
-    boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);
+    boolean existsByChatAndTaskName(LumiosChat chat, String taskName);
 
-    List<DueTask> getTasksForCurrentChat(ReverenceChat chat);
+    List<DueTask> getTasksForCurrentChat(LumiosChat chat);
 
     DueTask findTaskById(Long chatId, Long id) throws InputMismatchException;
 }

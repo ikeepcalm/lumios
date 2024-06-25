@@ -3,11 +3,11 @@ package dev.ua.ikeepcalm.lumios.web.endpoints;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TimetableService;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.TimetableWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.lumios.telegram.modules.impl.timetable.utils.TimetableParser;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,9 +31,9 @@ public class TimetablesController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createTimetable(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
-        ReverenceChat reverenceChat;
+        LumiosChat lumiosChat;
         try {
-            reverenceChat = chatService.findByChatId(chatId);
+            lumiosChat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat with ID: " + chatId + " is not registered in the system");
         }
@@ -45,7 +45,7 @@ public class TimetablesController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format! No timetable entries found!");
 
             for (TimetableEntry timetableEntry : timetableEntries) {
-                timetableEntry.setChat(reverenceChat);
+                timetableEntry.setChat(lumiosChat);
                 timetableService.save(timetableEntry);
             }
 

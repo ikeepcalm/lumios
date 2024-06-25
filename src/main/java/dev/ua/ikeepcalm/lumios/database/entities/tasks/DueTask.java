@@ -1,6 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.entities.tasks;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.wrappers.TaskWrapper;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,7 +26,7 @@ public class DueTask {
     @Column(length = 2048)
     private String url;
     @ManyToOne
-    private ReverenceChat chat;
+    private LumiosChat chat;
 
     public DueTask() {
     }

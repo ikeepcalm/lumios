@@ -1,6 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.dal.repositories.tasks;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -10,13 +10,13 @@ import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends CrudRepository<DueTask, Long> {
-    List<DueTask> findByChat(ReverenceChat chat);
+    List<DueTask> findByChat(LumiosChat chat);
 
-    Optional<DueTask> findByChatAndId(ReverenceChat chat, Long id);
+    Optional<DueTask> findByChatAndId(LumiosChat chat, Long id);
 
-    void deleteAllByChat(ReverenceChat chat);
+    void deleteAllByChat(LumiosChat chat);
 
-    boolean existsByChatAndTaskName(ReverenceChat chat, String taskName);
+    boolean existsByChatAndTaskName(LumiosChat chat, String taskName);
 
 
 }

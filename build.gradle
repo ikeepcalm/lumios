@@ -2,47 +2,33 @@ plugins {
     id 'java'
     id 'java-library'
     id 'maven-publish'
-    id 'org.graalvm.buildtools.native' version '0.9.28'
-    id 'org.springframework.boot' version '3.2.5'
+    id 'org.springframework.boot' version '3.3.0'
 }
+
+group = 'dev.ua.ikeepcalm'
+version = '1.9-SNAPSHOT'
+description = 'lumios.dev backend application'
+
+String springVersion = '3.3.0'
+String telegramApiVersion = '7.4.2'
 
 dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.5'
-    implementation 'org.springframework.boot:spring-boot-starter-web:3.2.5'
-    implementation 'org.springframework.boot:spring-boot-starter-security:3.2.5'
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-security:$springVersion"
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'org.yaml:snakeyaml:2.2'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
-    implementation 'org.telegram:telegrambots-longpolling:7.4.0'
-    implementation 'org.telegram:telegrambots-client:7.4.0'
+    implementation "org.telegram:telegrambots-longpolling:$telegramApiVersion"
+    implementation "org.telegram:telegrambots-client:$telegramApiVersion"
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
-    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
-    implementation 'org.json:json:20240303'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    implementation 'org.json:json:20240303'
 }
-
-group = 'dev.ua.ikeepcalm'
-version = '1.8.9.4-SNAPSHOT'
-description = 'lumios.dev backend application'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
-
-graalvmNative {
-    binaries {
-        main {
-            imageName = "lumios"
-            mainClass = "dev.ua.ikeepcalm.lumios.Application"
-            useFatJar = true
-            resources {
-                autodetect()
-            }
-            buildArgs.add("--verbose")
-        }
-    }
-    toolchainDetection = false
-}
-

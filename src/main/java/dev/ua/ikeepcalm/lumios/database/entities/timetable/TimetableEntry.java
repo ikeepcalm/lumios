@@ -1,6 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.entities.timetable;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.DayWrapper;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.TimetableWrapper;
@@ -30,7 +30,7 @@ public class TimetableEntry {
 
     @JoinColumn
     @ManyToOne
-    private ReverenceChat chat;
+    private LumiosChat chat;
 
     public TimetableEntry(TimetableWrapper timetableWrapper) {
         this.weekType = timetableWrapper.getWeekType();

@@ -1,6 +1,6 @@
 package dev.ua.ikeepcalm.lumios.database.entities.reverence.shots;
 
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +22,7 @@ public class ChatShot {
     private List<UserShot> userShots;
 
     @ManyToOne
-    private ReverenceChat chat;
+    private LumiosChat chat;
 
     @Column
     private LocalDate date;

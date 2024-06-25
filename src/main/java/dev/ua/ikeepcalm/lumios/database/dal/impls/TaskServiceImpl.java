@@ -3,7 +3,7 @@ package dev.ua.ikeepcalm.lumios.database.dal.impls;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TaskService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.tasks.TaskRepository;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.ReverenceChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
@@ -35,23 +35,23 @@ public class TaskServiceImpl
     }
 
     @Override
-    public void deleteAllByChat(ReverenceChat chat) {
+    public void deleteAllByChat(LumiosChat chat) {
         taskRepository.deleteAllByChat(chat);
     }
 
     @Override
-    public boolean existsByChatAndTaskName(ReverenceChat chat, String taskName) {
+    public boolean existsByChatAndTaskName(LumiosChat chat, String taskName) {
         return taskRepository.existsByChatAndTaskName(chat, taskName);
     }
 
     @Override
-    public List<DueTask> getTasksForCurrentChat(ReverenceChat chatId) {
+    public List<DueTask> getTasksForCurrentChat(LumiosChat chatId) {
         return taskRepository.findByChat(chatId);
     }
 
     @Override
     public DueTask findTaskById(Long chatId, Long id) throws InputMismatchException {
-        ReverenceChat chat;
+        LumiosChat chat;
         try {
             chat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
