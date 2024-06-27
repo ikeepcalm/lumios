@@ -11,8 +11,8 @@ import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.utils.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.QueueUpdateUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -20,14 +20,15 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-@BotCallback(callback = "simple-exit")
+@BotCallback(endsWith = "simple-exit")
 public class ExitCallback extends ServicesShortcut implements Interaction {
 
     @Override
-    @Transactional
+
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String receivedCallback = message.getData().replace("-simple-exit", "");
         String callbackQueryId = message.getId();
+        System.out.println("ExitCallback.fireInteraction");
         try {
             UUID queueId = UUID.fromString(receivedCallback);
             SimpleQueue simpleQueue = queueService.findSimpleById(queueId);
@@ -35,7 +36,7 @@ public class ExitCallback extends ServicesShortcut implements Interaction {
             SimpleUser simpleUser = new SimpleUser();
             simpleUser.setName(message.getFrom().getFirstName());
             simpleUser.setAccountId(message.getFrom().getId());
-            simpleUser.setUsername(message.getFrom().getUserName());
+            simpleUser.setUsername(message.getFrom().getUserName() == null ? "ukhilyant" : message.getFrom().getUserName());
 
             List<SimpleUser> queueContents = simpleQueue.getContents();
 

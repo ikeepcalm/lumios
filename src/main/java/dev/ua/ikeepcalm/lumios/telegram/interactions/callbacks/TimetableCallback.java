@@ -10,15 +10,13 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-@BotCallback(callback = "settings-timetable")
+@BotCallback(startsWith = "settings-timetable")
 public class TimetableCallback extends ServicesShortcut implements Interaction {
 
     @Override
-    public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
-        CallbackQuery message = update.getCallbackQuery();
+    public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String data = message.getData();
         if (data.equals("settings-timetable-enable")) {
             chat.setTimetableEnabled(true);

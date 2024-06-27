@@ -20,11 +20,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.UUID;
 
 @Component
-@BotCallback(callback = "mixed-shuffle")
+@BotCallback(endsWith = "mixed-shuffle")
 public class ShuffleCallback extends ServicesShortcut implements Interaction {
 
     @Override
-    @Transactional
+
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String receivedCallback = message.getData().replace("-mixed-shuffle", "");
         String callbackQueryId = message.getId();

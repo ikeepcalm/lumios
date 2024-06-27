@@ -21,7 +21,7 @@ import java.util.UUID;
 public class JoinCallback extends ServicesShortcut implements Interaction {
 
     @Override
-    @Transactional
+
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String receivedCallback = message.getData().replace("-mixed-join", "");
         String callbackQueryId = message.getId();

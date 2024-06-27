@@ -22,6 +22,7 @@ public class NotifyCallback extends ServicesShortcut implements Interaction {
     private LocalTime lastNotifyTime;
 
     @Override
+
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String receivedCallback = message.getData().replace("-simple-notify", "");
         String callbackQueryId = message.getId();

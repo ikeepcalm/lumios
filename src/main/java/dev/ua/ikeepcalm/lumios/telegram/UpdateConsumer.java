@@ -9,22 +9,27 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
+import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotReaction;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.interactions.inlines.InlineQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.reactions.MessageReactionUpdated;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -32,16 +37,16 @@ import java.util.stream.Collectors;
 public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
-    private final String BOT_USERNAME = "@lumios_bot";
+    private static final String BOT_USERNAME = "@lumios_bot";
+    private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
+    private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 
     private final Cache<Long, UserActivity> userActivityCache;
-
     private final List<Interaction> commandHandlers;
     private final List<Interaction> callbackHandlers;
     private final List<Interaction> updateHandlers;
-
+    private final List<Interaction> reactionHandlers;
     private final List<InlineQuery> inlineQueryList;
-
     private final UserService userService;
     private final ChatService chatService;
     private final TelegramClient telegramClient;
@@ -55,18 +60,10 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
         this.userActivityCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.MINUTES)
                 .build();
-        this.commandHandlers = context.getBeansWithAnnotation(BotCommand.class)
-                .values().stream()
-                .map(Interaction.class::cast)
-                .collect(Collectors.toList());
-        this.callbackHandlers = context.getBeansWithAnnotation(BotCallback.class)
-                .values().stream()
-                .map(Interaction.class::cast)
-                .collect(Collectors.toList());
-        this.updateHandlers = context.getBeansWithAnnotation(BotUpdate.class)
-                .values().stream()
-                .map(Interaction.class::cast)
-                .collect(Collectors.toList());
+        this.commandHandlers = getBeansWithAnnotation(context, BotCommand.class);
+        this.callbackHandlers = getBeansWithAnnotation(context, BotCallback.class);
+        this.updateHandlers = getBeansWithAnnotation(context, BotUpdate.class);
+        this.reactionHandlers = getBeansWithAnnotation(context, BotReaction.class);
     }
 
     @Override
@@ -76,46 +73,42 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
         }
 
         InteractionType interactionType = determineInteractionType(update);
+        if (interactionType == null) {
+            log.warn("Unknown interaction type" + update);
+            return;
+        }
+
         switch (interactionType) {
-            case COMMAND -> handleCommand(update);
-            case CALLBACK -> handleCallback(update);
+            case COMMAND -> handleInteraction(update, commandHandlers, BotCommand.class);
+            case CALLBACK -> handleInteraction(update, callbackHandlers, BotCallback.class);
             case INLINE_QUERY -> handleInlineQuery(update);
             case UPDATE -> handleUpdate(update);
-            case null -> log.warn("Unknown interaction type" + update);
+            case REACTION_PLUS -> handleReaction(update, true);
+            case REACTION_MINUS -> handleReaction(update, false);
         }
     }
 
-    private void handleCommand(Update update) {
-        Message message = update.getMessage();
-        for (Interaction handler : commandHandlers) {
-            BotCommand annotation = handler.getClass().getAnnotation(BotCommand.class);
-            if (annotation != null && matchCommand(message, annotation)) {
-                log.info("Matched command: {}", annotation.command());
-                LumiosChat chat;
-                try {
-                    chat = chatService.findByChatId(message.getChatId());
-                } catch (NoSuchEntityException e) {
-                    LumiosChat newChat = new LumiosChat();
-                    newChat.setChatId(message.getChatId());
-                    newChat.setName(message.getChat().getTitle());
-                    newChat.setTimetableEnabled(true);
-                    chatService.save(newChat);
-                    chat = newChat;
-                }
-                LumiosUser user;
-                try {
-                    user = userService.findById(message.getFrom().getId(), chat);
-                } catch (NoSuchEntityException e) {
-                    LumiosUser newUser = new LumiosUser();
-                    newUser.setChat(chat);
-                    newUser.setUserId(message.getFrom().getId());
-                    newUser.setUsername(message.getFrom().getUserName());
-                    newUser.setSustainable(100);
-                    newUser.setCredits(100);
-                    userService.save(newUser);
-                    user = newUser;
-                }
+    private <T extends java.lang.annotation.Annotation> List<Interaction> getBeansWithAnnotation(ApplicationContext context, Class<T> annotationClass) {
+        return context.getBeansWithAnnotation(annotationClass)
+                .values().stream()
+                .map(Interaction.class::cast)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    protected void handleInteraction(Update update, List<Interaction> handlers, Class<? extends java.lang.annotation.Annotation> annotationClass) {
+        for (Interaction handler : handlers) {
+            Class<?> targetClass = AopProxyUtils.ultimateTargetClass(handler);
+            java.lang.annotation.Annotation annotation = targetClass.getAnnotation(annotationClass);
+            if (annotation instanceof BotCommand && matchCommand(update.getMessage(), (BotCommand) annotation)) {
+                LumiosChat chat = getOrCreateChat(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
+                LumiosUser user = getOrCreateUser(update.getMessage().getFrom().getId(), chat, update.getMessage().getFrom().getUserName());
                 handler.fireInteraction(update, user, chat);
+                return;
+            } else if (annotation instanceof BotCallback && matchCallback(update.getCallbackQuery(), (BotCallback) annotation)) {
+                LumiosChat chat = getOrCreateChat(update.getCallbackQuery().getMessage().getChatId(), update.getCallbackQuery().getMessage().getChat().getTitle());
+                LumiosUser user = getOrCreateUser(update.getCallbackQuery().getFrom().getId(), chat, update.getCallbackQuery().getFrom().getUserName());
+                handler.fireInteraction(update.getCallbackQuery(), user, chat);
                 return;
             }
         }
@@ -133,90 +126,58 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private void handleUpdate(Update update) {
-        Message message = update.getMessage();
         for (Interaction handler : updateHandlers) {
-            LumiosChat chat;
-            try {
-                chat = chatService.findByChatId(message.getChatId());
-            } catch (NoSuchEntityException e) {
-                LumiosChat newChat = new LumiosChat();
-                newChat.setChatId(message.getChatId());
-                newChat.setName(message.getChat().getTitle());
-                newChat.setTimetableEnabled(true);
-                chatService.save(newChat);
-                chat = newChat;
+            handler.fireInteraction(update);
+        }
+    }
+
+    private void handleReaction(Update update, boolean isPlus) {
+        for (Interaction handler : reactionHandlers) {
+            Class<?> targetClass = AopProxyUtils.ultimateTargetClass(handler);
+            BotReaction annotation = targetClass.getAnnotation(BotReaction.class);
+            if (!annotation.isPlus() && isPlus) {
+                return;
             }
-            LumiosUser user;
-            try {
-                user = userService.findById(message.getFrom().getId(), chat);
-            } catch (NoSuchEntityException e) {
-                LumiosUser newUser = new LumiosUser();
-                newUser.setChat(chat);
-                newUser.setUserId(message.getFrom().getId());
-                newUser.setUsername(message.getFrom().getUserName());
-                newUser.setSustainable(100);
-                newUser.setCredits(100);
-                userService.save(newUser);
-                user = newUser;
-            }
+
+            LumiosChat chat = getOrCreateChat(update.getMessageReaction().getChat().getId(), update.getMessageReaction().getChat().getTitle());
+            LumiosUser user = getOrCreateUser(update.getMessageReaction().getUser().getId(), chat, update.getMessageReaction().getUser().getUserName());
+
             handler.fireInteraction(update, user, chat);
         }
     }
 
-    private void handleCallback(Update update) {
-        CallbackQuery message = update.getCallbackQuery();
-        for (Interaction handler : callbackHandlers) {
-            BotCallback annotation = handler.getClass().getAnnotation(BotCallback.class);
-
-            if (annotation == null) {
-                continue;
-            }
-
-            boolean match = false;
-
-            if (annotation.callback().isEmpty()){
-                match = message.getData().endsWith(annotation.endsWith());
-            }
-
-            if (match) {
-                LumiosChat chat;
-                try {
-                    chat = chatService.findByChatId(message.getMessage().getChatId());
-                } catch (NoSuchEntityException e) {
-                    LumiosChat newChat = new LumiosChat();
-                    newChat.setChatId(message.getMessage().getChatId());
-                    newChat.setName(message.getMessage().getChat().getTitle());
-                    newChat.setTimetableEnabled(true);
-                    chatService.save(newChat);
-                    chat = newChat;
-                }
-                LumiosUser user;
-                try {
-                    user = userService.findById(message.getFrom().getId(), chat);
-                } catch (NoSuchEntityException e) {
-                    LumiosUser newUser = new LumiosUser();
-                    newUser.setChat(chat);
-                    newUser.setUserId(message.getFrom().getId());
-                    newUser.setUsername(message.getFrom().getUserName());
-                    newUser.setSustainable(100);
-                    newUser.setCredits(100);
-                    userService.save(newUser);
-                    user = newUser;
-                }
-
-                handler.fireInteraction(message, user, chat);
-                return;
-            }
+    private LumiosChat getOrCreateChat(Long chatId, String chatTitle) {
+        LumiosChat chat;
+        try {
+            chat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            chat = new LumiosChat();
+            chat.setChatId(chatId);
+            chat.setName(chatTitle);
+            chat.setTimetableEnabled(true);
+            chatService.save(chat);
         }
+        return chat;
+    }
+
+    private LumiosUser getOrCreateUser(Long userId, LumiosChat chat, String username) {
+        LumiosUser user;
+        try {
+            user = userService.findById(userId, chat);
+        } catch (NoSuchEntityException e) {
+            user = new LumiosUser();
+            user.setChat(chat);
+            user.setUserId(userId);
+            user.setUsername(username);
+            user.setSustainable(100);
+            user.setCredits(100);
+            userService.save(user);
+        }
+        return user;
     }
 
     private boolean matchCommand(Message message, BotCommand annotation) {
-        String text = message.getText();
-        if (text.split(" ").length > 1) {
-            text = text.split(" ")[0];
-        }
-        text = text.replace(BOT_USERNAME, "");
-        text = text.replace("/", "");
+        String text = message.getText().split(" ")[0].replace(BOT_USERNAME, "").replace("/", "");
         if (annotation.command().equals(text)) {
             return true;
         }
@@ -231,9 +192,62 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
         return false;
     }
 
+    private boolean matchCallback(CallbackQuery callbackQuery, BotCallback annotation) {
+        if (annotation.callback().isEmpty()) {
+            if (annotation.startsWith().isEmpty()) {
+                return callbackQuery.getData().endsWith(annotation.endsWith());
+            }
+            return callbackQuery.getData().startsWith(annotation.startsWith());
+        }
+        return callbackQuery.getData().equals(annotation.callback());
+    }
+
+    private boolean rateLimit(Update update) {
+        if (update.hasMessage()) {
+            long userId = update.getMessage().getFrom().getId();
+            long currentTime = System.currentTimeMillis();
+
+            UserActivity userActivity = userActivityCache.get(userId, k -> new UserActivity());
+            if (Objects.requireNonNull(userActivity).isRateLimited(currentTime)) {
+                log.info("User {} is rate limited", userId);
+                return true;
+            }
+
+            userActivity.recordRequest(currentTime);
+            userActivityCache.put(userId, userActivity);
+        }
+        return false;
+    }
+
+    private InteractionType determineInteractionType(Update update) {
+        if (update.hasMessage()) {
+            if (update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) {
+                return InteractionType.COMMAND;
+            }
+            return InteractionType.UPDATE;
+        }
+        if (update.hasCallbackQuery()) {
+            log.info("Callback: {}", update.getCallbackQuery().getData());
+            return InteractionType.CALLBACK;
+        }
+        if (update.hasInlineQuery()) {
+            log.info("Inline query: {}", update.getInlineQuery().getQuery());
+            return InteractionType.INLINE_QUERY;
+        }
+        if (update.getMessageReaction() != null) {
+            MessageReactionUpdated reactionUpdated = update.getMessageReaction();
+            int oldCount = reactionUpdated.getOldReaction().size();
+            int newCount = reactionUpdated.getNewReaction().size();
+            if (oldCount < newCount) {
+                return InteractionType.REACTION_PLUS;
+            } else if (oldCount > newCount) {
+                return InteractionType.REACTION_MINUS;
+            }
+        }
+        return null;
+    }
+
     private static class UserActivity {
-        private final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
-        private final int MAX_REQUESTS_PER_INTERVAL = 5;
         private long lastRequestTime;
         private int requestCount;
 
@@ -262,43 +276,8 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
         COMMAND,
         CALLBACK,
         INLINE_QUERY,
-        UPDATE
-    }
-
-    private InteractionType determineInteractionType(Update update) {
-        if (update.hasMessage()) {
-            if (update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) {
-                log.info("Command: {}", update.getMessage().getText());
-                return InteractionType.COMMAND;
-            }
-            log.info("Update: {}", update.getMessage().getText());
-            return InteractionType.UPDATE;
-        }
-        if (update.hasCallbackQuery()) {
-            log.info("Callback: {}", update.getCallbackQuery().getData());
-            return InteractionType.CALLBACK;
-        }
-        if (update.hasInlineQuery()) {
-            log.info("Inline query: {}", update.getInlineQuery().getQuery());
-            return InteractionType.INLINE_QUERY;
-        }
-        return null;
-    }
-
-    private boolean rateLimit(Update update) {
-        if (update.hasMessage()) {
-            long userId = update.getMessage().getFrom().getId();
-            long currentTime = System.currentTimeMillis();
-
-            UserActivity userActivity = userActivityCache.get(userId, k -> new UserActivity());
-            if (userActivity.isRateLimited(currentTime)) {
-                log.info("User {} is rate limited", userId);
-                return true;
-            }
-
-            userActivity.recordRequest(currentTime);
-            userActivityCache.put(userId, userActivity);
-        }
-        return false;
+        UPDATE,
+        REACTION_PLUS,
+        REACTION_MINUS
     }
 }

@@ -27,4 +27,5 @@ public class TelegramApiInitializer {
     public TelegramBotInitializer telegramBotInitializer(TelegramBotsLongPollingApplication telegramBotsApi, ObjectProvider<List<LongPollingSingleThreadUpdateConsumer>> longPollingBots) {
         return new TelegramBotInitializer(telegramBotsApi, longPollingBots.getIfAvailable(Collections::emptyList));
     }
+
 }

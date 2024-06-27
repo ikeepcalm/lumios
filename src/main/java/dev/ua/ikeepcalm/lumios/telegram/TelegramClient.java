@@ -23,7 +23,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
@@ -76,6 +75,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("me", "Подивитися персональну статистику"),
                                 new BotCommand("stats", "Подивитися загальну статистику"),
                                 new BotCommand("gamble", "Команда для лудоманів"),
+                                new BotCommand("gamble_all", "Команда для повних лудоманів"),
                                 new BotCommand("wheel", "Щоденне колесо фортуни")))
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }

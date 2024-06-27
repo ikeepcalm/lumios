@@ -5,10 +5,8 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
-import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -24,7 +22,6 @@ import java.util.Set;
 public class WheelCommand extends ServicesShortcut implements Interaction {
 
     @Override
-    @Transactional
     public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
         Message message = update.getMessage();
         LocalDateTime lastWheel = chat.getLastWheelDate();

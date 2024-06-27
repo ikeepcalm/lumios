@@ -1,8 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.interactions.updates;
 
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
@@ -17,7 +15,7 @@ import java.time.LocalDateTime;
 public class TextUpdate extends ServicesShortcut implements Interaction {
 
     @Override
-    public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
+    public void fireInteraction(Update update) {
         MessageRecord messageRecord = new MessageRecord();
         if (update.hasMessage() && update.getMessage().hasText()) {
             if (update.getMessage().getText().length() > 30000)

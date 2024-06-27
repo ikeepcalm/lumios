@@ -29,7 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
-@BotCommand(command = "gamble")
+@BotCommand(command = "gamble", aliases = ("gamble_all"))
 public class GambleCommand extends ServicesShortcut implements Interaction {
 
     private static final Logger log = LoggerFactory.getLogger(GambleCommand.class);
@@ -44,6 +44,8 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
     public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
         Message message = update.getMessage();
         String commandText = message.getText();
+        commandText = commandText.replace("@lumios_bot", "");
+        commandText = commandText.replace("_", " ");
         String[] parts = commandText.split("\\s+", 2);
         int betAmount;
         try {
@@ -124,7 +126,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
             sent = telegramClient.sendAnimation(new MediaMessage(message.getMessageId(), message.getChatId(), null, animation));
             isCaption = true;
         } catch (RuntimeException e) {
-            sent = telegramClient.sendTextMessage(new TextMessage("Mercury snake biting its tail... Кручу колесо, кидаю кубики...", message.getChatId(), message.getMessageId(), null, null, null));
+            sent = telegramClient.sendTextMessage(new TextMessage("Never stop gambling, because next time you might hit a jackpot!", message.getChatId(), message.getMessageId(), null, null, null));
             isCaption = false;
         }
 
@@ -132,6 +134,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         String finalResultMessage = resultMessage;
         Message finalSent = sent;
         boolean finalIsCaption = isCaption;
+        userService.save(user);
         scheduler.schedule(() -> {
             EditMessage editMessage = new EditMessage();
             editMessage.setMessageId(finalSent.getMessageId());

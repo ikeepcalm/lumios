@@ -9,6 +9,6 @@ import java.lang.annotation.RetentionPolicy;
 @Component
 @Transactional
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BotInlineQuery {
-    String inlineQuery() default "";
+public @interface BotReaction {
+    boolean isPlus() default false;
 }

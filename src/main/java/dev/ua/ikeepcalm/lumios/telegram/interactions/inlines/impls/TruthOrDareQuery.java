@@ -48,7 +48,7 @@ public class TruthOrDareQuery implements InlineQuery {
         this.userService = userService;
     }
 
-    @Transactional
+
     public InlineQueryResult processUpdate(Update update) {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         String result;

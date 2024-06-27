@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.Scanner;
@@ -46,6 +47,7 @@ public class Application implements CommandLineRunner {
                     case "stop":
                         logger.info("Shutting down the application...");
                         SpringApplication.exit(applicationContext, () -> 0);
+                        System.exit(0);
                         break label;
                     case "restart":
                         logger.info("Restarting the application...");
