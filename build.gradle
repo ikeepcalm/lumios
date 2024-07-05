@@ -3,10 +3,12 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'org.springframework.boot' version '3.3.0'
+    id 'org.springframework.boot.experimental.thin-launcher' version '1.0.31.RELEASE'
+    id("io.spring.dependency-management") version "1.1.5"
 }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.9-SNAPSHOT'
+version = '1.9.1-SNAPSHOT'
 description = 'lumios.dev backend application'
 
 String springVersion = '3.3.0'
@@ -31,4 +33,12 @@ dependencies {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
 }

@@ -19,7 +19,6 @@ import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -74,7 +73,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
         InteractionType interactionType = determineInteractionType(update);
         if (interactionType == null) {
-            log.warn("Unknown interaction type" + update);
+            log.warn("Unknown interaction type{}", update);
             return;
         }
 
@@ -95,7 +94,6 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     protected void handleInteraction(Update update, List<Interaction> handlers, Class<? extends java.lang.annotation.Annotation> annotationClass) {
         for (Interaction handler : handlers) {
             Class<?> targetClass = AopProxyUtils.ultimateTargetClass(handler);

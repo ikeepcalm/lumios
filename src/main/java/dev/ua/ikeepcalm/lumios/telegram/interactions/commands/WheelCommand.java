@@ -6,7 +6,6 @@ import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -48,7 +47,11 @@ public class WheelCommand extends ServicesShortcut implements Interaction {
                                         
                     _Не розказуйте нікому про це!_
                     """.formatted(winner.getUsername(), winAmount);
-            sendMessage(text, ParseMode.MARKDOWN, message);
+            try {
+                sendMessage(text, ParseMode.MARKDOWN, message);
+            } catch (Exception e) {
+                sendMessage(text, message);
+            }
         } else {
             sendMessage("До наступної спроби залишилося %d годин(и) %d хвилин(и)".formatted(24 - duration.toHours(), 60 - duration.toMinutes() % 60), ParseMode.MARKDOWN, message);
         }

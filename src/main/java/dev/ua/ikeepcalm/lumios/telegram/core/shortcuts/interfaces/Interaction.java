@@ -7,18 +7,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+@Transactional
 public interface Interaction {
 
     default void fireInteraction(Update update) {
         throw new NotImplementedException("Method not implemented");
     }
 
-    @Transactional
     default void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
         throw new NotImplementedException("Method not implemented");
     }
 
-    @Transactional
     default void fireInteraction(CallbackQuery callbackQuery, LumiosUser user, LumiosChat chat) {
         throw new NotImplementedException("Method not implemented");
     }
