@@ -93,7 +93,7 @@ public abstract class ServicesShortcut {
         return newReaction;
     }
 
-    private void scheduleMessageToDelete(Message message) {
+    protected void scheduleMessageToDelete(Message message) {
         scheduler.schedule(() -> {
             RemoveMessage removeMessage = new RemoveMessage(message.getMessageId(), message.getChatId());
             try {

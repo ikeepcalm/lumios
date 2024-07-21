@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
@@ -85,7 +84,7 @@ public class TruthOrDareQuery implements InlineQuery {
         try {
             jsonContent = new String(Files.readAllBytes(Paths.get(filePath)));
         } catch (IOException e) {
-            return "Ти рижа мавпа? Кажи лише правду";
+            return "Порожня база данних для гри \"Правда або дія\". Хочете допомогти? Звертайтесь до адміністратора.";
         }
         JSONObject jsonObject = new JSONObject(jsonContent);
         JSONArray questions = jsonObject.getJSONArray("questions");

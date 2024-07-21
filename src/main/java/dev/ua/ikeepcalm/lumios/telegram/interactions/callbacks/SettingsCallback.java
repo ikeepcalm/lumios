@@ -12,8 +12,8 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
 @Component
-@BotCallback(startsWith = "settings-timetable")
-public class TimetableCallback extends ServicesShortcut implements Interaction {
+@BotCallback(startsWith = "settings-")
+public class SettingsCallback extends ServicesShortcut implements Interaction {
 
     @Override
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
@@ -23,7 +23,14 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
         } else if (data.equals("settings-timetable-disable")) {
             chat.setTimetableEnabled(false);
         }
+
+        if (data.equals("settings-dice-enable")) {
+            chat.setDiceEnabled(true);
+        } else if (data.equals("settings-dice-disable")) {
+            chat.setDiceEnabled(false);
+        }
         chatService.save(chat);
+
 
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(message.getMessage().getChatId());

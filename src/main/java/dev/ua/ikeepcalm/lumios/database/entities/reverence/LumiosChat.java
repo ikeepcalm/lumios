@@ -36,6 +36,9 @@ public class LumiosChat {
     @Column(columnDefinition = "boolean default true")
     private boolean isTimetableEnabled;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean isDiceEnabled;
+
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<LumiosUser> users;
 

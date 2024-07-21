@@ -21,9 +21,22 @@ public class SettingsMarkupUtil {
             timetableEnabled = new InlineKeyboardButton("Сповіщення ❌");
             timetableEnabled.setCallbackData("settings-timetable-enable");
         }
+
+        InlineKeyboardRow secondRow = new InlineKeyboardRow();
+        InlineKeyboardButton diceEnabled;
+        if (lumiosChat.isDiceEnabled()) {
+            diceEnabled = new InlineKeyboardButton("Кубики ✅");
+            diceEnabled.setCallbackData("settings-dice-disable");
+        } else {
+            diceEnabled = new InlineKeyboardButton("Кубики ❌");
+            diceEnabled.setCallbackData("settings-dice-enable");
+        }
+
         firstRow.add(timetableEnabled);
+        secondRow.add(diceEnabled);
 
         keyboard.add(firstRow);
+        keyboard.add(secondRow);
 
         return new InlineKeyboardMarkup(keyboard);
     }

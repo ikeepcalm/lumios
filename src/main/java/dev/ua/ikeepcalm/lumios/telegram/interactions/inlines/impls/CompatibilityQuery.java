@@ -15,24 +15,41 @@ import java.util.Random;
 public class CompatibilityQuery implements InlineQuery {
 
     private final String[] emojis = {"😊", "🚀", "🌟", "🎉", "👾", "💻", "📚", "🎨"};
+    private final String[] strings = {"рижою мавпою", "мовою програмування Java", "успішним життям", "спекою 40 градусів", "піцою з ананасом", "програмою Microsoft Excel"};
 
     public InlineQueryResult processUpdate(Update update) {
         String query = update.getInlineQuery().getQuery();
-
-        return InlineQueryResultArticle.builder()
-                .id("compatibility")
-                .thumbnailUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5UECHdmuFUHHT7Nc_1mty8G6T1SUiAfKcbw&s")
-                .title("Наскільки ти сумісний із <твоя річ> ?")
-                .description("Дізнайтеся, на скільки відсотків ви сумісні з вашою річчю (або людиною, хі-хі)!")
-                .inputMessageContent(InputTextMessageContent.builder()
-                        .messageText("Ви із " + query + " підходите один одному на " + (new Random().nextInt(100) + 1) + "% " + getRandomEmoji())
-                        .build())
-                .build();
+        if (query.isBlank()) {
+            String randomString = getRandomString();
+            return InlineQueryResultArticle.builder()
+                    .id("compatibility")
+                    .title("Наскільки ти сумісний із " + randomString + "?")
+                    .description("Дізнайтеся, на скільки відсотків ви сумісні з вашою річчю (або людиною, хі-хі)!")
+                    .inputMessageContent(InputTextMessageContent.builder()
+                            .messageText("Ви із " + randomString + " підходите один одному на " + (new Random().nextInt(100) + 1) + "% " + getRandomEmoji())
+                            .build())
+                    .build();
+        } else {
+            return InlineQueryResultArticle.builder()
+                    .id("compatibility")
+                    .thumbnailUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5UECHdmuFUHHT7Nc_1mty8G6T1SUiAfKcbw&s")
+                    .title("Наскільки ти сумісний із " + query + "?")
+                    .description("Дізнайтеся, на скільки відсотків ви сумісні з вашою річчю (або людиною, хі-хі)!")
+                    .inputMessageContent(InputTextMessageContent.builder()
+                            .messageText("Ви із " + query + " підходите один одному на " + (new Random().nextInt(100) + 1) + "% " + getRandomEmoji())
+                            .build())
+                    .build();
+        }
     }
 
-    public String getRandomEmoji() {
+    private String getRandomEmoji() {
         Random random = new Random();
         return emojis[random.nextInt(emojis.length)];
+    }
+
+    private String getRandomString() {
+        Random random = new Random();
+        return strings[random.nextInt(strings.length)];
     }
 
 }
