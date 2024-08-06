@@ -68,12 +68,12 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
 
     private double getDiceCoefficient(int diceValue) {
         return switch (diceValue) {
-            case 1 -> 0.7;
-            case 2 -> 0.8;
+            case 1 -> 0.5;
+            case 2 -> 0.6;
             case 3 -> 0.9;
-            case 4 -> 1;
-            case 5 -> 1.2;
-            case 6 -> 1.3;
+            case 4 -> 1.5;
+            case 5 -> 1.8;
+            case 6 -> 2.0;
             default -> throw new IllegalArgumentException("Invalid dice value: " + diceValue);
         };
     }
@@ -88,13 +88,13 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
         } else if (slotValue >= 31 && slotValue <= 40) {
             return 1;
         } else if (slotValue >= 41 && slotValue <= 50) {
-            return 1.2;
+            return 1.5;
         } else if (slotValue >= 51 && slotValue <= 60) {
-            return 1.4;
+            return 1.8;
         } else if (slotValue >= 61 && slotValue <= 63) {
-            return 1.6;
-        } else if (slotValue == 64) {
             return 2.0;
+        } else if (slotValue == 64) {
+            return 2.5;
         } else {
             throw new IllegalArgumentException("Invalid slot machine value: " + slotValue);
         }

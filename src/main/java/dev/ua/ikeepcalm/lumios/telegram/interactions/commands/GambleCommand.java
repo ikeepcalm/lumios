@@ -80,7 +80,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         InputFile animation;
         if (win) {
             if (betAmount == user.getReverence()) {
-                newReverence = (int) (user.getReverence() * 1.4);
+                newReverence = (int) (user.getReverence() * 1.75);
             } else {
                 newReverence = (int) (user.getReverence() + (betAmount * 0.5));
             }
