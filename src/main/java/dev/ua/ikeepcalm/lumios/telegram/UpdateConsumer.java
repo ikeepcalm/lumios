@@ -37,8 +37,8 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
     private static final String BOT_USERNAME = "@lumios_bot";
-//    private static final String BOT_USERNAME = "@localios_bot";
-    private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
+    //    private static final String BOT_USERNAME = "@localios_bot";
+    private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(50);
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 
     private final Cache<Long, UserActivity> userActivityCache;

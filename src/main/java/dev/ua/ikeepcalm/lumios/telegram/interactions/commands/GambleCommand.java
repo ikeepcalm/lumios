@@ -72,7 +72,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         }
 
         Random random = new Random();
-        boolean win = random.nextBoolean();
+        boolean win = getRandomBoolean();
 
         int newReverence;
         String resultMessage = "@" + user.getUsername() + "\n\n";
@@ -80,7 +80,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         InputFile animation;
         if (win) {
             if (betAmount == user.getReverence()) {
-                newReverence = (int) (user.getReverence() * 1.75);
+                newReverence = (int) (user.getReverence() * 1.5);
             } else {
                 newReverence = (int) (user.getReverence() + (betAmount * 0.5));
             }
@@ -152,6 +152,10 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         }, 8, TimeUnit.SECONDS);
     }
 
+    private boolean getRandomBoolean() {
+        return Math.random() < 0.5;
+    }
+
     private String generateWinMessage(int betAmount, int newReverence) {
         String[] messages = {
                 "Леді Фортуна посміхається тобі! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
@@ -199,10 +203,8 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
                 "Royal Flush",
                 "JJK",
                 "Anime",
-                "Amon",
                 "Mahoraga",
-                "With this treasure I summon",
-                "Honored one"
+                "Gojo"
         };
         return randomMessage(messages);
     }
@@ -213,12 +215,11 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
                 "Casino",
                 "Bankrupt",
                 "Dark Souls",
+                "Died",
+                "Death",
                 "Elden Ring",
                 "JJK",
                 "Anime",
-                "Tokyo Ghoul",
-                "Kaiju No. 8",
-                "Fuck up"
         };
         return randomMessage(messages);
     }
