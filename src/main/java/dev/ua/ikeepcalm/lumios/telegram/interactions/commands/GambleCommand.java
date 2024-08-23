@@ -101,7 +101,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
             if (betAmount == user.getReverence()) {
                 newReverence = (int) (user.getReverence() * 0.5);
             } else {
-                newReverence = (int) (user.getReverence() - (betAmount * 0.6));
+                newReverence = (int) (user.getReverence() - (betAmount * 0.7));
             }
             resultMessage = resultMessage + generateLoseMessage(betAmount, newReverence);
             JSONObject loseGifs = tenorUtil.getSearchResults(generateLoseKeyword(), 10);
@@ -202,6 +202,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
                 "Rich",
                 "Royal Flush",
                 "JJK",
+                "Gojo Satoru",
                 "Anime",
                 "Mahoraga",
                 "Gojo"
@@ -215,6 +216,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
                 "Casino",
                 "Bankrupt",
                 "Dark Souls",
+                "Wasted",
                 "Died",
                 "Death",
                 "Elden Ring",

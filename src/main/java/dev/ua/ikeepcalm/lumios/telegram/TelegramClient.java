@@ -162,7 +162,6 @@ public class TelegramClient extends OkHttpTelegramClient {
                 throw new RuntimeException(e);
             }
         } else {
-
             if (editMessage.getFilePath() == null && editMessage.getText() == null) {
                 try {
                     return (Message) executeCommand(EditMessageReplyMarkup.builder()
@@ -179,6 +178,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                             .text(editMessage.getText())
                             .messageId(editMessage.getMessageId())
                             .chatId(editMessage.getChatId())
+                            .parseMode(editMessage.getParseMode())
                             .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                             .build());
                 } catch (TelegramApiException e) {

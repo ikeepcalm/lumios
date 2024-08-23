@@ -24,6 +24,10 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
     @Override
     public void fireInteraction(Update update) {
         if (update.getMessage().hasDice()) {
+            if (update.getMessage().getForwardFrom() != null) {
+                sendGoFuckYourselfReaction(update.getMessage());
+                return;
+            }
             Dice dice = update.getMessage().getDice();
             LumiosChat chat;
             try {
@@ -71,9 +75,9 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
             case 1 -> 0.5;
             case 2 -> 0.6;
             case 3 -> 0.9;
-            case 4 -> 1.5;
-            case 5 -> 1.8;
-            case 6 -> 2.0;
+            case 4 -> 1.0;
+            case 5 -> 1.1;
+            case 6 -> 1.4;
             default -> throw new IllegalArgumentException("Invalid dice value: " + diceValue);
         };
     }
@@ -85,16 +89,14 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
             return 0.8;
         } else if (slotValue >= 21 && slotValue <= 30) {
             return 0.9;
-        } else if (slotValue >= 31 && slotValue <= 40) {
+        } else if (slotValue >= 31 && slotValue <= 50) {
             return 1;
-        } else if (slotValue >= 41 && slotValue <= 50) {
-            return 1.5;
         } else if (slotValue >= 51 && slotValue <= 60) {
-            return 1.8;
+            return 1.3;
         } else if (slotValue >= 61 && slotValue <= 63) {
-            return 2.0;
+            return 1.5;
         } else if (slotValue == 64) {
-            return 2.5;
+            return 2.0;
         } else {
             throw new IllegalArgumentException("Invalid slot machine value: " + slotValue);
         }
@@ -116,6 +118,16 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
         reactionMessage.setMessageId(message.getMessageId());
         List<ReactionType> reactionTypes = new ArrayList<>();
         reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "\uD83E\uDD2E"));
+        reactionMessage.setReactionTypes(reactionTypes);
+        telegramClient.sendReaction(reactionMessage);
+    }
+
+    private void sendGoFuckYourselfReaction(Message message) {
+        ReactionMessage reactionMessage = new ReactionMessage();
+        reactionMessage.setChatId(message.getChatId());
+        reactionMessage.setMessageId(message.getMessageId());
+        List<ReactionType> reactionTypes = new ArrayList<>();
+        reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "\uD83D\uDD95"));
         reactionMessage.setReactionTypes(reactionTypes);
         telegramClient.sendReaction(reactionMessage);
     }
