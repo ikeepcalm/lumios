@@ -40,7 +40,7 @@ public class DayEntry {
     }
 
     public DayEntry() {
-
+        classEntries = new ArrayList<>();
     }
 
 }

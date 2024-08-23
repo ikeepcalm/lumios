@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.lumios.database.entities.timetable;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.campus.CampusTimetable;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.DayWrapper;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.TimetableWrapper;
@@ -8,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,6 @@ public class TimetableEntry {
     }
 
     public TimetableEntry() {
-
+        days = new ArrayList<>();
     }
 }

@@ -76,7 +76,9 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("stats", "Подивитися загальну статистику"),
                                 new BotCommand("gamble", "Команда для лудоманів"),
                                 new BotCommand("gamble_all", "Команда для повних лудоманів"),
-                                new BotCommand("wheel", "Щоденне колесо фортуни")))
+                                new BotCommand("wheel", "Щоденне колесо фортуни"),
+                                new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу")
+                        ))
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }
 

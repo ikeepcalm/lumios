@@ -9,7 +9,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
-import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableParser;
+import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TimetableParser;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;

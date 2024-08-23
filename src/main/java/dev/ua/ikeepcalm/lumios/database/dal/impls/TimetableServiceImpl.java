@@ -9,7 +9,6 @@ import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +29,15 @@ public class TimetableServiceImpl implements TimetableService {
         timetableEntry.getDays().forEach(day -> day.getClassEntries().forEach(lesson -> lesson.setDayEntry(day)));
         timetableEntry.getDays().forEach(day -> day.setTimetableEntry(timetableEntry));
         timetableRepository.save(timetableEntry);
+    }
+
+    @Override
+    public void saveAll(List<TimetableEntry> timetableEntries) {
+        for (TimetableEntry timetableEntry : timetableEntries) {
+            timetableEntry.getDays().forEach(day -> day.getClassEntries().forEach(lesson -> lesson.setDayEntry(day)));
+            timetableEntry.getDays().forEach(day -> day.setTimetableEntry(timetableEntry));
+            timetableRepository.save(timetableEntry);
+        }
     }
 
     @Override

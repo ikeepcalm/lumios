@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.lumios.telegram.utils;
+package dev.ua.ikeepcalm.lumios.telegram.utils.parsers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

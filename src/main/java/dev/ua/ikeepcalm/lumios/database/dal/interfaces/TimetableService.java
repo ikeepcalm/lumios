@@ -11,6 +11,8 @@ public interface TimetableService {
 
     void save(TimetableEntry timetableEntry);
 
+    void saveAll(List<TimetableEntry> timetableEntries);
+
     void delete(TimetableEntry timetableEntry);
 
     void deleteAll(List<TimetableEntry> timetableEntries);

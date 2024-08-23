@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@BotCallback(startsWith = "stats-")
+@BotCallback(startsWith = "stats")
 public class StatsCallback extends ServicesShortcut implements Interaction {
 
     @Override

@@ -1,4 +1,4 @@
-package dev.ua.ikeepcalm.lumios.telegram.utils;
+package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;

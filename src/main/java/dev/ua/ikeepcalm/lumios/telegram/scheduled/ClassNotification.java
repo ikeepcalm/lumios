@@ -5,7 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
-import dev.ua.ikeepcalm.lumios.telegram.utils.ClassMarkupUtil;
+import dev.ua.ikeepcalm.lumios.telegram.utils.markup.ClassMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;

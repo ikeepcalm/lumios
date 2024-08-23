@@ -7,7 +7,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.wrappers.TaskWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.lumios.telegram.utils.TaskParser;
+import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TaskParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

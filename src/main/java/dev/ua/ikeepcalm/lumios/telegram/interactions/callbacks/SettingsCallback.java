@@ -5,7 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
-import dev.ua.ikeepcalm.lumios.telegram.utils.SettingsMarkupUtil;
+import dev.ua.ikeepcalm.lumios.telegram.utils.markup.SettingsMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
