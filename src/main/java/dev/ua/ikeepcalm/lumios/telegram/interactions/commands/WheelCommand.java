@@ -5,20 +5,27 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 @Component
 @BotCommand(command = "wheel")
 public class WheelCommand extends ServicesShortcut implements Interaction {
+
+    @Contract(pure = true, value = "-> new")
+    private @NotNull SecureRandom RNG() {
+        return new SecureRandom(SecureRandom.getSeed(20));
+    }
 
     @Override
     public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
@@ -31,10 +38,9 @@ public class WheelCommand extends ServicesShortcut implements Interaction {
         Duration duration = Duration.between(lastWheel, now);
         if (duration.toHours() >= 24) {
             Set<LumiosUser> lumiosUsers = chat.getUsers();
-            Random random = new Random();
-            LumiosUser winner = List.copyOf(lumiosUsers).get(random.nextInt(lumiosUsers.size()));
+            LumiosUser winner = List.copyOf(lumiosUsers).get(RNG().nextInt(lumiosUsers.size()));
 
-            int winAmount = random.nextInt(1000);
+            int winAmount = RNG().nextInt(1000);
             winner.setReverence(winner.getReverence() + winAmount);
             userService.save(winner);
             chat.setLastWheelDate(now);
@@ -46,7 +52,9 @@ public class WheelCommand extends ServicesShortcut implements Interaction {
                     💰 Виграш: __ %d __
                                         
                     _Не розказуйте нікому про це!_
-                    """.formatted(winner.getUsername(), winAmount);
+                    """.formatted(winner.getUsername()
+                    .replace("_", "\\_")
+                    .replace("*", "\\*"), winAmount);
             try {
                 sendMessage(text, ParseMode.MARKDOWN, message);
             } catch (Exception e) {

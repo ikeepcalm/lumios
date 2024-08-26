@@ -23,11 +23,9 @@ import java.util.UUID;
 public class ExitCallback extends ServicesShortcut implements Interaction {
 
     @Override
-
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String receivedCallback = message.getData().replace("-simple-exit", "");
         String callbackQueryId = message.getId();
-        System.out.println("ExitCallback.fireInteraction");
         try {
             UUID queueId = UUID.fromString(receivedCallback);
             SimpleQueue simpleQueue = queueService.findSimpleById(queueId);

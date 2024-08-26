@@ -10,6 +10,8 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.MediaMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,12 +74,11 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
             return;
         }
 
-        Random random = new Random();
-        boolean win = getRandomBoolean();
+        boolean win = RNG().nextBoolean();
 
         int newReverence;
         String resultMessage = "@" + user.getUsername() + "\n\n";
-        int randomInt = random.nextInt(10);
+        int randomInt = RNG().nextInt(10);
         InputFile animation;
         if (win) {
             if (betAmount == user.getReverence()) {
@@ -224,6 +226,11 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
                 "Anime",
         };
         return randomMessage(messages);
+    }
+
+    @Contract(pure = true, value = "-> new")
+    private @NotNull SecureRandom RNG() {
+        return new SecureRandom(SecureRandom.getSeed(20));
     }
 
     private String randomMessage(String[] messages) {
