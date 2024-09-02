@@ -15,5 +15,7 @@ public interface RecordService {
 
     MessageRecord findByMessageIdAndChatId(Long id, Long chatId) throws NoSuchEntityException;
 
+    int countAllByChatId(Long chatId);
+
     List<MessageRecord> findAllByChatAndDateBetween(LumiosChat chat, LocalDateTime startDate, LocalDateTime endDate);
 }

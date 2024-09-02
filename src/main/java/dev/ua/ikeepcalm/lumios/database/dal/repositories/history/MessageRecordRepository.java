@@ -16,6 +16,8 @@ public interface MessageRecordRepository extends CrudRepository<MessageRecord, U
 
     List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDateTime date, LocalDateTime date2);
 
+    int countAllByChatId(Long chatId);
+
     void deleteAllByUser(LumiosUser user);
 
 }

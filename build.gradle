@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.9.5-SNAPSHOT'
+version = '1.9.6-SNAPSHOT'
 description = 'lumios.dev backend application'
 
 String springVersion = '3.3.0'

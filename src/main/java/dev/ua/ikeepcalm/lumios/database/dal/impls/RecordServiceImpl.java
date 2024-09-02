@@ -35,6 +35,11 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
+    public int countAllByChatId(Long chatId) {
+        return this.messageRecordRepository.countAllByChatId(chatId);
+    }
+
+    @Override
     public List<MessageRecord> findAllByChatAndDateBetween(LumiosChat chat, LocalDateTime startDate, LocalDateTime endDate) {
         return this.messageRecordRepository.findAllByChatIdAndDateBetween(chat.getChatId(), startDate, endDate);
     }
