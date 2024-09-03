@@ -27,6 +27,7 @@ import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQuery
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.reactions.MessageReactionUpdated;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +37,8 @@ import java.util.stream.Collectors;
 public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
-//    private static final String BOT_USERNAME = "@lumios_bot";
-        private static final String BOT_USERNAME = "@localios_bot";
+    private static final String BOT_USERNAME = "@lumios_bot";
+    //    private static final String BOT_USERNAME = "@localios_bot";
     private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 
@@ -50,6 +51,8 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     private final UserService userService;
     private final ChatService chatService;
     private final TelegramClient telegramClient;
+
+    public static final HashMap<Long, Long> waitingTasks = new HashMap<>();
 
     @Autowired
     public UpdateConsumer(ApplicationContext context, List<InlineQuery> inlineQueryList, UserService userService, ChatService chatService, TelegramClient telegramClient) {

@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.methods.*;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
@@ -19,11 +16,13 @@ import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.reactions.SetMessageReaction;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -57,8 +56,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                 .commands(
                         new ArrayList<>(List.of(
                                 new BotCommand("help", "Відкрити довідку користувача"),
-                                new BotCommand("task", "Створити заплановане завдання"),
-                                new BotCommand("edit", "Редагувати заплановане завдання"),
+                                new BotCommand("task", "Відкрити меню завдань"),
                                 new BotCommand("due", "Переглянути список завдань")
                         ))).scope(BotCommandScopeAllPrivateChats.builder().build())
                 .commands(
@@ -116,6 +114,34 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .chatId(mediaMessage.getChatId())
                     .caption(mediaMessage.getLabel())
                     .replyToMessageId(mediaMessage.getMessageId())
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Message sendDocument(String chatId, String documentId, String caption) {
+        try {
+            return execute(SendAnimation.builder()
+                    .animation(new InputFile(documentId))
+                    .chatId(chatId)
+                    .parseMode(ParseMode.MARKDOWN)
+                    .showCaptionAboveMedia(true)
+                    .caption(caption)
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Message sendPhoto(String chatId, String photoId, String caption) {
+        try {
+            return execute(SendPhoto.builder()
+                    .chatId(chatId)
+                    .photo(new InputFile(photoId))
+                    .parseMode(ParseMode.MARKDOWN)
+                    .showCaptionAboveMedia(true)
+                    .caption(caption)
                     .build());
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);

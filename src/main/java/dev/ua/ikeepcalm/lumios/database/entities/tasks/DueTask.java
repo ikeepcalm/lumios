@@ -17,14 +17,34 @@ public class DueTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column
     private LocalDate dueDate;
+
     @Column
     private LocalTime dueTime;
+
     @Column
     private String taskName;
+
     @Column(length = 2048)
     private String url;
+
+    @Column
+    private long author;
+
+    @Column
+    private TaskScope scope;
+
+    @Column
+    private TaskState state;
+
+    @Column
+    private String description;
+
+    @Column
+    private String attachment;
+
     @ManyToOne
     private LumiosChat chat;
 

@@ -2,13 +2,14 @@ package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 
 import java.util.InputMismatchException;
 import java.util.List;
 
 public interface TaskService {
 
-    void save(DueTask dueTask);
+    long save(DueTask dueTask);
 
     void delete(DueTask dueTask);
 
@@ -18,6 +19,7 @@ public interface TaskService {
 
     List<DueTask> getTasksForCurrentChat(LumiosChat chat);
 
-    DueTask findTaskById(Long chatId, Long id) throws InputMismatchException;
+    DueTask findTaskById(Long chatId, Long id) throws NoSuchEntityException;
+    DueTask findTaskById(Long id) throws NoSuchEntityException;
 }
 

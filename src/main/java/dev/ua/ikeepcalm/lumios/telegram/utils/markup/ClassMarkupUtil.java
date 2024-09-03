@@ -25,7 +25,12 @@ public class ClassMarkupUtil {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
         InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
-        notify.setUrl(classEntry.getUrl());
+        if (classEntry.getUrl() == null) {
+            notify.setText("Fice Advisor");
+            notify.setCallbackData("https://ficeadvisor.com/schedule?week=1");
+        } else {
+            notify.setUrl(classEntry.getUrl());
+        }
         firstRow.add(notify);
         keyboard.add(firstRow);
 
@@ -47,7 +52,12 @@ public class ClassMarkupUtil {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
         InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
-        notify.setUrl(classEntry.getUrl());
+        if (classEntry.getUrl() == null) {
+            notify.setText("Fice Advisor");
+            notify.setCallbackData("https://ficeadvisor.com/schedule?week=1");
+        } else {
+            notify.setUrl(classEntry.getUrl());
+        }
         firstRow.add(notify);
         keyboard.add(firstRow);
         textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));

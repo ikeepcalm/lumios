@@ -8,7 +8,6 @@ import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import org.springframework.stereotype.Service;
 
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,8 +24,8 @@ public class TaskServiceImpl
     }
 
     @Override
-    public void save(DueTask dueTask) {
-        taskRepository.save(dueTask);
+    public long save(DueTask dueTask) {
+        return taskRepository.save(dueTask).getId();
     }
 
     @Override
@@ -50,16 +49,26 @@ public class TaskServiceImpl
     }
 
     @Override
-    public DueTask findTaskById(Long chatId, Long id) throws InputMismatchException {
+    public DueTask findTaskById(Long chatId, Long id) throws NoSuchEntityException {
         LumiosChat chat;
         try {
             chat = chatService.findByChatId(chatId);
         } catch (NoSuchEntityException e) {
-            throw new InputMismatchException("Couldn't find chat by id " + chatId);
+            throw new NoSuchEntityException("Couldn't find chat by id " + chatId);
         }
         Optional<DueTask> dueTask = taskRepository.findByChatAndId(chat, id);
         if (dueTask.isEmpty()) {
-            throw new InputMismatchException("Couldn't find DueTask by id " + id);
+            throw new NoSuchEntityException("Couldn't find DueTask by id " + id);
+        } else {
+            return dueTask.get();
+        }
+    }
+
+    @Override
+    public DueTask findTaskById(Long id) throws NoSuchEntityException {
+        Optional<DueTask> dueTask = taskRepository.findById(id);
+        if (dueTask.isEmpty()) {
+            throw new NoSuchEntityException("Couldn't find DueTask by id " + id);
         } else {
             return dueTask.get();
         }

@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.InputMismatchException;
 import java.util.List;
 
 @RestController
@@ -54,7 +53,7 @@ public class TasksController {
         try {
             DueTask task = taskService.findTaskById(lumiosChat.getChatId(), id);
             return ResponseEntity.status(HttpStatus.OK).body(TaskWrapper.wrapTask(task));
-        } catch (InputMismatchException e) {
+        } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
@@ -82,6 +81,8 @@ public class TasksController {
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated given task!");
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
+        } catch (NoSuchEntityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Task with ID: " + taskId + " is not found");
         }
     }
 
@@ -118,7 +119,7 @@ public class TasksController {
             DueTask task = taskService.findTaskById(lumiosChat.getChatId(), taskId);
             taskService.delete(task);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted task with ID: " + taskId);
-        } catch (InputMismatchException e) {
+        } catch (NoSuchEntityException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Task with ID: " + taskId + " is not found");
         }
     }

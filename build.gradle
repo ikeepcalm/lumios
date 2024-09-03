@@ -8,11 +8,11 @@ plugins {
 }
 
 group = 'dev.ua.ikeepcalm'
-version = '1.9.6-SNAPSHOT'
+version = '1.9.7-SNAPSHOT'
 description = 'lumios.dev backend application'
 
 String springVersion = '3.3.0'
-String telegramApiVersion = '7.9.0'
+String telegramApiVersion = '7.9.1'
 
 dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
