@@ -32,7 +32,7 @@ public class TelegramBotInitializer implements InitializingBean {
     public void afterPropertiesSet() {
         try {
             for (LongPollingSingleThreadUpdateConsumer bot : longPollingBots) {
-                telegramBotsApi.registerBot(token, () -> TelegramUrl.DEFAULT_URL, new DefaultGetUpdatesGenerator(List.of("inline_query", "message", "callback_query", "message_reaction", "chat_member")), bot);
+                telegramBotsApi.registerBot(token, () -> TelegramUrl.DEFAULT_URL, new DefaultGetUpdatesGenerator(List.of("channel_post", "inline_query", "message", "callback_query", "message_reaction", "chat_member")), bot);
             }
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);

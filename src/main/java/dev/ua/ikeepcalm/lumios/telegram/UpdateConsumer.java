@@ -7,10 +7,7 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.UserService;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
-import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
-import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
-import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotReaction;
-import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
+import dev.ua.ikeepcalm.lumios.telegram.core.annotations.*;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.interactions.inlines.InlineQuery;
 import org.slf4j.Logger;
@@ -43,7 +40,11 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 
     private final Cache<Long, UserActivity> userActivityCache;
+    public static final HashMap<Long, Long> waitingTasks = new HashMap<>();
+    public static final HashMap<Long, Long> waitingLinks = new HashMap<>();
+
     private final List<Interaction> commandHandlers;
+    private final List<Interaction> channelHandlers;
     private final List<Interaction> callbackHandlers;
     private final List<Interaction> updateHandlers;
     private final List<Interaction> reactionHandlers;
@@ -52,7 +53,6 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     private final ChatService chatService;
     private final TelegramClient telegramClient;
 
-    public static final HashMap<Long, Long> waitingTasks = new HashMap<>();
 
     @Autowired
     public UpdateConsumer(ApplicationContext context, List<InlineQuery> inlineQueryList, UserService userService, ChatService chatService, TelegramClient telegramClient) {
@@ -64,6 +64,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
                 .expireAfterWrite(1, TimeUnit.MINUTES)
                 .build();
         this.commandHandlers = getBeansWithAnnotation(context, BotCommand.class);
+        this.channelHandlers = getBeansWithAnnotation(context, BotChannel.class);
         this.callbackHandlers = getBeansWithAnnotation(context, BotCallback.class);
         this.updateHandlers = getBeansWithAnnotation(context, BotUpdate.class);
         this.reactionHandlers = getBeansWithAnnotation(context, BotReaction.class);
@@ -86,6 +87,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
             case CALLBACK -> handleInteraction(update, callbackHandlers, BotCallback.class);
             case INLINE_QUERY -> handleInlineQuery(update);
             case UPDATE -> handleUpdate(update);
+            case CHANNEL -> handleChannel(update);
             case REACTION_PLUS -> handleReaction(update, true);
             case REACTION_MINUS -> handleReaction(update, false);
         }
@@ -129,6 +131,12 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     private void handleUpdate(Update update) {
         for (Interaction handler : updateHandlers) {
+            handler.fireInteraction(update);
+        }
+    }
+
+    private void handleChannel(Update update) {
+        for (Interaction handler : channelHandlers) {
             handler.fireInteraction(update);
         }
     }
@@ -229,6 +237,10 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
             }
             return InteractionType.UPDATE;
         }
+        if (update.hasChannelPost()) {
+            log.info("Channel post: {}", update.getChannelPost().getText());
+            return InteractionType.CHANNEL;
+        }
         if (update.hasCallbackQuery()) {
             log.info("Callback: {}", update.getCallbackQuery().getData());
             return InteractionType.CALLBACK;
@@ -280,6 +292,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
         CALLBACK,
         INLINE_QUERY,
         UPDATE,
+        CHANNEL,
         REACTION_PLUS,
         REACTION_MINUS
     }

@@ -3,7 +3,9 @@ package dev.ua.ikeepcalm.lumios.database.dal.impls;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TimetableService;
+import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.ClassEntryRepository;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.TimetableRepository;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
@@ -16,11 +18,13 @@ import java.util.Optional;
 public class TimetableServiceImpl implements TimetableService {
 
     final TimetableRepository timetableRepository;
+    final ClassEntryRepository classEntryRepository;
     final ChatService chatService;
 
-    public TimetableServiceImpl(TimetableRepository timetableRepository,
+    public TimetableServiceImpl(TimetableRepository timetableRepository, ClassEntryRepository classEntryRepository,
                                 ChatService chatService) {
         this.timetableRepository = timetableRepository;
+        this.classEntryRepository = classEntryRepository;
         this.chatService = chatService;
     }
 
@@ -29,6 +33,11 @@ public class TimetableServiceImpl implements TimetableService {
         timetableEntry.getDays().forEach(day -> day.getClassEntries().forEach(lesson -> lesson.setDayEntry(day)));
         timetableEntry.getDays().forEach(day -> day.setTimetableEntry(timetableEntry));
         timetableRepository.save(timetableEntry);
+    }
+
+    @Override
+    public void save(ClassEntry classEntry) {
+        classEntryRepository.save(classEntry);
     }
 
     @Override
@@ -64,6 +73,12 @@ public class TimetableServiceImpl implements TimetableService {
         } else {
             return timetableEntries;
         }
+    }
+
+    @Override
+    public ClassEntry findClassById(Long classId) throws NoSuchEntityException {
+        Optional<ClassEntry> classEntry = classEntryRepository.findById(classId);
+        return classEntry.orElseThrow(() -> new NoSuchEntityException("Class with id " + classId + " not found!"));
     }
 
 }

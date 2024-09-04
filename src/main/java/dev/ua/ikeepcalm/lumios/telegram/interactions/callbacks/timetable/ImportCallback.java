@@ -77,7 +77,7 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(message.getChatId());
         editMessage.setMessageId(message.getMessageId());
-        editMessage.setText("Розклад для `" + data.replace("import#", "") + "` був іспішно імпортований!");
+        editMessage.setText("Розклад для `" + data.replace("import#", "") + "` був успішно імпортований!");
         editMessage.setParseMode(ParseMode.MARKDOWN);
         editMessage(editMessage);
     }

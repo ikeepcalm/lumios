@@ -27,7 +27,12 @@ public class ClassMarkupUtil {
         InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
         if (classEntry.getUrl() == null) {
             notify.setText("Fice Advisor");
-            notify.setCallbackData("https://ficeadvisor.com/schedule?week=1");
+            notify.setUrl("https://ficeadvisor.com/schedule?week=1");
+            InlineKeyboardRow secondRow = new InlineKeyboardRow();
+            InlineKeyboardButton secondButton = new InlineKeyboardButton("Додати посилання \uD83D\uDD17");
+            secondButton.setCallbackData("classlink-add-" + classEntry.getId());
+            secondRow.add(secondButton);
+            keyboard.add(secondRow);
         } else {
             notify.setUrl(classEntry.getUrl());
         }
@@ -54,7 +59,12 @@ public class ClassMarkupUtil {
         InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
         if (classEntry.getUrl() == null) {
             notify.setText("Fice Advisor");
-            notify.setCallbackData("https://ficeadvisor.com/schedule?week=1");
+            notify.setUrl("https://ficeadvisor.com/schedule?week=1");
+            InlineKeyboardRow secondRow = new InlineKeyboardRow();
+            InlineKeyboardButton secondButton = new InlineKeyboardButton("Додати посилання \uD83D\uDD17");
+            secondButton.setCallbackData("classlink-add-" + classEntry.getId());
+            secondRow.add(secondButton);
+            keyboard.add(secondRow);
         } else {
             notify.setUrl(classEntry.getUrl());
         }
