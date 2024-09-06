@@ -19,6 +19,8 @@ public class LumiosUser {
     private Long userId;
     @Column
     private String username;
+    @Column
+    private String fullName;
     @Column(columnDefinition = "integer default 0")
     private int reverence;
     @Column(columnDefinition = "integer default 100")

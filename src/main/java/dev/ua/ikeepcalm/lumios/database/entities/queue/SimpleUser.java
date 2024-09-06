@@ -23,6 +23,9 @@ public class SimpleUser {
     private String name;
 
     @Column
+    String fullName;
+
+    @Column
     private Long accountId;
 
     @ManyToOne

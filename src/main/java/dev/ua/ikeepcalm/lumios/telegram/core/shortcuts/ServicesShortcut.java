@@ -47,7 +47,7 @@ public abstract class ServicesShortcut {
         this.queueService = queueService;
     }
 
-    public void sendMessage(String text, Message message) {
+    public Message sendMessage(String text, Message message) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
         textMessage.setMessageId(message.getMessageId());
@@ -55,9 +55,10 @@ public abstract class ServicesShortcut {
         Message sent = telegramClient.sendTextMessage(textMessage);
         scheduleMessageToDelete(message);
         scheduleMessageToDelete(sent);
+        return sent;
     }
 
-    public void sendMessage(String text, String parseMode, Message message) {
+    public Message sendMessage(String text, String parseMode, Message message) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
         textMessage.setMessageId(message.getMessageId());
@@ -66,6 +67,7 @@ public abstract class ServicesShortcut {
         Message sent = telegramClient.sendTextMessage(textMessage);
         scheduleMessageToDelete(message);
         scheduleMessageToDelete(sent);
+        return sent;
     }
 
     public void sendMessage(TextMessage textMessage, Message message) {

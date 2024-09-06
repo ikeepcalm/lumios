@@ -23,7 +23,6 @@ public class DeleteCallback extends ServicesShortcut implements Interaction {
 
     @Override
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
-
         String receivedCallback = message.getData().replace("-simple-delete", "");
         try {
             for (ChatMember chatMember : telegramClient.getChatAdministrators(String.valueOf(message.getMessage().getChatId()))) {
