@@ -67,28 +67,28 @@ public class TaskMarkupUtil {
     private static String getFormattedMessage(DueTask dueTask) {
         return """
                 *Редагування завдання*
-                                
+                
                 ```String НАЗВА ЗАВДАННЯ```
                 > %s
-                                
+                
                 ```Date ДЕДЛАЙН ЗАВДАННЯ```
                 > %s %S
-                                
+                
                 ```Scope ДІАПАЗОН ЗАВДАННЯ```
                 > %s
-                                
+                
                 ```Attachment ДОДАТКИ ЗАВДАННЯ```
                 > %s
-                                
+                
                 ```Description ОПИС ЗАВДАННЯ```
                 > %s
-                                
+                
                 ```URL ГІПЕР-ПОСИЛАННЯ```
                 > %s
-                                
+                
                 ```Author АВТОР ЗАВДАННЯ```
-                > @%s
-                                
+                > [ця людинка](tg://user?id=%d)
+                
                 """.formatted(
                 dueTask.getTaskName() != null ? dueTask.getTaskName() : "Не встановлено",
                 dueTask.getDueDate() != null ? dueTask.getDueDate() : "Не встановлено",
@@ -107,6 +107,7 @@ public class TaskMarkupUtil {
         InlineKeyboardRow secondRow = new InlineKeyboardRow();
         InlineKeyboardRow thirdRow = new InlineKeyboardRow();
         InlineKeyboardRow fourthRow = new InlineKeyboardRow();
+        InlineKeyboardRow fifthRow = new InlineKeyboardRow();
 
         InlineKeyboardButton name = new InlineKeyboardButton("Alter Name \uD83D\uDCC7");
         name.setCallbackData("task-alter-name-" + id);
@@ -135,15 +136,20 @@ public class TaskMarkupUtil {
         thirdRow.add(attachments);
         thirdRow.add(link);
 
+        InlineKeyboardButton delete = new InlineKeyboardButton("Delete \uD83D\uDDD1");
+        delete.setCallbackData("task-alter-delete-" + id);
+        fourthRow.add(delete);
+
         InlineKeyboardButton finish = new InlineKeyboardButton("Finish ✅");
         finish.setCallbackData("task-finish-" + id);
 
-        fourthRow.add(finish);
+        fifthRow.add(finish);
 
         keyboard.add(firstRow);
         keyboard.add(secondRow);
         keyboard.add(thirdRow);
         keyboard.add(fourthRow);
+        keyboard.add(fifthRow);
 
         return new InlineKeyboardMarkup(keyboard);
     }
@@ -206,6 +212,24 @@ public class TaskMarkupUtil {
         secondRow.add(allExceptMe);
 
         keyboard.add(firstRow);
+        keyboard.add(secondRow);
+
+        return new InlineKeyboardMarkup(keyboard);
+    }
+
+    public static ReplyKeyboard createDeleteTaskKeyboard(Long id) {
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        InlineKeyboardRow row = new InlineKeyboardRow();
+        InlineKeyboardRow secondRow = new InlineKeyboardRow();
+
+        InlineKeyboardButton delete = new InlineKeyboardButton("Delete \uD83D\uDDD1");
+        delete.setCallbackData("task-delete-" + id);
+        row.add(delete);
+
+        InlineKeyboardButton cancel = new InlineKeyboardButton("Cancel \uD83D\uDEAB");
+        cancel.setCallbackData("task-edit-" + id);
+        secondRow.add(cancel);
+        keyboard.add(row);
         keyboard.add(secondRow);
 
         return new InlineKeyboardMarkup(keyboard);
