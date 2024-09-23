@@ -1,8 +1,12 @@
 package dev.ua.ikeepcalm.lumios.telegram;
 
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -41,7 +45,9 @@ public class TelegramClient extends OkHttpTelegramClient {
 
     private static final Logger log = LoggerFactory.getLogger(TelegramClient.class);
 
-    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken) {
+    private final ChatService chatService;
+
+    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken, ChatService chatService) {
         super(botToken);
         try {
             executeCommand(setBotCommands());
@@ -49,6 +55,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         } catch (TelegramApiException e) {
             log.error("Failed to set bot commands", e);
         }
+        this.chatService = chatService;
     }
 
     private SetMyCommands setBotCommands() {
@@ -240,24 +247,6 @@ public class TelegramClient extends OkHttpTelegramClient {
         }
     }
 
-    public Message sendTextMessage(TextMessage textMessage, boolean shouldHandleExceptions) throws TelegramApiException {
-        if (!shouldHandleExceptions) {
-            return sendTextMessage(textMessage);
-        } else {
-            try {
-                return (Message) executeCommand(SendMessage.builder()
-                        .text(textMessage.getText())
-                        .chatId(textMessage.getChatId())
-                        .parseMode(textMessage.getParseMode())
-                        .replyMarkup(textMessage.getReplyKeyboard())
-                        .replyToMessageId(textMessage.getMessageId())
-                        .build());
-            } catch (TelegramApiException e) {
-                throw new TelegramApiException(e);
-            }
-        }
-    }
-
     public Message sendTextMessage(TextMessage textMessage) {
         try {
             return (Message) executeCommand(SendMessage.builder()
@@ -268,8 +257,22 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .replyToMessageId(textMessage.getMessageId())
                     .build());
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            if (e instanceof TelegramApiRequestException exception) {
+                if (exception.getErrorCode() == 403) {
+                    log.error("Failed to send message to chat: {}", textMessage.getChatId());
+                    log.error("Error code: {}", exception.getErrorCode());
+                } else if (exception.getErrorCode() == 400) {
+                    try {
+                        LumiosChat chat = chatService.findByChatId(textMessage.getChatId());
+                        chatService.delete(chat);
+                    } catch (NoSuchEntityException ex) {
+                        log.error("No chat found in database: {}", textMessage.getChatId());
+                    }
+                    log.error("Chat not found, deleting entity: {}", textMessage.getChatId());
+                }
+            }
         }
+        return null;
     }
 
     public void sendRemoveMessage(RemoveMessage removeMessage) throws TelegramApiException {

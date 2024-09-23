@@ -11,6 +11,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.wrappers.UserWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoBindSpecifiedException;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirement(name = "bearerAuth")
 public class UsersController {
 
     private final ChatService chatService;

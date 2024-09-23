@@ -18,6 +18,7 @@ import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.QueueParser;
 import dev.ua.ikeepcalm.lumios.telegram.utils.QueueUpdateUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/queues")
+@SecurityRequirement(name = "bearerAuth")
 public class QueuesController {
 
     private final ChatService chatService;

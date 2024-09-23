@@ -10,6 +10,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.UserShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.wrappers.DifferenceWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/records")
+@SecurityRequirement(name = "bearerAuth")
 public class RecordsController {
 
     private final RecordService recordService;

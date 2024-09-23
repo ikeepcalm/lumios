@@ -19,6 +19,27 @@ import java.io.PrintWriter;
 
 @Component
 public class AuthenticationFilter extends GenericFilterBean {
+
+    private static final String[] AUTH_WHITELIST = {
+            "/v2/api-docs",
+            "v2/api-docs",
+            "/swagger-resources",
+            "swagger-resources",
+            "/swagger-resources/",
+            "swagger-resources/",
+            "/configuration/ui",
+            "configuration/ui",
+            "/configuration/security",
+            "configuration/security",
+            "/swagger-ui.html",
+            "swagger-ui.html",
+            "webjars/**",
+            "/v3/api-docs/",
+            "v3/api-docs/",
+            "/swagger-ui/",
+            "swagger-ui/",
+    };
+
     private final AuthenticationService authenticationService;
 
     public AuthenticationFilter(AuthenticationService authenticationService) {
@@ -26,8 +47,16 @@ public class AuthenticationFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
-            throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        String path = ((HttpServletRequest) request).getRequestURI();
+
+        for (String s : AUTH_WHITELIST) {
+            if (path.startsWith(s)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
         try {
             Authentication authentication = authenticationService.getAuthentication((HttpServletRequest) request);
             SecurityContextHolder.getContext().setAuthentication(authentication);

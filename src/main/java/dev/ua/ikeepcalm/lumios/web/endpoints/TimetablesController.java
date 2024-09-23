@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.TimetableWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TimetableParser;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/timetables")
+@SecurityRequirement(name = "bearerAuth")
 public class TimetablesController {
 
     private final TimetableService timetableService;
@@ -55,7 +57,7 @@ public class TimetablesController {
         }
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<String> updateTimetable(@RequestBody String json, @RequestHeader("chatId") Long chatId) {
         try {
             chatService.findByChatId(chatId);

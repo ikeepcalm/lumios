@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.wrappers.TaskWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TaskParser;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
+@SecurityRequirement(name = "bearerAuth")
 public class TasksController {
 
     private final TaskService taskService;
