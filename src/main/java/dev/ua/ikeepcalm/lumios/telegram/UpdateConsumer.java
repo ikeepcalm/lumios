@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -34,8 +35,8 @@ import java.util.stream.Collectors;
 public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
-    private static final String BOT_USERNAME = "@lumios_bot";
-    //    private static final String BOT_USERNAME = "@localios_bot";
+    @Value("${telegram.bot.username}")
+    private String BOT_USERNAME;
     private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 
@@ -119,6 +120,10 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private void handleInlineQuery(Update update) {
+        if (update.getInlineQuery() == null) {
+            return;
+        }
+
         List<InlineQueryResult> inlineQueryResults = inlineQueryList.stream().map(inlineQuery -> inlineQuery.processUpdate(update)).toList();
         AnswerInlineQuery answerInlineQuery = AnswerInlineQuery.builder()
                 .inlineQueryId(update.getInlineQuery().getId())

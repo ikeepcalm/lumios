@@ -6,7 +6,6 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -63,7 +62,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                 .commands(
                         new ArrayList<>(List.of(
                                 new BotCommand("help", "Відкрити довідку користувача"),
-                                new BotCommand("task", "Відкрити меню завдань"),
+                                new BotCommand("tasks", "Відкрити меню завдань"),
                                 new BotCommand("due", "Переглянути список завдань")
                         ))).scope(BotCommandScopeAllPrivateChats.builder().build())
                 .commands(
@@ -83,7 +82,8 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("gamble_all", "Команда для повних лудоманів"),
                                 new BotCommand("wheel", "Щоденне колесо фортуни"),
                                 new BotCommand("identity", "Прив'язати своє реальне ім'я до аккаунту"),
-                                new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу")
+                                new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
+                                new BotCommand("summary", "Підведення підсумку за останні повідомлення")
                         ))
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }
@@ -95,6 +95,7 @@ public class TelegramClient extends OkHttpTelegramClient {
             if (e.getErrorCode() == 400 || e.getErrorCode() == 403) {
                 log.error("Failed to execute {}", command.getMethod());
                 log.error("Error code: {}", e.getErrorCode());
+                log.error("Error message: {}", e.getApiResponse());
             }
             throw new TelegramApiException(e);
         }
@@ -249,6 +250,11 @@ public class TelegramClient extends OkHttpTelegramClient {
 
     public Message sendTextMessage(TextMessage textMessage) {
         try {
+
+//            if (textMessage.getParseMode() != null) {
+//                textMessage.setText(MarkdownValidator.checkAndResolveMarkdown(textMessage.getText()));
+//            }
+
             return (Message) executeCommand(SendMessage.builder()
                     .text(textMessage.getText())
                     .chatId(textMessage.getChatId())
@@ -258,9 +264,16 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .build());
         } catch (TelegramApiException e) {
             if (e instanceof TelegramApiRequestException exception) {
+                log.info(textMessage.getText());
+                if (exception.getErrorCode() == 400 && textMessage.getParseMode() != null) {
+                    textMessage.setParseMode(null);
+                    sendTextMessage(textMessage);
+                }
+
                 if (exception.getErrorCode() == 403) {
                     log.error("Failed to send message to chat: {}", textMessage.getChatId());
                     log.error("Error code: {}", exception.getErrorCode());
+                    log.error("Error message: {}", exception.getApiResponse());
                 } else if (exception.getErrorCode() == 400) {
                     try {
                         LumiosChat chat = chatService.findByChatId(textMessage.getChatId());

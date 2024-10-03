@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.lumios.database.entities.reverence;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.source.AiModel;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import jakarta.persistence.*;
@@ -38,6 +39,18 @@ public class LumiosChat {
 
     @Column(columnDefinition = "boolean default false")
     private boolean isDiceEnabled;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean isAiEnabled;
+
+    @Column
+    private AiModel aiModel;
+
+    @Column(columnDefinition = "integer default 2")
+    private int summaryLimit;
+
+    @Column(columnDefinition = "integer default 10")
+    private int communicationLimit;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<LumiosUser> users;

@@ -1,6 +1,7 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.source.AiModel;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -32,11 +33,45 @@ public class SettingsMarkupUtil {
             diceEnabled.setCallbackData("settings-dice-enable");
         }
 
+        InlineKeyboardRow thirdRow = new InlineKeyboardRow();
+        InlineKeyboardButton aiEnabled;
+        if (lumiosChat.isAiEnabled()) {
+            aiEnabled = new InlineKeyboardButton("AI ✅");
+            aiEnabled.setCallbackData("settings-ai-disable");
+        } else {
+            aiEnabled = new InlineKeyboardButton("AI ❌");
+            aiEnabled.setCallbackData("settings-ai-enable");
+        }
+
+        InlineKeyboardRow fourthRow = new InlineKeyboardRow();
+        if (lumiosChat.isAiEnabled()) {
+
+            if (lumiosChat.getAiModel() == null) {
+                lumiosChat.setAiModel(AiModel.OPENAI);
+            }
+
+            switch (lumiosChat.getAiModel()) {
+                case GEMINI -> {
+                    InlineKeyboardButton geminiEnabled = new InlineKeyboardButton("Gemini ✅");
+                    geminiEnabled.setCallbackData("settings-ai-gemini");
+                    fourthRow.add(geminiEnabled);
+                }
+                case OPENAI -> {
+                    InlineKeyboardButton openAIEnabled = new InlineKeyboardButton("OpenAI ✅");
+                    openAIEnabled.setCallbackData("settings-ai-openai");
+                    fourthRow.add(openAIEnabled);
+                }
+            }
+        }
+
         firstRow.add(timetableEnabled);
         secondRow.add(diceEnabled);
+        thirdRow.add(aiEnabled);
 
         keyboard.add(firstRow);
         keyboard.add(secondRow);
+        keyboard.add(thirdRow);
+        keyboard.add(fourthRow);
 
         return new InlineKeyboardMarkup(keyboard);
     }

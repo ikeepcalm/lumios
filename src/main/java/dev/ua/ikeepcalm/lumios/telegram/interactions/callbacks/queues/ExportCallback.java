@@ -38,7 +38,7 @@ public class ExportCallback extends ServicesShortcut implements Interaction {
             editMessage.setText(createExport(chat, simpleQueue));
             editMessage.setParseMode(ParseMode.MARKDOWN);
 
-            editMessage(editMessage);
+            telegramClient.sendEditMessage(editMessage);
 
         } catch (NoSuchEntityException e) {
             telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);

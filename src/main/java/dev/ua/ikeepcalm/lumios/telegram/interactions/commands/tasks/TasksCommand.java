@@ -12,8 +12,8 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-@BotCommand(command = "task", aliases = {"tasks"})
-public class TaskCommand extends ServicesShortcut implements Interaction {
+@BotCommand(command = "tasks", aliases = {"task"})
+public class TasksCommand extends ServicesShortcut implements Interaction {
 
     @Override
     public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {

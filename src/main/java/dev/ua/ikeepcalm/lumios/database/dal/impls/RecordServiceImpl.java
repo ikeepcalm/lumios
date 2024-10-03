@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.dal.repositories.history.MessageRecordRe
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -32,6 +33,12 @@ public class RecordServiceImpl implements RecordService {
     @Override
     public MessageRecord findByMessageIdAndChatId(Long id, Long chatId) throws NoSuchEntityException {
         return this.messageRecordRepository.findByMessageIdAndChatId(id, chatId).orElseThrow(() -> new NoSuchEntityException("No such record with id: " + id));
+    }
+
+    @Override
+    public List<MessageRecord> findLastMessagesByChatId(Long chatId, int number) {
+        PageRequest pageRequest = PageRequest.of(0, number);
+        return messageRecordRepository.findByChatIdOrderByDateDesc(chatId, pageRequest);
     }
 
     @Override
