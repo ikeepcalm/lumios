@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Objects;
-
 @Getter
 @Setter
 @Entity(name = "mixedUsers")
@@ -39,19 +37,9 @@ public class MixedUser {
         this.accountId = userWrapper.getAccountId();
     }
 
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || this.getClass() != o.getClass()) {
-            return false;
-        }
-        MixedUser mixedUser = (MixedUser) o;
-        return Objects.equals(this.username, mixedUser.username) && Objects.equals(this.name, mixedUser.name) && Objects.equals(this.accountId, mixedUser.accountId);
-    }
-
-    public int hashCode() {
-        return Objects.hash(this.username, this.name, this.accountId);
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof MixedUser && ((MixedUser) obj).getAccountId().equals(this.accountId);
     }
 
     public String toString() {

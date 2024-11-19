@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -49,6 +50,36 @@ public class RecordServiceImpl implements RecordService {
     @Override
     public List<MessageRecord> findAllByChatAndDateBetween(LumiosChat chat, LocalDateTime startDate, LocalDateTime endDate) {
         return this.messageRecordRepository.findAllByChatIdAndDateBetween(chat.getChatId(), startDate, endDate);
+    }
+
+    @Override
+    public List<MessageRecord> findAllInReplyChain(Long chatId, Long messageId) {
+        int maxChainLength = 15;
+
+        List<MessageRecord> replyChain = new ArrayList<>();
+        MessageRecord currentMessage;
+        try {
+            currentMessage = messageRecordRepository.findByMessageIdAndChatId(messageId, chatId)
+                    .orElseThrow(() -> new NoSuchEntityException("No such record with id: " + messageId));
+        } catch (NoSuchEntityException e) {
+            return replyChain;
+        }
+        replyChain.add(currentMessage);
+
+        while (currentMessage.getReplyToMessageId() != null) {
+            try {
+                if (replyChain.size() >= maxChainLength) {
+                    break;
+                }
+                currentMessage = messageRecordRepository.findByMessageIdAndChatId(currentMessage.getReplyToMessageId(), chatId)
+                        .orElseThrow(() -> new NoSuchEntityException("No such record with id: "));
+                replyChain.add(currentMessage);
+            } catch (NoSuchEntityException e) {
+                break;
+            }
+        }
+
+        return replyChain;
     }
 
 }

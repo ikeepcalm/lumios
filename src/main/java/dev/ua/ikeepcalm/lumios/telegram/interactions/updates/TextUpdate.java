@@ -23,9 +23,14 @@ public class TextUpdate extends ServicesShortcut implements Interaction {
             else {
                 messageRecord.setText(update.getMessage().getText());
             }
+
+            if (update.getMessage().isReply()) {
+                messageRecord.setReplyToMessageId(Long.valueOf(update.getMessage().getReplyToMessage().getMessageId()));
+            }
         } else {
             messageRecord.setText("MEDIA_UNDETERMINED_TYPE");
         }
+
         messageRecord.setChatId(update.getMessage().getChatId());
         messageRecord.setMessageId(Long.valueOf(update.getMessage().getMessageId()));
         try {

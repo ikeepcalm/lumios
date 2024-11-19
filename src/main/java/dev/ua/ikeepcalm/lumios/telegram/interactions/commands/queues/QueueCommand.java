@@ -27,10 +27,17 @@ public class QueueCommand extends ServicesShortcut implements Interaction {
                     .replace("/queue@lumios_bot ", "")
                     .replace("/queue ", "")
                     .toUpperCase();
+
+            if (alias.isBlank() || alias.length() > 20) {
+                sendMessage("Назва черги повинна бути від 1 до 20 символів!", message);
+                return;
+            }
             simpleQueue = new SimpleQueue(alias);
         } else {
-            simpleQueue = new SimpleQueue();
+            sendMessage("Введіть назву черги після команди! Черги без назви були поміченими застарілими починаючи із версії 2.0.0!", message);
+            return;
         }
+
         SimpleUser simpleUser = new SimpleUser();
         simpleUser.setName(message.getFrom().getFirstName());
         simpleUser.setAccountId(message.getFrom().getId());

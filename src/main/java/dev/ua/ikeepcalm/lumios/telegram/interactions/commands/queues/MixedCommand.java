@@ -27,9 +27,15 @@ public class MixedCommand extends ServicesShortcut implements Interaction {
                     .replace("/mixed@lumios_bot ", "")
                     .replace("/mixed ", "")
                     .toUpperCase();
-            mixedQueue = new MixedQueue(alias);
+            if (alias.isBlank() || alias.length() > 20) {
+                sendMessage("Назва черги повинна бути від 1 до 20 символів!", message);
+                return;
+            } else {
+                mixedQueue = new MixedQueue(alias);
+            }
         } else {
-            mixedQueue = new MixedQueue();
+            sendMessage("Введіть назву черги після команди! Черги без назви були поміченими застарілими починаючи із версії 2.0.0!", message);
+            return;
         }
         MixedUser mixedUser = new MixedUser();
         mixedUser.setName(message.getFrom().getFirstName());

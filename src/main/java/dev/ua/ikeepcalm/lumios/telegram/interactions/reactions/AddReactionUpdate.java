@@ -25,6 +25,9 @@ public class AddReactionUpdate extends ServicesShortcut implements Interaction {
 
             if (user.getCredits() > reactionValue) {
                 LumiosUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
+                if (onUser == null) {
+                    return;
+                }
                 if (!user.getUserId().equals(onUser.getUserId())) {
                     user.setCredits(user.getCredits() - Math.abs(reactionValue));
                     onUser.setReverence(onUser.getReverence() + reactionValue);

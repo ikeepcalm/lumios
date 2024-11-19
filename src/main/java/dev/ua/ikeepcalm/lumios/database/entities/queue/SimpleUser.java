@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Objects;
-
 @Getter
 @Setter
 @Entity(name = "simpleUsers")
@@ -23,28 +21,15 @@ public class SimpleUser {
     private String name;
 
     @Column
-    String fullName;
-
-    @Column
     private Long accountId;
 
     @ManyToOne
     @JoinColumn(name = "simpleQueue")
     private SimpleQueue simpleQueue;
 
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || this.getClass() != o.getClass()) {
-            return false;
-        }
-        SimpleUser mixedUser = (SimpleUser) o;
-        return Objects.equals(this.username, mixedUser.username) && Objects.equals(this.name, mixedUser.name) && Objects.equals(this.accountId, mixedUser.accountId);
-    }
-
-    public int hashCode() {
-        return Objects.hash(this.username, this.name, this.accountId);
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SimpleUser && ((SimpleUser) obj).getAccountId().equals(this.accountId);
     }
 
     public String toString() {

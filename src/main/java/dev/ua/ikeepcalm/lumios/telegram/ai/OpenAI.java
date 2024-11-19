@@ -8,6 +8,7 @@ import io.github.sashirestela.openai.domain.chat.ChatRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -44,6 +45,8 @@ public class OpenAI {
 
     private String executeSummary(long chatId, int amountOfMessages) {
         List<MessageRecord> userMessages = recordService.findLastMessagesByChatId(chatId, amountOfMessages);
+        userMessages.sort(Comparator.comparing(MessageRecord::getDate));
+
         StringBuilder messagesToSummarize = new StringBuilder();
         for (MessageRecord message : userMessages) {
             if (message.getText().contains("MEDIA") || message.getText().contains("lumios")) {
@@ -55,9 +58,20 @@ public class OpenAI {
             messagesToSummarize.append(fullName).append(": ").append(message.getText()).append("\n");
         }
 
-        var chatRequest = ChatRequest.builder().model("gpt-4o-mini").message(ChatMessage.SystemMessage.of("""
-                You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).
-                """)).message(ChatMessage.UserMessage.of("Summarize and structure the following messages, show only important things in the list by the users:\n" + messagesToSummarize)).temperature(0.7).maxTokens(6000).build();
+        String prompt = """
+                As a professional summarizer, create a concise and comprehensive summary of the provided conversation in group chat, while adhering to these guidelines:
+                    1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
+                    2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
+                    3. Rely strictly on the provided text, without including external information.
+                    4. Format the summary in paragraph form for easy understanding.
+                    5. Summary should be divided into paragraphs, each covering a different aspect of the conversation including names or tags of the participants.
+                By following this optimized prompt, you will generate an effective summary that encapsulates the essence of the given text in a clear, concise, and reader-friendly manner.
+                
+                """;
+
+        var chatRequest = ChatRequest.builder().model("gpt-4o")
+                .message(ChatMessage.SystemMessage.of("You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\)."))
+                .message(ChatMessage.UserMessage.of(prompt + ":\n" + messagesToSummarize)).temperature(0.4).maxTokens(8000).build();
 
         var futureChat = openAI.chatCompletions().create(chatRequest);
         var chatResponse = futureChat.join();

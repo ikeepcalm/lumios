@@ -38,8 +38,8 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
 
         try {
             int count = Integer.parseInt(parts[1]);
-            if (count < 1 || count > 100) {
-                sendMessage("Кількість повідомлень повинна бути від 1 до 200!", update.getMessage());
+            if (count < 1 || count > 300) {
+                sendMessage("Кількість повідомлень повинна бути від 1 до 300!", update.getMessage());
                 return;
             }
 
