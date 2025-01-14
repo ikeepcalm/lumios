@@ -88,7 +88,9 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("wheel", "Щоденне колесо фортуни"),
                                 new BotCommand("identity", "Прив'язати своє реальне ім'я до аккаунту"),
                                 new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
-                                new BotCommand("summary", "Підведення підсумку за останні повідомлення")
+                                new BotCommand("summary", "Підведення підсумку за останні повідомлення"),
+                                new BotCommand("repin", "Прикріпити всі активні черги в групі"),
+                                new BotCommand("revive", "Відновити всі активні черги в групі")
                         ))
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }

@@ -117,6 +117,10 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                 return;
             }
 
+            if (!update.getMessage().getReplyToMessage().getFrom().getUserName().equals(botName)) {
+                return;
+            }
+
             String tag = "@" + update.getMessage().getFrom().getUserName();
 
             List<MessageRecord> context = recordService.findAllInReplyChain(chat.getChatId(), Long.valueOf(update.getMessage().getReplyToMessage().getMessageId()));
