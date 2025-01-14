@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
@@ -37,10 +37,11 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     private boolean consumeUpdates = true;
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
-    @Value("${telegram.bot.username}")
-    private String BOT_USERNAME;
+
     private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
+
+    private final Environment environment;
 
     private final Cache<Long, UserActivity> userActivityCache;
     public static final HashMap<Long, Long> waitingTasks = new HashMap<>();
@@ -58,7 +59,8 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
 
     @Autowired
-    public UpdateConsumer(ApplicationContext context, List<InlineQuery> inlineQueryList, UserService userService, ChatService chatService, TelegramClient telegramClient) {
+    public UpdateConsumer(Environment environment, ApplicationContext context, List<InlineQuery> inlineQueryList, UserService userService, ChatService chatService, TelegramClient telegramClient) {
+        this.environment = environment;
         this.inlineQueryList = inlineQueryList;
         this.userService = userService;
         this.chatService = chatService;
@@ -194,7 +196,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private boolean matchCommand(Message message, BotCommand annotation) {
-        String text = message.getText().split(" ")[0].replace(BOT_USERNAME, "").replace("/", "");
+        String text = message.getText().split(" ")[0].replace(environment.getProperty("TELEGRAM_USERNAME"), "").replace("/", "");
         if (annotation.command().equals(text)) {
             return true;
         }

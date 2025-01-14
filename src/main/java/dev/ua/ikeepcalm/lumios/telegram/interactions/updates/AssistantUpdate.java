@@ -9,7 +9,7 @@ import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -25,14 +25,16 @@ import java.util.List;
 @Component
 public class AssistantUpdate extends ServicesShortcut implements Interaction {
 
-    @Value("${telegram.bot.username}")
     private String botName;
     private final OpenAI openAI;
     private final Gemini gemini;
+    private final Environment environment;
 
-    public AssistantUpdate(OpenAI openAI, Gemini gemini) {
+    public AssistantUpdate(OpenAI openAI, Gemini gemini, Environment environment) {
         this.openAI = openAI;
         this.gemini = gemini;
+        this.environment = environment;
+        this.botName = environment.getProperty("TELEGRAM_USERNAME");
     }
 
     @Override

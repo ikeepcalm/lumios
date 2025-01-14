@@ -8,7 +8,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.api.methods.*;
@@ -47,11 +47,13 @@ public class TelegramClient extends OkHttpTelegramClient {
 
     private static final Logger log = LoggerFactory.getLogger(TelegramClient.class);
 
+    private final Environment environment;
     private final ChatService chatService;
     private final RecordService recordService;
 
-    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken, ChatService chatService, RecordService recordService) {
-        super(botToken);
+    public TelegramClient(Environment environment, ChatService chatService, RecordService recordService) {
+        super(environment.getProperty("TELEGRAM_API_KEY"));
+        this.environment = environment;
         try {
             executeCommand(setBotCommands());
             log.info("Bot commands set successfully");
