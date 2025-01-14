@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 
@@ -17,12 +16,6 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "telegrambots", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class TelegramApiInitializer {
 
-    private final Environment environment;
-
-    public TelegramApiInitializer(Environment environment) {
-        this.environment = environment;
-    }
-
     @Bean
     @ConditionalOnMissingBean(TelegramBotsLongPollingApplication.class)
     public TelegramBotsLongPollingApplication telegramBotsApi() {
@@ -32,7 +25,7 @@ public class TelegramApiInitializer {
     @Bean
     @ConditionalOnMissingBean
     public TelegramBotInitializer telegramBotInitializer(TelegramBotsLongPollingApplication telegramBotsApi, ObjectProvider<List<LongPollingSingleThreadUpdateConsumer>> longPollingBots) {
-        return new TelegramBotInitializer(telegramBotsApi, longPollingBots.getIfAvailable(Collections::emptyList), environment);
+        return new TelegramBotInitializer(telegramBotsApi, longPollingBots.getIfAvailable(Collections::emptyList));
     }
 
 }

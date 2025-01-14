@@ -1,7 +1,7 @@
 package dev.ua.ikeepcalm.lumios.telegram.config;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.DefaultGetUpdatesGenerator;
@@ -16,11 +16,12 @@ import java.util.Objects;
 public class TelegramBotInitializer implements InitializingBean {
     private final TelegramBotsLongPollingApplication telegramBotsApi;
     private final List<LongPollingSingleThreadUpdateConsumer> longPollingBots;
-    private final Environment environment;
+
+    @Value("${telegram.bot.token}")
+    private String token;
 
     public TelegramBotInitializer(TelegramBotsLongPollingApplication telegramBotsApi,
-                                  List<LongPollingSingleThreadUpdateConsumer> longPollingBots, Environment environment) {
-        this.environment = environment;
+                                  List<LongPollingSingleThreadUpdateConsumer> longPollingBots) {
         Objects.requireNonNull(telegramBotsApi);
         Objects.requireNonNull(longPollingBots);
         this.telegramBotsApi = telegramBotsApi;
@@ -31,7 +32,7 @@ public class TelegramBotInitializer implements InitializingBean {
     public void afterPropertiesSet() {
         try {
             for (LongPollingSingleThreadUpdateConsumer bot : longPollingBots) {
-                telegramBotsApi.registerBot(environment.getProperty("TELEGRAM_API_KEY"), () -> TelegramUrl.DEFAULT_URL, new DefaultGetUpdatesGenerator(List.of("channel_post", "inline_query", "message", "callback_query", "message_reaction", "chat_member")), bot);
+                telegramBotsApi.registerBot(token, () -> TelegramUrl.DEFAULT_URL, new DefaultGetUpdatesGenerator(List.of("channel_post", "inline_query", "message", "callback_query", "message_reaction", "chat_member")), bot);
             }
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
