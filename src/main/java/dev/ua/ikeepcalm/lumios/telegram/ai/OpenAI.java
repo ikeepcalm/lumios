@@ -5,7 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
 import io.github.sashirestela.openai.domain.chat.ChatRequest;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -17,11 +17,12 @@ public class OpenAI {
 
     private SimpleOpenAI openAI;
     private final RecordService recordService;
-    private final Environment environment;
 
-    public OpenAI(RecordService recordService, Environment environment) {
+    @Value("${openai.api.key}")
+    private String apiKey;
+
+    public OpenAI(RecordService recordService) {
         this.recordService = recordService;
-        this.environment = environment;
     }
 
     public CompletableFuture<String> getChatSummary(long chatId, int amountOfMessages) {
@@ -38,7 +39,7 @@ public class OpenAI {
 
     private void setupOpenAI() {
         if (openAI == null) {
-            openAI = SimpleOpenAI.builder().apiKey(environment.getProperty("OPENAI_API_KEY")).build();
+            openAI = SimpleOpenAI.builder().apiKey(apiKey).build();
         }
     }
 

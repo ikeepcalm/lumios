@@ -2,7 +2,7 @@ package dev.ua.ikeepcalm.lumios.telegram.utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -14,14 +14,11 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class TenorUtil {
 
-    private final Environment environment;
-
-    public TenorUtil(Environment environment) {
-        this.environment = environment;
-    }
+    @Value("${tenor.api.key}")
+    private String API_KEY;
 
     public JSONObject getSearchResults(String searchTerm, int limit) {
-        final String url = String.format("https://tenor.googleapis.com/v2/search?q=%1$s&key=%2$s&limit=%3$s&random=true&media_filter=gif", searchTerm, environment.getProperty("TENOR_API_KEY"), limit);
+        final String url = String.format("https://tenor.googleapis.com/v2/search?q=%1$s&key=%2$s&limit=%3$s&random=true&media_filter=gif", searchTerm, API_KEY, limit);
         try {
             return get(url);
         } catch (JSONException e) {

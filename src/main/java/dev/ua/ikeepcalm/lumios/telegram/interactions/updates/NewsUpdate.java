@@ -6,7 +6,7 @@ import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -22,17 +22,16 @@ public class NewsUpdate extends ServicesShortcut implements Interaction {
 
     private static final Logger log = LoggerFactory.getLogger(NewsUpdate.class);
 
-    private final long intervalSeconds = 10;
-    private final Environment environment;
+    @Value("${telegram.news.interval.seconds}")
+    private long intervalSeconds;
 
-    public NewsUpdate(Environment environment) {
-        this.environment = environment;
-    }
+    @Value("${telegram.news.channel.id}")
+    private long channelId;
 
     @Override
     public void fireInteraction(Update update) {
         if (update.hasChannelPost() && update.getChannelPost().hasText()) {
-            if (update.getChannelPost().getChatId().equals(environment.getProperty("TELEGRAM_NEWS_CHANNEL_ID", Long.class))) {
+            if (update.getChannelPost().getChatId() == channelId) {
                 try (ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)) {
                     List<LumiosChat> chats = (List<LumiosChat>) chatService.findAll();
                     for (int i = 0; i < chats.size(); i++) {
