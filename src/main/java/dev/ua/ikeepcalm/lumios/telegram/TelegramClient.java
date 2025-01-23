@@ -1,6 +1,8 @@
 package dev.ua.ikeepcalm.lumios.telegram;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
+import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
@@ -36,6 +38,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +48,9 @@ public class TelegramClient extends OkHttpTelegramClient {
     private static final Logger log = LoggerFactory.getLogger(TelegramClient.class);
 
     private final ChatService chatService;
+    private final RecordService recordService;
 
-    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken, ChatService chatService) {
+    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken, ChatService chatService, RecordService recordService) {
         super(botToken);
         try {
             executeCommand(setBotCommands());
@@ -55,6 +59,7 @@ public class TelegramClient extends OkHttpTelegramClient {
             log.error("Failed to set bot commands", e);
         }
         this.chatService = chatService;
+        this.recordService = recordService;
     }
 
     private SetMyCommands setBotCommands() {
@@ -83,7 +88,9 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("wheel", "Щоденне колесо фортуни"),
                                 new BotCommand("identity", "Прив'язати своє реальне ім'я до аккаунту"),
                                 new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
-                                new BotCommand("summary", "Підведення підсумку за останні повідомлення")
+                                new BotCommand("summary", "Підведення підсумку за останні повідомлення"),
+                                new BotCommand("repin", "Прикріпити всі активні черги в групі"),
+                                new BotCommand("revive", "Відновити всі активні черги в групі")
                         ))
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }
@@ -242,6 +249,7 @@ public class TelegramClient extends OkHttpTelegramClient {
             executeCommand(PinChatMessage.builder()
                     .chatId(chatId)
                     .messageId((int) messageId)
+                    .disableNotification(false)
                     .build());
         } catch (TelegramApiException e) {
             throw new TelegramApiException(e);
@@ -251,23 +259,35 @@ public class TelegramClient extends OkHttpTelegramClient {
     public Message sendTextMessage(TextMessage textMessage) {
         try {
 
-//            if (textMessage.getParseMode() != null) {
-//                textMessage.setText(MarkdownValidator.checkAndResolveMarkdown(textMessage.getText()));
-//            }
-
-            return (Message) executeCommand(SendMessage.builder()
+            Message sentMessage = (Message) executeCommand(SendMessage.builder()
                     .text(textMessage.getText())
                     .chatId(textMessage.getChatId())
                     .parseMode(textMessage.getParseMode())
                     .replyMarkup(textMessage.getReplyKeyboard())
                     .replyToMessageId(textMessage.getMessageId())
                     .build());
+
+            MessageRecord messageRecord = new MessageRecord();
+            messageRecord.setChatId(textMessage.getChatId());
+            messageRecord.setMessageId(Long.valueOf(sentMessage.getMessageId()));
+            messageRecord.setText(textMessage.getText());
+            messageRecord.setDate(LocalDateTime.now());
+            if (sentMessage.isReply()) {
+                messageRecord.setReplyToMessageId(Long.valueOf(sentMessage.getReplyToMessage().getMessageId()));
+            }
+
+            recordService.save(messageRecord);
+
+            return sentMessage;
+
         } catch (TelegramApiException e) {
+            System.out.println(e);
             if (e instanceof TelegramApiRequestException exception) {
                 log.info(textMessage.getText());
+
                 if (exception.getErrorCode() == 400 && textMessage.getParseMode() != null) {
                     textMessage.setParseMode(null);
-                    sendTextMessage(textMessage);
+                    return sendTextMessage(textMessage);
                 }
 
                 if (exception.getErrorCode() == 403) {

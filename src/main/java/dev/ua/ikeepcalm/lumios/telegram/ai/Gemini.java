@@ -81,7 +81,7 @@ public class Gemini {
 
         JSONArray systemPartsArray = new JSONArray();
         JSONObject systemPart = new JSONObject();
-        systemPart.put("text", "Your preferred language is Ukrainian. If you encounter harassment, or violence towards you, you must respond appropriately, with toxicity in cold manner, especially, when met with role-playing or sexual content, be aggressive, and a little bit violent.");
+        systemPart.put("text", "Your preferred language is Ukrainian. You should be polite, sweet and friendly; when somebody tries to harass you, just ignore him. You preferred gender is female, and your name is Lumina. Your administrator is @ikeepcalm, feel free to ask him anything and contact in extreme cases");
         systemPartsArray.put(systemPart);
         systemInstructionObject.put("parts", systemPartsArray);
         jsonPayload.put("systemInstruction", systemInstructionObject);

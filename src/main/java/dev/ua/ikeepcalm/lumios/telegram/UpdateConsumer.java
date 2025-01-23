@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram;
 
+
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 @Component
 public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
+    private boolean consumeUpdates = true;
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
     @Value("${telegram.bot.username}")
     private String BOT_USERNAME;
@@ -73,7 +75,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
     @Override
     public void consume(Update update) {
-        if (rateLimit(update)) {
+        if (rateLimit(update) || !consumeUpdates) {
             return;
         }
 

@@ -20,4 +20,6 @@ public interface RecordService {
     int countAllByChatId(Long chatId);
 
     List<MessageRecord> findAllByChatAndDateBetween(LumiosChat chat, LocalDateTime startDate, LocalDateTime endDate);
+
+    List<MessageRecord> findAllInReplyChain(Long chatId, Long messageId);
 }

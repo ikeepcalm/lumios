@@ -8,37 +8,31 @@ plugins {
 }
 
 group = 'dev.ua.ikeepcalm'
-version = '2-PREVIEW'
+version = '2.0.0'
 description = 'lumios.dev backend application'
 
 String springVersion = '3.3.0'
-String telegramApiVersion = '7.10.0'
+String telegramApiVersion = '8.2.0'
 
 dependencies {
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
+    implementation 'com.mysql:mysql-connector-j:9.1.0'
+
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springVersion"
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
-    implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
+
     implementation "org.telegram:telegrambots-longpolling:$telegramApiVersion"
     implementation "org.telegram:telegrambots-client:$telegramApiVersion"
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
+
+    implementation 'org.json:json:20250107'
     implementation 'io.github.sashirestela:simple-openai:3.8.2'
 
-    implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
-    implementation 'org.json:json:20240303'
-
-    implementation 'ch.qos.logback:logback-classic:1.4.12'
-
-    configurations {
-        configureEach {
-            exclude group: 'org.slf4j', module: 'slf4j-simple'
-        }
-    }
 }
 
 tasks.withType(JavaCompile).configureEach {

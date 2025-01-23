@@ -31,11 +31,12 @@ public class DeleteCallback extends ServicesShortcut implements Interaction {
                     try {
                         simpleQueue = queueService.findSimpleById(UUID.fromString(receivedCallback));
                         queueService.deleteSimpleQueue(simpleQueue);
-                        telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), message.getMessage().getChatId()));
                         TextMessage textMessage = new TextMessage();
                         textMessage.setChatId(message.getMessage().getChatId());
                         textMessage.setText("@".concat(message.getFrom().getUserName()).concat(" видалив чергу: ").concat(simpleQueue.getAlias()).concat("!"));
                         sendMessage(textMessage, (Message) message.getMessage());
+                        telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), message.getMessage().getChatId()));
+
                         break;
                     } catch (NoSuchEntityException e) {
                         sendMessage("Помилка! Не знайдено чергу з таким ID!", (Message) message.getMessage());

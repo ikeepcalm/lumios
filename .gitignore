@@ -4,7 +4,7 @@
 /.idea
 README.md
 /.mvn
-/src/main/resources
 bfg.jar
 simpleQueues.json
 mixedQueues.json
+/logs
