@@ -119,7 +119,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                 return;
             }
 
-            if (!update.getMessage().getReplyToMessage().getFrom().getUserName().equals(botName)) {
+            if (!update.getMessage().getReplyToMessage().getFrom().getUserName().equals(botName.replace("@", ""))) {
                 return;
             }
 
