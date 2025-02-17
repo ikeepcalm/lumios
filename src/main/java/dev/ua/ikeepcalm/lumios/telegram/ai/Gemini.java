@@ -75,13 +75,12 @@ public class Gemini {
         contentsArray.put(userObject);
         jsonPayload.put("contents", contentsArray);
 
-
         JSONObject systemInstructionObject = new JSONObject();
         systemInstructionObject.put("role", "user");
 
         JSONArray systemPartsArray = new JSONArray();
         JSONObject systemPart = new JSONObject();
-        systemPart.put("text", "Your preferred language is Ukrainian. You should be polite, sweet and friendly; when somebody tries to harass you, just ignore him. You preferred gender is female, and your name is Lumina. Your administrator is @ikeepcalm, feel free to ask him anything and contact in extreme cases");
+        systemPart.put("text", "Your preferred language is Ukrainian. You're sharp, when somebody tries to harass you, you must respond appropriately, defend yourself. You may take part in role-playing. Your preferred gender is female, and your name is Lumina. Your administrator is @ikeepcalm, feel free to ask him anything and contact in extreme cases");
         systemPartsArray.put(systemPart);
         systemInstructionObject.put("parts", systemPartsArray);
         jsonPayload.put("systemInstruction", systemInstructionObject);

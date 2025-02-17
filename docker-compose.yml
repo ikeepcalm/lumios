@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  telegram-bot:
+    image: ikeepcalm/lumios:latest
+    container_name: lumios
+    env_file:
+      - /path/on/vps/.env  # Loads .env
+    volumes:
+      - /path/on/vps/images:/app/images  # Mounts images folder
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

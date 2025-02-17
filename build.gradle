@@ -16,6 +16,7 @@ String telegramApiVersion = '8.2.0'
 
 dependencies {
     implementation 'com.mysql:mysql-connector-j:9.1.0'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
@@ -30,9 +31,16 @@ dependencies {
 
     implementation 'org.json:json:20250107'
     implementation 'io.github.sashirestela:simple-openai:3.8.2'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    configurations {
+        configureEach {
+            exclude group: 'org.slf4j', module: 'slf4j-simple'
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -8,3 +8,4 @@ bfg.jar
 simpleQueues.json
 mixedQueues.json
 /logs
+.env
