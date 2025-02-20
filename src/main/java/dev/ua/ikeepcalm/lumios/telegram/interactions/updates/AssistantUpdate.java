@@ -131,7 +131,11 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
 
             StringBuilder stringBuilder = new StringBuilder();
             for (MessageRecord messageRecord : context) {
-                stringBuilder.append("@").append(messageRecord.getUser().getUsername()).append(" каже: ").append(messageRecord.getText()).append("\n");
+                if (messageRecord.getUser() == null){
+                    stringBuilder.append("Ти відповідаєш: ").append(messageRecord.getText());
+                } else {
+                    stringBuilder.append("@").append(messageRecord.getUser().getUsername()).append(" каже: ").append(messageRecord.getText()).append("\n");
+                }
             }
 
             String invertedContext = stringBuilder.toString();
