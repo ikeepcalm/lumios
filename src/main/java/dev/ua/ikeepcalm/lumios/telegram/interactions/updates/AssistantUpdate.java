@@ -49,15 +49,16 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
 
     @Override
     public void fireInteraction(Update update) {
+        // Skip processing if not a message
+        if (!update.hasMessage()) {
+            return;
+        }
+
         LumiosChat chat;
         try {
             chat = chatService.findByChatId(update.getMessage().getChatId());
         } catch (Exception e) {
             log.error("Failed to get chat by chatId", e);
-            return;
-        }
-
-        if (!update.hasMessage()) {
             return;
         }
 
@@ -131,23 +132,22 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                 }
             }
 
+            String formattedInput = inputText + ", каже " + fullName + "(" + tag + ")";
+
             switch (chat.getAiModel()) {
                 case GEMINI -> {
                     CompletableFuture<String> responseFuture;
 
                     if (isReplyToBot) {
                         Long replyToMessageId = Long.valueOf(update.getMessage().getReplyToMessage().getMessageId());
-                        responseFuture = gemini.getChatResponseForReply(
-                                inputText + ", каже " + fullName + "(" + tag + ")",
-                                update.getMessage().getChatId(),
-                                replyToMessageId
-                        );
+                        log.info("Processing reply to bot, message ID: {}", replyToMessageId);
+                        if (hasPhoto) {
+                            responseFuture = gemini.getChatResponse(formattedInput, update.getMessage().getChatId(), imageData, replyToMessageId);
+                        } else {
+                            responseFuture = gemini.getChatResponseForReply(formattedInput, update.getMessage().getChatId(), replyToMessageId);
+                        }
                     } else {
-                        responseFuture = gemini.getChatResponse(
-                                inputText + ", каже " + fullName + "(" + tag + ")",
-                                update.getMessage().getChatId(),
-                                imageData
-                        );
+                        responseFuture = gemini.getChatResponse(formattedInput, update.getMessage().getChatId(), imageData);
                     }
 
                     responseFuture.thenAccept(response -> {
@@ -159,7 +159,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                 try {
                                     List<MessageRecord> records = recordService.findLastMessagesByChatId(chat.getChatId(), 1);
                                     if (!records.isEmpty()) {
-                                        MessageRecord record = records.get(0);
+                                        MessageRecord record = records.getFirst();
                                         if (record.getUser() == null && record.getMessageId() == null) {
                                             record.setMessageId(Long.valueOf(sentMessage.getMessageId()));
                                             recordService.save(record);
@@ -185,7 +185,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                         return;
                     }
 
-                    openAI.getChatResponse(inputText + ", каже " + fullName + "(" + tag + ")", chat.getChatId())
+                    openAI.getChatResponse(formattedInput, chat.getChatId())
                             .thenAccept(response -> {
                                 if (response != null) {
                                     Message sentMessage = sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
@@ -230,6 +230,9 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                 .max(Comparator.comparing(PhotoSize::getFileSize))
                 .orElseThrow(() -> new IllegalStateException("No photo found"));
 
+        log.info("Selected photo size: {}x{}, file_id: {}",
+                largestPhoto.getWidth(), largestPhoto.getHeight(), largestPhoto.getFileId());
+
         GetFile getFileRequest = new GetFile(largestPhoto.getFileId());
         File file = telegramClient.execute(getFileRequest);
 
@@ -237,7 +240,9 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
         URL url = new URL(fileUrl);
 
         try (InputStream is = url.openStream()) {
-            return is.readAllBytes();
+            byte[] imageData = is.readAllBytes();
+            log.info("Downloaded image size: {} bytes", imageData.length);
+            return imageData;
         }
     }
 }

@@ -12,7 +12,6 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 
@@ -93,11 +92,7 @@ public class StatsCallback extends ServicesShortcut implements Interaction {
                 RemoveMessage removeMessage = new RemoveMessage();
                 removeMessage.setChatId(message.getMessage().getChatId());
                 removeMessage.setMessageId(message.getMessage().getMessageId());
-                try {
-                    telegramClient.sendRemoveMessage(removeMessage);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+                telegramClient.sendRemoveMessage(removeMessage);
                 return;
             }
         }

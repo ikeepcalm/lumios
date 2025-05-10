@@ -8,12 +8,11 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
-import dev.ua.ikeepcalm.lumios.telegram.utils.markup.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.QueueUpdateUtil;
+import dev.ua.ikeepcalm.lumios.telegram.utils.markup.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,11 +53,7 @@ public class ExitCallback extends ServicesShortcut implements Interaction {
 
                     if (queueContents.isEmpty()) {
                         RemoveMessage removeMessage = new RemoveMessage(simpleQueue.getMessageId(), message.getMessage().getChatId());
-                        try {
-                            this.telegramClient.sendRemoveMessage(removeMessage);
-                        } catch (TelegramApiException e) {
-                            throw new RuntimeException(e);
-                        }
+                        this.telegramClient.sendRemoveMessage(removeMessage);
                         queueService.deleteSimpleQueue(simpleQueue);
                     } else {
                         this.telegramClient.sendTextMessage(QueueMarkupUtil.createNotification(message.getMessage().getChatId(), simpleQueue));
