@@ -1,5 +1,7 @@
 package dev.ua.ikeepcalm.lumios.telegram.ai;
 
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
+import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -12,6 +14,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -25,12 +29,31 @@ public class Gemini {
     private List<String> apiKey;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final GeminiConversationService conversationService;
+    private final RecordService recordService;
 
-    public CompletableFuture<String> getChatResponse(String inputText) {
+    public Gemini(GeminiConversationService conversationService, RecordService recordService) {
+        this.conversationService = conversationService;
+        this.recordService = recordService;
+    }
+
+    public CompletableFuture<String> getChatResponse(String inputText, Long chatId) {
+        return getChatResponse(inputText, chatId, null, null);
+    }
+
+    public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData) {
+        return getChatResponse(inputText, chatId, imageData, null);
+    }
+
+    public CompletableFuture<String> getChatResponseForReply(String inputText, Long chatId, Long replyToMessageId) {
+        return getChatResponse(inputText, chatId, null, replyToMessageId);
+    }
+
+    public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData, Long replyToMessageId) {
         return CompletableFuture.supplyAsync(() -> {
             for (String key : apiKey) {
                 try {
-                    JSONObject jsonPayload = getJsonObject(inputText);
+                    JSONObject jsonPayload = getJsonObject(inputText, chatId, imageData, replyToMessageId);
 
                     URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-002:generateContent?key=" + key);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -51,7 +74,12 @@ public class Gemini {
                         }
                     }
 
-                    return extractTextFromResponse(response.toString());
+                    String responseText = extractTextFromResponse(response.toString());
+
+                    // Save response to database for future context
+                    saveResponseToDatabase(chatId, responseText, replyToMessageId);
+
+                    return responseText;
 
                 } catch (Exception e) {
                     log.error("Error with key {}: {}", key, e.getMessage());
@@ -61,18 +89,53 @@ public class Gemini {
         }, executorService);
     }
 
+    private void saveResponseToDatabase(Long chatId, String responseText, Long replyToMessageId) {
+        MessageRecord messageRecord = new MessageRecord();
+        messageRecord.setChatId(chatId);
+        messageRecord.setText(responseText);
+        messageRecord.setDate(LocalDateTime.now());
+        messageRecord.setReplyToMessageId(replyToMessageId);
+        // Bot messages don't have a user, so leave user null
+        // messageId will be set by the bot when it actually sends the message
+
+        recordService.save(messageRecord);
+    }
+
     @NotNull
-    private JSONObject getJsonObject(String inputText) {
+    private JSONObject getJsonObject(String inputText, Long chatId, byte[] imageData, Long replyToMessageId) {
         JSONObject jsonPayload = new JSONObject();
-        JSONArray contentsArray = new JSONArray();
+
+        // Get conversation context from database
+        JSONArray contentsArray;
+        if (replyToMessageId != null) {
+            contentsArray = conversationService.getReplyChainContext(chatId, replyToMessageId);
+        } else {
+            contentsArray = conversationService.getConversationContext(chatId);
+        }
+
+        // Add current user message
         JSONObject userObject = new JSONObject();
         userObject.put("role", "user");
         JSONArray userPartsArray = new JSONArray();
-        JSONObject userPart = new JSONObject();
-        userPart.put("text", inputText);
-        userPartsArray.put(userPart);
+
+        // Add text part
+        JSONObject userTextPart = new JSONObject();
+        userTextPart.put("text", inputText);
+        userPartsArray.put(userTextPart);
+
+        // Add image part if available
+        if (imageData != null) {
+            JSONObject imagePart = new JSONObject();
+            JSONObject inlineData = new JSONObject();
+            inlineData.put("mimeType", "image/jpeg");
+            inlineData.put("data", Base64.getEncoder().encodeToString(imageData));
+            imagePart.put("inlineData", inlineData);
+            userPartsArray.put(imagePart);
+        }
+
         userObject.put("parts", userPartsArray);
         contentsArray.put(userObject);
+
         jsonPayload.put("contents", contentsArray);
 
         JSONObject systemInstructionObject = new JSONObject();
@@ -80,13 +143,13 @@ public class Gemini {
 
         JSONArray systemPartsArray = new JSONArray();
         JSONObject systemPart = new JSONObject();
-        systemPart.put("text", "Your preferred language is Ukrainian. You're sharp, when somebody tries to harass you, you must respond appropriately, defend yourself. You may take part in role-playing. Your preferred gender is female, and your name is Lumina");
+        systemPart.put("text", "Your preferred language is Ukrainian. You should maintain a diverse range of responses and personalities based on the conversation context.");
         systemPartsArray.put(systemPart);
         systemInstructionObject.put("parts", systemPartsArray);
         jsonPayload.put("systemInstruction", systemInstructionObject);
 
         JSONObject generationConfigObject = new JSONObject();
-        generationConfigObject.put("temperature", 1.8);
+        generationConfigObject.put("temperature", 1.0);
         generationConfigObject.put("maxOutputTokens", 6000);
         generationConfigObject.put("responseMimeType", "text/plain");
         jsonPayload.put("generationConfig", generationConfigObject);
