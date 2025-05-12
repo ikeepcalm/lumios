@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -29,9 +30,12 @@ public class Gemini {
     @Value("#{'${gemini.api.keys}'.split(',')}")
     private List<String> apiKey;
 
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
     private final GeminiConversationService conversationService;
     private final RecordService recordService;
+
+    private static final int MAX_CACHE_ENTRIES = 10;
+    private static final int MAX_IMAGE_SIZE = 1024 * 1024; // 1MB limit
     private final ConcurrentHashMap<String, byte[]> imageCache = new ConcurrentHashMap<>();
 
     public Gemini(GeminiConversationService conversationService, RecordService recordService) {
@@ -54,6 +58,15 @@ public class Gemini {
     public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData, Long replyToMessageId) {
         String imageKey = null;
         if (imageData != null && imageData.length > 0) {
+            if (imageData.length > MAX_IMAGE_SIZE) {
+                log.warn("Image size exceeds limit of {}KB, resizing would be better", MAX_IMAGE_SIZE/1024);
+            }
+
+            if (imageCache.size() >= MAX_CACHE_ENTRIES) {
+                imageCache.clear();
+                log.info("Cleared image cache due to size limit");
+            }
+
             imageKey = chatId + "_" + System.currentTimeMillis();
             imageCache.put(imageKey, imageData);
             log.info("Cached image with key {} and size {}", imageKey, imageData.length);
@@ -66,13 +79,15 @@ public class Gemini {
                 for (String key : apiKey) {
                     try {
                         JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId);
-                        log.debug("Payload: {}", jsonPayload.toString(2));
+                        log.debug("Payload size: {} bytes", jsonPayload.toString().length());
 
                         URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("POST");
                         connection.setRequestProperty("Content-Type", "application/json");
                         connection.setDoOutput(true);
+                        connection.setConnectTimeout(30000);
+                        connection.setReadTimeout(30000);
 
                         try (OutputStream os = connection.getOutputStream()) {
                             os.write(jsonPayload.toString().getBytes());
@@ -93,9 +108,6 @@ public class Gemini {
 
                     } catch (Exception e) {
                         log.error("Error with key {}: {}", key, e.getMessage());
-                        if (e.getMessage().contains("400")) {
-                            log.error("Request payload: {}", getJsonObject(inputText, chatId, finalImageKey, replyToMessageId).toString(2));
-                        }
                     }
                 }
                 throw new RuntimeException("Failed to get response from Gemini with all provided API keys");
@@ -104,6 +116,7 @@ public class Gemini {
                     imageCache.remove(finalImageKey);
                     log.info("Removed image with key {}", finalImageKey);
                 }
+                System.gc();
             }
         }, executorService);
     }
@@ -123,7 +136,6 @@ public class Gemini {
 
     @NotNull
     private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId) {
-        // Get conversation context
         JSONArray conversationContext;
         if (replyToMessageId != null) {
             conversationContext = conversationService.getReplyChainContext(chatId, replyToMessageId);
@@ -131,23 +143,19 @@ public class Gemini {
             conversationContext = conversationService.getConversationContext(chatId);
         }
 
-        // Create the payload structure
         JSONObject jsonPayload = new JSONObject();
         JSONArray contentsArray = new JSONArray();
 
-        // Add context messages if available
-        if (conversationContext.length() > 0) {
+        if (!conversationContext.isEmpty()) {
             for (int i = 0; i < conversationContext.length(); i++) {
                 contentsArray.put(conversationContext.get(i));
             }
         }
 
-        // Create user message
         JSONObject userMessage = new JSONObject();
         userMessage.put("role", "user");
         JSONArray parts = new JSONArray();
 
-        // Add image if present
         byte[] imageData = null;
         if (imageKey != null) {
             imageData = imageCache.get(imageKey);
@@ -163,7 +171,6 @@ public class Gemini {
             }
         }
 
-        // Add text part
         JSONObject textPart = new JSONObject();
         textPart.put("text", inputText);
         parts.put(textPart);
@@ -172,7 +179,6 @@ public class Gemini {
         contentsArray.put(userMessage);
         jsonPayload.put("contents", contentsArray);
 
-        // System instruction
         JSONObject systemInstruction = new JSONObject();
         systemInstruction.put("role", "user");
         JSONArray systemParts = new JSONArray();
@@ -196,22 +202,10 @@ public class Gemini {
         systemInstruction.put("parts", systemParts);
         jsonPayload.put("systemInstruction", systemInstruction);
 
-        // Generation config
         JSONObject genConfig = new JSONObject();
         genConfig.put("temperature", 0.7);
         genConfig.put("maxOutputTokens", 1024);
         jsonPayload.put("generationConfig", genConfig);
-
-//        // Safety settings
-//        JSONArray safetySettings = new JSONArray();
-//        String[] categories = {"HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"};
-//        for (String category : categories) {
-//            JSONObject setting = new JSONObject();
-//            setting.put("category", category);
-//            setting.put("threshold", "BLOCK_NONE");
-//            safetySettings.put(setting);
-//        }
-//        jsonPayload.put("safetySettings", safetySettings);
 
         return jsonPayload;
     }
@@ -224,8 +218,20 @@ public class Gemini {
             JSONArray parts = content.getJSONArray("parts");
             return parts.getJSONObject(0).getString("text");
         } catch (Exception e) {
-            log.error("Failed to extract text from response: {}", jsonResponse, e);
+            log.error("Failed to extract text from response", e);
             return "Виникла помилка при обробці відповіді від Gemini.";
+        }
+    }
+
+    public void destroy() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(10, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 }
