@@ -14,17 +14,17 @@ services:
       MYSQL_URL: "mariadb://mariadb:3306/lumios"
       MYSQL_USER: "lumios"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
-      
+
       # Telegram Bot configuration
       TELEGRAM_TOKEN: "${TELEGRAM_TOKEN}"
       TELEGRAM_USERNAME: "${TELEGRAM_USERNAME}"
       TELEGRAM_NEWS_CHANNEL_ID: "${TELEGRAM_NEWS_CHANNEL_ID}"
-      
+
       # API Keys
       OPENAI_API_KEY: "${OPENAI_API_KEY}"
       GEMINI_API_KEYS: "${GEMINI_API_KEYS}"
       TENOR_API_KEY: "${TENOR_API_KEY}"
-      
+
       # REST API configuration
       REST_API_KEY: "${REST_API_KEY}"
       REST_API_HEADER: "${REST_API_HEADER}"

@@ -12,7 +12,6 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @BotCommand(command = "mixed")
@@ -58,11 +57,7 @@ public class MixedCommand extends ServicesShortcut implements Interaction {
         queueMessage.setText(stringBuilder.toString());
         queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(mixedQueue));
         Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
-        try {
-            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
-        } catch (TelegramApiException e) {
-            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено автоматично, надайте мені необхідні дозволи!", message);
-        }
+        this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         mixedQueue.setMessageId(sendTextMessage.getMessageId());
         mixedQueue.setChatId(message.getChatId());
         queueService.save(mixedQueue);

@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.io.IOException;
@@ -147,12 +146,8 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
             editMessage.setText(finalResultMessage);
             Message sentMessage = telegramClient.sendEditMessage(editMessage, finalIsCaption);
             scheduler.schedule(() -> {
-                try {
-                    telegramClient.sendRemoveMessage(new RemoveMessage(sentMessage.getMessageId(), sentMessage.getChatId()));
-                    telegramClient.sendRemoveMessage(new RemoveMessage(message.getMessageId(), message.getChatId()));
-                } catch (TelegramApiException e) {
-                    log.error("Failed to delete message: {}", sentMessage.getText());
-                }
+                telegramClient.sendRemoveMessage(new RemoveMessage(sentMessage.getMessageId(), sentMessage.getChatId()));
+                telegramClient.sendRemoveMessage(new RemoveMessage(message.getMessageId(), message.getChatId()));
             }, 5, TimeUnit.MINUTES);
         }, 8, TimeUnit.SECONDS);
     }

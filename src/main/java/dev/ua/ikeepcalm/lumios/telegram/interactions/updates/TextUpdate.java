@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -14,8 +15,33 @@ import java.time.LocalDateTime;
 @BotUpdate
 public class TextUpdate extends ServicesShortcut implements Interaction {
 
+    private String botName;
+
+    public TextUpdate(Environment environment) {
+        this.botName = environment.getProperty("TELEGRAM_USERNAME");
+    }
+
     @Override
     public void fireInteraction(Update update) {
+        if (update.hasMessage()) {
+            boolean isAiRelated = false;
+
+            if (update.getMessage().hasText() &&
+                    update.getMessage().getText().matches(".*\\B" + botName + "\\b.*")) {
+                isAiRelated = true;
+            }
+
+            if (update.getMessage().isReply() &&
+                    update.getMessage().getReplyToMessage().getFrom().getIsBot() &&
+                    update.getMessage().getReplyToMessage().getFrom().getUserName().equals(botName.replace("@", ""))) {
+                isAiRelated = true;
+            }
+
+            if (isAiRelated) {
+                return;
+            }
+        }
+
         MessageRecord messageRecord = new MessageRecord();
         if (update.hasMessage() && update.getMessage().hasText()) {
 

@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -47,11 +46,7 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
         RemoveMessage removeMessage = new RemoveMessage();
         removeMessage.setMessageId(callbackQuery.getMessage().getMessageId());
         removeMessage.setChatId(callbackQuery.getMessage().getChatId());
-        try {
-            telegramClient.sendRemoveMessage(removeMessage);
-        } catch (TelegramApiException e) {
-            log.error("Error while removing message", e);
-        }
+        telegramClient.sendRemoveMessage(removeMessage);
 
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(callbackQuery.getMessage().getChatId());
