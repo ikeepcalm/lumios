@@ -5,7 +5,6 @@ plugins {
     id 'org.springframework.boot' version '3.3.0'
     id 'org.springframework.boot.experimental.thin-launcher' version '1.0.31.RELEASE'
     id("io.spring.dependency-management") version "1.1.5"
-    id 'org.graalvm.buildtools.native' version '0.10.3'
 }
 
 group = 'dev.ua.ikeepcalm'
@@ -48,37 +47,7 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-graalvmNative {
-    binaries {
-        main {
-            imageName = 'lumios'
-            // Force executable build (not shared library)
-            sharedLibrary = false
-            buildArgs.addAll([
-                '-H:+UnlockExperimentalVMOptions',
-                '-H:TraceClassInitialization=true',
-                '--enable-url-protocols=https,http',
-                '--enable-all-security-services',
-                '-H:+ReportExceptionStackTraces',
-                '-H:+AddAllCharsets',
-                '--initialize-at-build-time=org.slf4j,ch.qos.logback,com.fasterxml.jackson',
-                '--initialize-at-run-time=org.springframework.core.NativeDetector,com.github.benmanes.caffeine,org.telegram',
-                '--initialize-at-build-time=org.yaml.snakeyaml.DumperOptions$ScalarStyle,org.yaml.snakeyaml.external.com.google.gdata.util.common.base.UnicodeEscaper,org.yaml.snakeyaml.external.com.google.gdata.util.common.base.PercentEscaper,org.yaml.snakeyaml.util.UriEncoder,org.yaml.snakeyaml.nodes.Tag',
-                '-H:+InstallExitHandlers',
-                '-H:+ReportUnsupportedElementsAtRuntime',
-                '--enable-preview',
-                '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
-                '--add-exports=java.base/sun.nio.ch=ALL-UNNAMED',
-                '-H:ReflectionConfigurationResources=META-INF/native-image/reflect-config.json',
-                '-H:IncludeResources=.*\\.properties$',
-                '-H:+JNI',
-                '-H:+AllowVMInspection',
-                '--verbose',
-                '--no-fallback'
-            ])
-        }
-    }
-}
+
 
 publishing {
     publications {

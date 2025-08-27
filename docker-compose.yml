@@ -4,7 +4,7 @@ services:
   lumios-bot:
     build:
       context: .
-      dockerfile: Dockerfile.jvm
+      dockerfile: Dockerfile
     container_name: lumios-bot
     deploy:
       resources:

@@ -1,9 +1,9 @@
-# Stage 1: Build with GraalVM
-FROM ghcr.io/graalvm/native-image-community:21 AS build
-WORKDIR /app
+# Fallback Dockerfile for JVM mode (for development/testing)
+# Usage: docker build -f Dockerfile.jvm -t lumios-jvm .
 
-# Install required packages
-RUN microdnf install -y findutils
+# Stage 1: Build
+FROM gradle:8.12.0-jdk21 AS build
+WORKDIR /app
 
 # Copy gradle files first for better caching
 COPY gradle/ gradle/
@@ -13,31 +13,36 @@ COPY gradlew gradlew.bat build.gradle settings.gradle ./
 COPY src/ src/
 
 # Make gradlew executable
-RUN chmod +x gradlew
+RUN chmod +x ./gradlew
 
-# Build native image
-RUN ./gradlew nativeCompile && \
-    echo "=== Native compile output ===" && \
-    ls -la /app/build/native/nativeCompile/
+# Build the JAR
+RUN ./gradlew bootJar
 
-# Stage 2: Runtime dependencies - Get zlib library
-FROM debian:12-slim AS runtime-deps
-RUN apt-get update && apt-get install -y \
-    zlib1g \
-    && rm -rf /var/lib/apt/lists/*
-
-# Stage 3: Runtime - Use distroless for minimal attack surface
-FROM gcr.io/distroless/base-debian12:nonroot
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy required shared libraries
-COPY --from=runtime-deps /usr/lib/x86_64-linux-gnu/libz.so.1* /usr/lib/x86_64-linux-gnu/
+# Install curl for health checks
+RUN apk add --no-cache curl
 
-# Copy the native executable
-COPY --from=build /app/build/native/nativeCompile/lumios /app/lumios
+# Copy the built JAR
+COPY --from=build /app/build/libs/*.jar app.jar
 
-# Expose the port (from application.properties)
+# Create non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S -D -H -u 1001 -s /sbin/nologin -G appgroup appuser
+
+USER appuser
+
+# Expose the port
 EXPOSE 8847
 
-# Set the entry point - use the copied executable
-ENTRYPOINT ["/app/lumios"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8847/actuator/health || exit 1
+
+# Set JVM options for better memory and CPU usage
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=85.0 -XX:+UseZGC -XX:+UnlockExperimentalVMOptions -XX:+UseContainerSupport -Xms256m -XX:MaxGCPauseMillis=100"
+
+# Set the entry point
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
