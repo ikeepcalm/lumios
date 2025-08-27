@@ -8,6 +8,8 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.UserShot;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class ShotTask {
 
@@ -27,10 +30,13 @@ public class ShotTask {
         this.shotService = shotService;
     }
 
+    @Async
+    @Scheduled(cron = "0 45 22 * * *") // 22:45 - avoid collision with other tasks
     @Transactional
-    @Scheduled(cron = "0 0 22 * * *")
     public void executeShotTask() {
-        Iterable<LumiosChat> chats = this.chatService.findAll();
+        try {
+            log.info("Starting daily shot snapshot task");
+            Iterable<LumiosChat> chats = this.chatService.findAll();
         for (LumiosChat chat : chats) {
             ChatShot chatShot;
             try {
@@ -53,6 +59,10 @@ public class ShotTask {
             }
             chatShot.setUserShots(userShots);
             this.shotService.save(chatShot);
+        }
+        log.info("Completed daily shot snapshot task");
+        } catch (Exception e) {
+            log.error("Failed to execute shot snapshot task", e);
         }
     }
 }

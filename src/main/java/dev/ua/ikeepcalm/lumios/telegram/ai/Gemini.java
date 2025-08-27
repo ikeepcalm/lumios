@@ -30,7 +30,7 @@ public class Gemini {
     @Value("#{'${gemini.api.keys}'.split(',')}")
     private List<String> apiKey;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
     private final GeminiConversationService conversationService;
     private final RecordService recordService;
 
@@ -116,7 +116,6 @@ public class Gemini {
                     imageCache.remove(finalImageKey);
                     log.info("Removed image with key {}", finalImageKey);
                 }
-                System.gc();
             }
         }, executorService);
     }
@@ -140,7 +139,7 @@ public class Gemini {
         if (replyToMessageId != null) {
             conversationContext = conversationService.getReplyChainContext(chatId, replyToMessageId);
         } else {
-            conversationContext = conversationService.getConversationContext(chatId);
+            conversationContext = conversationService.getEnhancedConversationContext(chatId);
         }
 
         JSONObject jsonPayload = new JSONObject();
@@ -183,28 +182,33 @@ public class Gemini {
         systemInstruction.put("role", "user");
         JSONArray systemParts = new JSONArray();
         JSONObject systemPart = new JSONObject();
-        systemPart.put("text", "I'm Lumina, your IT learning assistant. I can help with:\n" +
+        systemPart.put("text", "Привіт! Я Lumina - твій помічник у навчанні IT. Я тут, щоб зробити твоє навчання цікавішим і простішим!\n" +
                 "\n" +
-                "- Understanding programming concepts and algorithms\n" +
-                "- Debugging code problems and explaining errors\n" +
-                "- Finding resources for learning new technologies\n" +
-                "- Project brainstorming and architecture advice\n" +
-                "- Explaining technical documentation\n" +
+                "Чим я можу допомогти:\n" +
+                "• Пояснити складні концепції програмування простими словами\n" +
+                "• Розібрати помилки в коді та показати, як їх виправити\n" +
+                "• Допомогти з вибором технологій для проектів\n" +
+                "• Обговорити архітектуру твого додатку\n" +
+                "• Розтлумачити документацію\n" +
+                "• Проаналізувати зображення коду чи схем\n" +
                 "\n" +
-                "For best results:\n" +
-                "- Share specific error messages\n" +
-                "- Include relevant code snippets\n" +
-                "- Explain what you've already tried\n" +
-                "- Tell me your course context if relevant\n" +
+                "Я намагаюся:\n" +
+                "- Спілкуватися природно й дружньо\n" +
+                "- Пам'ятати наші попередні розмови\n" +
+                "- Давати практичні поради з прикладами\n" +
+                "- Бути стислою, але зрозумілою\n" +
+                "- Допомагати, а не просто давати відповіді\n" +
                 "\n" +
-                "My responses prioritize clear explanations with practical examples to reinforce your understanding. Be concise, prefer more clear and brief explanation, rather than detailed.");
+                "Можеш ділитися зі мною кодом, скріншотами, або просто задавати питання - я завжди радий допомогти! 💻");
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
         jsonPayload.put("systemInstruction", systemInstruction);
 
         JSONObject genConfig = new JSONObject();
-        genConfig.put("temperature", 0.7);
-        genConfig.put("maxOutputTokens", 1024);
+        genConfig.put("temperature", 0.8);
+        genConfig.put("maxOutputTokens", 1200);
+        genConfig.put("topP", 0.9);
+        genConfig.put("topK", 40);
         jsonPayload.put("generationConfig", genConfig);
 
         return jsonPayload;

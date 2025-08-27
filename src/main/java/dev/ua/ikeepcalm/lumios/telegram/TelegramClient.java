@@ -71,29 +71,48 @@ public class TelegramClient extends OkHttpTelegramClient {
                         new ArrayList<>(List.of(
                                 new BotCommand("help", "Відкрити довідку користувача"),
                                 new BotCommand("tasks", "Відкрити меню завдань"),
-                                new BotCommand("due", "Переглянути список завдань")
+                                new BotCommand("due", "Переглянути список завдань"),
+                                new BotCommand("me", "Подивитися персональну статистику"),
+                                new BotCommand("stats", "Подивитися загальну статистику"),
+                                new BotCommand("gamble", "Команда для лудоманів"),
+                                new BotCommand("wheel", "Щоденне колесо фортуни")
                         ))).scope(BotCommandScopeAllPrivateChats.builder().build())
                 .commands(
                         new ArrayList<>(List.of(
+                                // System Commands
                                 new BotCommand("settings", "Відкрити налаштування бота"),
+                                new BotCommand("help", "Відкрити довідку користувача"),
+                                new BotCommand("summary", "Підведення підсумку за останні повідомлення"),
+                                
+                                // Queue Commands
                                 new BotCommand("queue", "Створити просту нумеровану чергу"),
                                 new BotCommand("mixed", "Створити мішану (випадкову) чергу"),
+                                new BotCommand("identity", "Прив'язати своє реальне ім'я до аккаунту"),
+                                new BotCommand("repin", "Прикріпити всі активні черги в групі (для адмінів)"),
+                                new BotCommand("revive", "Відновити всі активні черги в групі (для адмінів)"),
+                                
+                                // Timetable Commands  
                                 new BotCommand("editor", "Налаштувати розклад для чату"),
                                 new BotCommand("today", "Показати розклад на сьогодні"),
                                 new BotCommand("tomorrow", "Показати розклад на завтра"),
-                                new BotCommand("now", "Посмлання на заняття, яке йде зараз"),
-                                new BotCommand("next", "Посмлання на наступне заняття"),
                                 new BotCommand("week", "Показати розклад тижня"),
+                                new BotCommand("now", "Посилання на заняття, яке йде зараз"),
+                                new BotCommand("next", "Посилання на наступне заняття"),
+                                new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
+                                
+                                // Task Commands
+                                new BotCommand("tasks", "Відкрити меню завдань"),
+                                new BotCommand("due", "Переглянути список завдань"),
+                                
+                                // Reverence Commands
                                 new BotCommand("me", "Подивитися персональну статистику"),
                                 new BotCommand("stats", "Подивитися загальну статистику"),
                                 new BotCommand("gamble", "Команда для лудоманів"),
                                 new BotCommand("gamble_all", "Команда для повних лудоманів"),
                                 new BotCommand("wheel", "Щоденне колесо фортуни"),
-                                new BotCommand("identity", "Прив'язати своє реальне ім'я до аккаунту"),
-                                new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
-                                new BotCommand("summary", "Підведення підсумку за останні повідомлення"),
-                                new BotCommand("repin", "Прикріпити всі активні черги в групі"),
-                                new BotCommand("revive", "Відновити всі активні черги в групі")
+
+                                // Ai
+                                new BotCommand("nickname", "Встановити нікнейм для бота")
                         ))
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }

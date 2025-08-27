@@ -72,6 +72,14 @@ public class SettingsMarkupUtil {
         keyboard.add(secondRow);
         keyboard.add(thirdRow);
         keyboard.add(fourthRow);
+        
+        if (lumiosChat.isAiEnabled()) {
+            InlineKeyboardRow nicknameRow = new InlineKeyboardRow();
+            InlineKeyboardButton nicknameButton = new InlineKeyboardButton("Псевдонім бота");
+            nicknameButton.setCallbackData("settings-nickname");
+            nicknameRow.add(nicknameButton);
+            keyboard.add(nicknameRow);
+        }
 
         return new InlineKeyboardMarkup(keyboard);
     }

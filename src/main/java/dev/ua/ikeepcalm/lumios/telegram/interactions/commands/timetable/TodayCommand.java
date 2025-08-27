@@ -31,21 +31,31 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
                     WeekValidator.determineWeekDay());
             DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
 
-            StringBuilder messageBuilder = new StringBuilder("\uD83D\uDCC5> *РОЗКЛАД НА СЬОГОДНІ* <\uD83D\uDCC5 \n\n");
-            messageBuilder.append("``` \uD83D\uDD35 - ЛЕКЦІЯ\n \uD83D\uDFE0 - ПРАКТИКА\n \uD83D\uDFE2 - ЛАБОРАТОРНА```\n\n");
+            StringBuilder messageBuilder = new StringBuilder("📅 *РОЗКЛАД НА СЬОГОДНІ* 📅\n\n");
+            messageBuilder.append(TimetableParser.EMOJI_LEGEND);
+
+            boolean hasClasses = false;
 
             for (DayEntry dayEntry : timetableEntry.getDays()) {
                 if (dayEntry.getDayName().equals(dayOfWeek)) {
-                    for (ClassEntry classEntry : dayEntry.getClassEntries()) {
-                        messageBuilder.append("*").append(classEntry.getStartTime()).append(" - ").append(classEntry.getEndTime()).append("*\n");
-                        messageBuilder.append(TimetableParser.parseClassEmoji(classEntry.getClassType())).append(" [").append(classEntry.getName()).append("]");
-                        messageBuilder.append("(").append(classEntry.getUrl()).append(")\n\n");
+                    if (!dayEntry.getClassEntries().isEmpty()) {
+                        messageBuilder.append("*{").append(dayOfWeek.toString()).append("}*\n\n");
+                        hasClasses = true;
+                        for (ClassEntry classEntry : dayEntry.getClassEntries()) {
+                            messageBuilder.append("*").append(classEntry.getStartTime()).append(" - ").append(classEntry.getEndTime()).append("*\n");
+                            messageBuilder.append(TimetableParser.parseClassEmoji(classEntry.getClassType())).append(" [").append(classEntry.getName()).append("](")
+                                    .append(classEntry.getUrl()).append(")\n\n");
+                        }
                     }
                 }
             }
+
+            if (!hasClasses) {
+                messageBuilder.append("🎆 *Немає пар на сьогодні!* 🎆\n");
+            }
             sendMessage(messageBuilder.toString(), ParseMode.MARKDOWN, message);
         } catch (NoSuchEntityException e) {
-            sendMessage("Не знайдено розкладу на сьогодні! Ви точно все налаштували?", message);
+            sendMessage("❌ Не знайдено розклад на сьогодні! Ви точно все налаштували?", message);
         }
     }
 

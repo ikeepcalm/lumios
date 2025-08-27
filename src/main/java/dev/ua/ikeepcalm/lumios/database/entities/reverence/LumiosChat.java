@@ -52,6 +52,9 @@ public class LumiosChat {
     @Column(columnDefinition = "integer default 10")
     private int communicationLimit;
 
+    @Column
+    private String botNickname;
+
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<LumiosUser> users;
 

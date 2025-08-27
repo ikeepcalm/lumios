@@ -21,8 +21,17 @@ public class ImportUtil {
     public static Map<String, String> getGroupsByFilter(String filter) throws RuntimeException {
         try {
             String response = sendGetRequest("https://api.campus.kpi.ua/schedule/groups", Map.of("filter", filter));
-            JSONObject jsonResponse = new JSONObject(response);
-            JSONArray groups = jsonResponse.getJSONArray("data");
+
+            if (response == null || response.trim().isEmpty()) {
+                throw new RuntimeException("Empty response from API");
+            }
+            
+            String trimmedResponse = response.trim();
+            if (!trimmedResponse.startsWith("{") && !trimmedResponse.startsWith("[")) {
+                throw new RuntimeException("Invalid JSON response: " + trimmedResponse.substring(0, Math.min(100, trimmedResponse.length())));
+            }
+            
+            JSONArray groups = new JSONArray(response);
             Map<String, String> groupNames = new HashMap<>();
             for (int i = 0; i < groups.length(); i++) {
                 JSONObject group = groups.getJSONObject(i);
@@ -40,10 +49,29 @@ public class ImportUtil {
     public static CampusTimetable getScheduleByGroup(String groupId) throws RuntimeException {
         try {
             String response = sendGetRequest("https://api.campus.kpi.ua/schedule/lessons", Map.of("groupId", groupId));
-            JSONObject jsonResponse = new JSONObject(response);
-            JSONObject data = jsonResponse.getJSONObject("data");
+            
+            if (response == null || response.trim().isEmpty()) {
+                throw new RuntimeException("Empty response from API");
+            }
+            
+            String trimmedResponse = response.trim();
+            if (!trimmedResponse.startsWith("{") && !trimmedResponse.startsWith("[")) {
+                throw new RuntimeException("Invalid JSON response: " + trimmedResponse.substring(0, Math.min(100, trimmedResponse.length())));
+            }
+
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(data.toString(), CampusTimetable.class);
+            if (trimmedResponse.startsWith("{")) {
+                JSONObject jsonResponse = new JSONObject(response);
+                
+                if (jsonResponse.has("data")) {
+                    JSONObject data = jsonResponse.getJSONObject("data");
+                    return mapper.readValue(data.toString(), CampusTimetable.class);
+                } else {
+                    return mapper.readValue(response, CampusTimetable.class);
+                }
+            } else {
+                return mapper.readValue(response, CampusTimetable.class);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to get schedule by group", e);
         }
@@ -79,8 +107,17 @@ public class ImportUtil {
             connection.disconnect();
             return content.toString();
         } else {
+            // Try to read error response body for better debugging
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            StringBuilder errorContent = new StringBuilder();
+            String errorLine;
+            while ((errorLine = errorReader.readLine()) != null) {
+                errorContent.append(errorLine);
+            }
+            errorReader.close();
             connection.disconnect();
-            throw new RuntimeException("HTTP GET Request Failed with Error code : " + responseCode);
+            throw new RuntimeException("HTTP GET Request Failed with Error code: " + responseCode + 
+                                     ", Error response: " + errorContent.toString());
         }
     }
 

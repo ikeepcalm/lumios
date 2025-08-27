@@ -59,6 +59,15 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
         } else if (data.equals("settings-ai-openai")) {
             chat.setAiModel(AiModel.GEMINI);
         }
+        
+        if (data.equals("settings-nickname")) {
+            String nicknameInfo = chat.getBotNickname() != null && !chat.getBotNickname().trim().isEmpty() 
+                ? "Поточний псевдонім: **" + chat.getBotNickname() + "**"
+                : "Псевдонім не встановлено";
+            
+            telegramClient.sendAnswerCallbackQuery(nicknameInfo + "\n\nВикористовуйте команду `/nickname [псевдонім]` для зміни", message.getId());
+            return;
+        }
 
         chatService.save(chat);
 

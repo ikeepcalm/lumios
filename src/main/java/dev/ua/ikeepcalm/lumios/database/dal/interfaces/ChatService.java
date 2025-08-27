@@ -11,5 +11,7 @@ public interface ChatService {
     void delete(LumiosChat chat);
 
     Iterable<LumiosChat> findAll();
+    
+    int batchUpdateLimits(int summaryLimit, int communicationLimit);
 }
 

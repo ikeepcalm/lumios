@@ -37,6 +37,8 @@ public class TimetableParser {
     }
 
 
+    public static final String EMOJI_LEGEND = "``` 🔵 - ЛЕКЦІЯ\n 🟠 - ПРАКТИКА\n 🟢 - ЛАБОРАТОРНА```\n\n";
+
     public static String parseClassEmoji(ClassType classType) {
         return switch (classType.name()) {
             case "LECTURE" -> "\uD83D\uDD35";

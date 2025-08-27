@@ -1,10 +1,13 @@
 package dev.ua.ikeepcalm.lumios.telegram.scheduled;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
-import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Component
 public class LimitsWipe {
 
@@ -14,14 +17,19 @@ public class LimitsWipe {
         this.chatService = chatService;
     }
 
-    @Scheduled(cron = "0 0 22 * * *")
+    @Async
+    @Transactional
+    @Scheduled(cron = "0 30 22 * * *")
     public void executeUpdateTask() {
-        Iterable<LumiosChat> chats = chatService.findAll();
-        for (LumiosChat chat : chats) {
-            chat.setSummaryLimit(2);
-            chat.setCommunicationLimit(10);
-            chatService.save(chat);
+        try {
+            log.info("Starting daily limits reset");
+            
+            int updatedChats = chatService.batchUpdateLimits(2, 10);
+            
+            log.info("Successfully reset limits for {} chats", updatedChats);
+        } catch (Exception e) {
+            log.error("Failed to reset daily limits", e);
+            throw e;
         }
     }
-
 }

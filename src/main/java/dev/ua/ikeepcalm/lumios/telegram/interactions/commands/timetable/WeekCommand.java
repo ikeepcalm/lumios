@@ -29,22 +29,22 @@ public class WeekCommand extends ServicesShortcut implements Interaction {
             TimetableEntry timetableEntry = timetableService.findByChatIdAndWeekType(message.getChatId(),
                     WeekValidator.determineWeekDay());
 
-            StringBuilder messageBuilder = new StringBuilder("\uD83D\uDCC5> *РОЗКЛАД НА ТИЖДЕНЬ* <\uD83D\uDCC5 \n\n");
-            messageBuilder.append("``` \uD83D\uDD35 - ЛЕКЦІЯ\n \uD83D\uDFE0 - ПРАКТИКА\n \uD83D\uDFE2 - ЛАБОРАТОРНА```\n\n");
+            StringBuilder messageBuilder = new StringBuilder("📅 *РОЗКЛАД НА ТИЖДЕНЬ* 📅\n\n");
+            messageBuilder.append(TimetableParser.EMOJI_LEGEND);
             for (DayEntry dayEntry : timetableEntry.getDays()) {
                 if (!dayEntry.getClassEntries().isEmpty()) {
-                    messageBuilder.append("*").append(dayEntry.getDayName()).append(" {*\n");
+                    messageBuilder.append("*{").append(dayEntry.getDayName()).append("}*\n");
                     List<ClassEntry> classEntries = dayEntry.getClassEntries();
                     for (int i = 0; i < classEntries.size(); i++) {
                         ClassEntry classEntry = classEntries.get(i);
-                        messageBuilder.append(classEntry.getStartTime()).append(" - ").append(classEntry.getEndTime()).append("\n");
-                        messageBuilder.append(TimetableParser.parseClassEmoji(classEntry.getClassType())).append(" [").append(classEntry.getName()).append("]");
-                        messageBuilder.append("(").append(classEntry.getUrl()).append(")");
+                        messageBuilder.append("*").append(classEntry.getStartTime()).append(" - ").append(classEntry.getEndTime()).append("*\n");
+                        messageBuilder.append(TimetableParser.parseClassEmoji(classEntry.getClassType())).append(" [").append(classEntry.getName()).append("](")
+                                .append(classEntry.getUrl()).append(")");
                         if (i < classEntries.size() - 1) {
                             messageBuilder.append("\n\n");
                         }
                     }
-                    messageBuilder.append("\n*}*\n\n");
+                    messageBuilder.append("\n\n");
                 }
             }
 

@@ -41,8 +41,8 @@ EXPOSE 8847
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:8847/actuator/health || exit 1
 
-# Set JVM options for better memory usage
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:+UseContainerSupport"
+# Set JVM options for better memory and CPU usage
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=85.0 -XX:+UseZGC -XX:+UnlockExperimentalVMOptions -XX:+UseContainerSupport -XX:+EnableJVMCI -XX:+UseJVMCICompiler -Xms256m -XX:MaxGCPauseMillis=100"
 
 # Set the entry point
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

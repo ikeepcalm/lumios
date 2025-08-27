@@ -153,6 +153,6 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
     private LocalTime parseTime(String time) {
         String timeWithColon = time.replace(".", ":");
         String formattedTime = timeWithColon.length() == 4 ? "0" + timeWithColon : timeWithColon;
-        return LocalTime.parse(formattedTime, DateTimeFormatter.ofPattern("HH:mm"));
+        return LocalTime.parse(formattedTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
     }
 }

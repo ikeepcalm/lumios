@@ -6,6 +6,7 @@ README.md
 bfg.jar
 simpleQueues.json
 mixedQueues.json
+src/main/resources/application-local.properties
 /logs
 .env
 .claude

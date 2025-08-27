@@ -9,8 +9,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 712M
+          cpus: '2'
+          memory: 1024M
       restart_policy:
         condition: on-failure
     restart: unless-stopped

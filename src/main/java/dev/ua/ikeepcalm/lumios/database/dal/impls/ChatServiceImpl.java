@@ -49,5 +49,10 @@ public class ChatServiceImpl implements ChatService {
     public Iterable<LumiosChat> findAll() {
         return chatRepository.findAll();
     }
+    
+    @Override
+    public int batchUpdateLimits(int summaryLimit, int communicationLimit) {
+        return chatRepository.batchUpdateLimits(summaryLimit, communicationLimit);
+    }
 }
 

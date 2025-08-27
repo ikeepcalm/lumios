@@ -11,8 +11,8 @@ import java.util.List;
 @Service
 public class GeminiConversationService {
 
-    private static final int MAX_CONTEXT_MESSAGES = 5;
-    private static final int MAX_MESSAGE_LENGTH = 500;
+    private static final int MAX_CONTEXT_MESSAGES = 8;
+    private static final int MAX_MESSAGE_LENGTH = 700;
     private final RecordService recordService;
 
     public GeminiConversationService(RecordService recordService) {
@@ -82,6 +82,51 @@ public class GeminiConversationService {
 
             messageObj.put("parts", parts);
             context.put(messageObj);
+        }
+
+        return context;
+    }
+
+    public JSONArray getEnhancedConversationContext(Long chatId) {
+        List<MessageRecord> recentMessages = recordService.findLastMessagesByChatId(chatId, MAX_CONTEXT_MESSAGES * 2);
+        JSONArray context = new JSONArray();
+        
+        int addedMessages = 0;
+        boolean hasRecentUserMessage = false;
+        
+        for (int i = recentMessages.size() - 1; i >= 0 && addedMessages < MAX_CONTEXT_MESSAGES; i--) {
+            MessageRecord message = recentMessages.get(i);
+            boolean isBot = message.getUser() == null;
+
+            if (message.getText() == null || message.getText().trim().isEmpty()) {
+                continue;
+            }
+            
+            if (!isBot) {
+                hasRecentUserMessage = true;
+            }
+            
+            if (!hasRecentUserMessage && isBot) {
+                continue;
+            }
+
+            JSONObject messageObj = new JSONObject();
+            messageObj.put("role", isBot ? "model" : "user");
+
+            JSONArray parts = new JSONArray();
+            JSONObject textPart = new JSONObject();
+
+            String messageText = message.getText();
+            if (messageText.length() > MAX_MESSAGE_LENGTH) {
+                messageText = messageText.substring(0, MAX_MESSAGE_LENGTH) + "...";
+            }
+
+            textPart.put("text", messageText);
+            parts.put(textPart);
+
+            messageObj.put("parts", parts);
+            context.put(messageObj);
+            addedMessages++;
         }
 
         return context;
