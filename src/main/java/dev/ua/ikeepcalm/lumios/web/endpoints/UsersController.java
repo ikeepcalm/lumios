@@ -62,13 +62,22 @@ public class UsersController {
             ChatWrapper chatWrapper = new ChatWrapper();
             chatWrapper.setId(iteUser.getChat().getChatId());
             chatWrapper.setName(iteUser.getChat().getName());
-            ChatFullInfo chat = telegramClient.getChat(String.valueOf(iteUser.getChat().getChatId()));
+            ChatFullInfo chat = null;
+            try {
+                chat = telegramClient.getChat(String.valueOf(iteUser.getChat().getChatId()));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
             chatWrapper.setDescription(chat.getDescription());
             if (iteUser.getUserId().equals(iteUser.getChat().getChatId())) {
                 chatWrapper.setAdmin(true);
             } else {
                 List<ChatMember> telegramUsers;
-                telegramUsers = telegramClient.getChatAdministrators(String.valueOf(iteUser.getChat().getChatId()));
+                try {
+                    telegramUsers = telegramClient.getChatAdministrators(String.valueOf(iteUser.getChat().getChatId()));
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
                 for (ChatMember chatMember : telegramUsers) {
                     if (chatMember.getUser().getId().equals(iteUser.getUserId())) {
                         userWrapper.setName(chatMember.getUser().getFirstName() + " " + chatMember.getUser().getLastName());

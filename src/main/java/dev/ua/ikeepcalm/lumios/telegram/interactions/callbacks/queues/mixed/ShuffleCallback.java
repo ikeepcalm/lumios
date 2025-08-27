@@ -14,6 +14,7 @@ import dev.ua.ikeepcalm.lumios.telegram.utils.QueueUpdateUtil;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.UUID;
 
@@ -60,6 +61,8 @@ public class ShuffleCallback extends ServicesShortcut implements Interaction {
             }
         } catch (NoSuchEntityException e) {
             telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
         }
     }
 }

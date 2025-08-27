@@ -17,9 +17,9 @@ import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.objects.File;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.photo.PhotoSize;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
@@ -38,6 +38,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
     private final String botName;
     private final OpenAI openAI;
     private final Gemini gemini;
+    private final Environment environment;
 
     private static final int MAX_CONCURRENT_REQUESTS = 5;
     private final AtomicInteger activeRequests = new AtomicInteger(0);
@@ -49,6 +50,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
     public AssistantUpdate(OpenAI openAI, Gemini gemini, Environment environment) {
         this.openAI = openAI;
         this.gemini = gemini;
+        this.environment = environment;
         this.botName = environment.getProperty("TELEGRAM_USERNAME");
     }
 

@@ -12,6 +12,7 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @BotCommand(command = "mixed")
@@ -57,7 +58,11 @@ public class MixedCommand extends ServicesShortcut implements Interaction {
         queueMessage.setText(stringBuilder.toString());
         queueMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(mixedQueue));
         Message sendTextMessage = this.telegramClient.sendTextMessage(queueMessage);
-        this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+        try {
+            this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
         mixedQueue.setMessageId(sendTextMessage.getMessageId());
         mixedQueue.setChatId(message.getChatId());
         queueService.save(mixedQueue);

@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionType;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeCustomEmoji;
 import org.telegram.telegrambots.meta.api.objects.reactions.ReactionTypeEmoji;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -97,7 +98,11 @@ public abstract class ServicesShortcut {
     protected void scheduleMessageToDelete(Message message) {
         scheduler.schedule(() -> {
             RemoveMessage removeMessage = new RemoveMessage(message.getMessageId(), message.getChatId());
-            telegramClient.sendRemoveMessage(removeMessage);
+            try {
+                telegramClient.sendRemoveMessage(removeMessage);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }, 5, TimeUnit.MINUTES);
     }
 

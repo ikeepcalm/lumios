@@ -13,6 +13,7 @@ import dev.ua.ikeepcalm.lumios.telegram.utils.markup.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 import java.util.UUID;
@@ -69,6 +70,8 @@ public class ExitCallback extends ServicesShortcut implements Interaction {
             telegramClient.sendAnswerCallbackQuery("Помилка! Невірний формат ID черги!", callbackQueryId);
         } catch (NoSuchEntityException e) {
             telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
         }
     }
 
