@@ -35,10 +35,12 @@ import java.util.stream.Collectors;
 @Component
 public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
 
-    private boolean consumeUpdates = true;
+    private final boolean consumeUpdates = true;
     private static final Logger log = LoggerFactory.getLogger(UpdateConsumer.class);
+
     @Value("${telegram.bot.username}")
     private String BOT_USERNAME;
+
     private static final long RATE_LIMIT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 

@@ -28,12 +28,10 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
     private String botName;
     private final OpenAI openAI;
     private final Gemini gemini;
-    private final Environment environment;
 
     public AssistantUpdate(OpenAI openAI, Gemini gemini, Environment environment) {
         this.openAI = openAI;
         this.gemini = gemini;
-        this.environment = environment;
         this.botName = environment.getProperty("TELEGRAM_USERNAME");
     }
 

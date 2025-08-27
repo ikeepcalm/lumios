@@ -5,6 +5,9 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
+import dev.ua.ikeepcalm.lumios.telegram.exceptions.MessageProcessingException;
+import dev.ua.ikeepcalm.lumios.telegram.exceptions.TelegramApiFailedException;
+import dev.ua.ikeepcalm.lumios.telegram.utils.MessageFormatter;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +58,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         try {
             executeCommand(setBotCommands());
             log.info("Bot commands set successfully");
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiFailedException e) {
             log.error("Failed to set bot commands", e);
         }
         this.chatService = chatService;
@@ -95,16 +98,22 @@ public class TelegramClient extends OkHttpTelegramClient {
                 ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
     }
 
-    private Object executeCommand(BotApiMethod<?> command) throws TelegramApiException {
+    private Object executeCommand(BotApiMethod<?> command) throws TelegramApiFailedException {
         try {
             return execute(command);
         } catch (TelegramApiRequestException e) {
-            if (e.getErrorCode() == 400 || e.getErrorCode() == 403) {
-                log.error("Failed to execute {}", command.getMethod());
-                log.error("Error code: {}", e.getErrorCode());
-                log.error("Error message: {}", e.getApiResponse());
-            }
-            throw new TelegramApiException(e);
+            log.error("Failed to execute {} - Code: {}, Message: {}", 
+                command.getMethod(), e.getErrorCode(), e.getApiResponse());
+            throw new TelegramApiFailedException(
+                "Failed to execute " + command.getMethod(),
+                e.getErrorCode(),
+                e.getApiResponse()
+            );
+        } catch (TelegramApiException e) {
+            log.error("Unexpected API error executing {}", command.getMethod(), e);
+            throw new TelegramApiFailedException(
+                "Unexpected error executing " + command.getMethod(), e
+            );
         }
     }
 
@@ -114,16 +123,23 @@ public class TelegramClient extends OkHttpTelegramClient {
         return chats;
     }
 
-    public ChatMember getChatMember(long chatId, long userId) {
+    public ChatMember getChatMember(long chatId, long userId) throws TelegramApiFailedException {
         try {
             return execute(new GetChatMember(String.valueOf(chatId), userId));
+        } catch (TelegramApiRequestException e) {
+            log.error("Failed to get chat member for chat {} user {}", chatId, userId, e);
+            throw new TelegramApiFailedException(
+                "Failed to get chat member",
+                e.getErrorCode(),
+                e.getApiResponse()
+            );
         } catch (TelegramApiException e) {
-            log.error("Failed to get chat member", e);
-            throw new RuntimeException(e);
+            log.error("Unexpected error getting chat member for chat {} user {}", chatId, userId, e);
+            throw new TelegramApiFailedException("Unexpected error getting chat member", e);
         }
     }
 
-    public Message sendAnimation(MediaMessage mediaMessage) {
+    public Message sendAnimation(MediaMessage mediaMessage) throws MessageProcessingException {
         try {
             return execute(SendAnimation.builder()
                     .animation(mediaMessage.getMedia())
@@ -131,12 +147,26 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .caption(mediaMessage.getLabel())
                     .replyToMessageId(mediaMessage.getMessageId())
                     .build());
+        } catch (TelegramApiRequestException e) {
+            log.error("Failed to send animation to chat {}", mediaMessage.getChatId(), e);
+            throw new MessageProcessingException(
+                "Failed to send animation",
+                mediaMessage.getChatId(),
+                "animation",
+                e
+            );
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Unexpected error sending animation to chat {}", mediaMessage.getChatId(), e);
+            throw new MessageProcessingException(
+                "Unexpected error sending animation",
+                mediaMessage.getChatId(),
+                "animation",
+                e
+            );
         }
     }
 
-    public Message sendDocument(String chatId, String documentId, String caption) {
+    public Message sendDocument(String chatId, String documentId, String caption) throws MessageProcessingException {
         try {
             return execute(SendAnimation.builder()
                     .animation(new InputFile(documentId))
@@ -145,8 +175,22 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .showCaptionAboveMedia(true)
                     .caption(caption)
                     .build());
+        } catch (TelegramApiRequestException e) {
+            log.error("Failed to send document to chat {}", chatId, e);
+            throw new MessageProcessingException(
+                "Failed to send document",
+                Long.valueOf(chatId),
+                "document",
+                e
+            );
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Unexpected error sending document to chat {}", chatId, e);
+            throw new MessageProcessingException(
+                "Unexpected error sending document",
+                Long.valueOf(chatId),
+                "document",
+                e
+            );
         }
     }
 
@@ -168,12 +212,19 @@ public class TelegramClient extends OkHttpTelegramClient {
         return execute(new GetChat(chatId));
     }
 
-    public File getFile(String fileId) {
+    public File getFile(String fileId) throws TelegramApiFailedException {
         try {
             return execute(new GetFile(fileId));
+        } catch (TelegramApiRequestException e) {
+            log.error("Failed to get file {}", fileId, e);
+            throw new TelegramApiFailedException(
+                "Failed to get file",
+                e.getErrorCode(),
+                e.getApiResponse()
+            );
         } catch (TelegramApiException e) {
-            log.error("Failed to get file", e);
-            throw new RuntimeException(e);
+            log.error("Unexpected error getting file {}", fileId, e);
+            throw new TelegramApiFailedException("Unexpected error getting file", e);
         }
     }
 
@@ -183,8 +234,8 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .text(text)
                     .callbackQueryId(callbackQueryId)
                     .build());
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+        } catch (TelegramApiFailedException e) {
+            log.warn("Failed to answer callback query {}: {}", callbackQueryId, e.getMessage());
         }
     }
 
@@ -202,7 +253,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                         .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                         .chatId(editMessage.getChatId())
                         .build());
-            } catch (TelegramApiException e) {
+            } catch (TelegramApiFailedException e) {
                 throw new RuntimeException(e);
             }
         } else {
@@ -213,7 +264,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                             .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                             .chatId(editMessage.getChatId())
                             .build());
-                } catch (TelegramApiException e) {
+                } catch (TelegramApiFailedException e) {
                     throw new RuntimeException(e);
                 }
             } else if (editMessage.getFilePath() == null) {
@@ -225,7 +276,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                             .parseMode(editMessage.getParseMode())
                             .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                             .build());
-                } catch (TelegramApiException e) {
+                } catch (TelegramApiFailedException e) {
                     throw new RuntimeException(e);
                 }
             } else {
@@ -237,7 +288,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                             .replyMarkup((InlineKeyboardMarkup) editMessage.getReplyKeyboard())
                             .chatId(editMessage.getChatId())
                             .build());
-                } catch (TelegramApiException e) {
+                } catch (TelegramApiFailedException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -251,22 +302,92 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .messageId((int) messageId)
                     .disableNotification(false)
                     .build());
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiFailedException e) {
             throw new TelegramApiException(e);
         }
     }
 
     public Message sendTextMessage(TextMessage textMessage) {
+        return sendTextMessageWithRetry(textMessage, 3);
+    }
+
+    private Message sendTextMessageWithRetry(TextMessage textMessage, int maxRetries) {
+        int currentRetry = 0;
+        String originalParseMode = textMessage.getParseMode();
+        
+        while (currentRetry < maxRetries) {
+            try {
+                Message sentMessage = (Message) executeCommand(SendMessage.builder()
+                        .text(textMessage.getText())
+                        .chatId(textMessage.getChatId())
+                        .parseMode(textMessage.getParseMode())
+                        .replyMarkup(textMessage.getReplyKeyboard())
+                        .replyToMessageId(textMessage.getMessageId())
+                        .build());
+
+                recordMessageSent(textMessage, sentMessage);
+                return sentMessage;
+
+            } catch (TelegramApiFailedException e) {
+                currentRetry++;
+                log.warn("Attempt {} failed for chat {}: {}", currentRetry, textMessage.getChatId(), e.getMessage());
+                
+                if (!handleApiError(e, textMessage, currentRetry)) {
+                    break;
+                }
+            } catch (Exception e) {
+                log.error("Unexpected error sending message to chat {}", textMessage.getChatId(), e);
+                break;
+            }
+        }
+        
+        textMessage.setParseMode(originalParseMode);
+        return handleFallbackMessage(textMessage);
+    }
+    
+    private boolean handleApiError(TelegramApiFailedException e, TextMessage textMessage, int retryAttempt) {
+        switch (e.getErrorCode()) {
+            case 400 -> {
+                if (textMessage.getParseMode() != null) {
+                    log.info("Parse mode error, retrying without formatting for chat {}", textMessage.getChatId());
+                    textMessage.setParseMode(null);
+                    return true;
+                } else {
+                    log.error("Bad request error for chat {}: {}", textMessage.getChatId(), e.getApiResponse());
+                    cleanupInvalidChat(textMessage.getChatId());
+                    return false;
+                }
+            }
+            case 403 -> {
+                log.error("Bot blocked by chat {}: {}", textMessage.getChatId(), e.getApiResponse());
+                cleanupInvalidChat(textMessage.getChatId());
+                return false;
+            }
+            case 429 -> {
+                int delay = Math.min(1000 * retryAttempt, 5000);
+                log.warn("Rate limited, waiting {}ms before retry", delay);
+                try {
+                    Thread.sleep(delay);
+                    return true;
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            }
+            case 500, 502, 503 -> {
+                log.warn("Server error {}, retrying...", e.getErrorCode());
+                return true;
+            }
+            default -> {
+                log.error("Unhandled API error {} for chat {}: {}", 
+                    e.getErrorCode(), textMessage.getChatId(), e.getApiResponse());
+                return false;
+            }
+        }
+    }
+    
+    private void recordMessageSent(TextMessage textMessage, Message sentMessage) {
         try {
-
-            Message sentMessage = (Message) executeCommand(SendMessage.builder()
-                    .text(textMessage.getText())
-                    .chatId(textMessage.getChatId())
-                    .parseMode(textMessage.getParseMode())
-                    .replyMarkup(textMessage.getReplyKeyboard())
-                    .replyToMessageId(textMessage.getMessageId())
-                    .build());
-
             MessageRecord messageRecord = new MessageRecord();
             messageRecord.setChatId(textMessage.getChatId());
             messageRecord.setMessageId(Long.valueOf(sentMessage.getMessageId()));
@@ -275,37 +396,43 @@ public class TelegramClient extends OkHttpTelegramClient {
             if (sentMessage.isReply()) {
                 messageRecord.setReplyToMessageId(Long.valueOf(sentMessage.getReplyToMessage().getMessageId()));
             }
-
             recordService.save(messageRecord);
-
-            return sentMessage;
-
-        } catch (TelegramApiException e) {
-            System.out.println(e);
-            if (e instanceof TelegramApiRequestException exception) {
-                log.info(textMessage.getText());
-
-                if (exception.getErrorCode() == 400 && textMessage.getParseMode() != null) {
-                    textMessage.setParseMode(null);
-                    return sendTextMessage(textMessage);
-                }
-
-                if (exception.getErrorCode() == 403) {
-                    log.error("Failed to send message to chat: {}", textMessage.getChatId());
-                    log.error("Error code: {}", exception.getErrorCode());
-                    log.error("Error message: {}", exception.getApiResponse());
-                } else if (exception.getErrorCode() == 400) {
-                    try {
-                        LumiosChat chat = chatService.findByChatId(textMessage.getChatId());
-                        chatService.delete(chat);
-                    } catch (NoSuchEntityException ex) {
-                        log.error("No chat found in database: {}", textMessage.getChatId());
-                    }
-                    log.error("Chat not found, deleting entity: {}", textMessage.getChatId());
-                }
-            }
+        } catch (Exception e) {
+            log.error("Failed to record message for chat {}", textMessage.getChatId(), e);
         }
-        return null;
+    }
+    
+    private void cleanupInvalidChat(Long chatId) {
+        try {
+            LumiosChat chat = chatService.findByChatId(chatId);
+            chatService.delete(chat);
+            log.info("Cleaned up invalid chat: {}", chatId);
+        } catch (NoSuchEntityException e) {
+            log.debug("Chat {} not found in database during cleanup", chatId);
+        } catch (Exception e) {
+            log.error("Failed to cleanup chat {}", chatId, e);
+        }
+    }
+    
+    private Message handleFallbackMessage(TextMessage textMessage) {
+        log.info("All retries failed for chat {}, attempting fallback", textMessage.getChatId());
+        
+        try {
+            textMessage.setText(MessageFormatter.formatErrorMessage(
+                "Сталася помилка при відправці повідомлення. Спробуйте ще раз пізніше."
+            ));
+            textMessage.setParseMode(MessageFormatter.getDefaultParseMode());
+            textMessage.setReplyKeyboard(null);
+            
+            return (Message) executeCommand(SendMessage.builder()
+                    .text(textMessage.getText())
+                    .chatId(textMessage.getChatId())
+                    .parseMode(textMessage.getParseMode())
+                    .build());
+        } catch (Exception e) {
+            log.error("Fallback message also failed for chat {}", textMessage.getChatId(), e);
+            return null;
+        }
     }
 
     public void sendRemoveMessage(RemoveMessage removeMessage) throws TelegramApiException {
@@ -314,7 +441,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .chatId(removeMessage.getChatId())
                     .messageId(removeMessage.getMessageId())
                     .build());
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiFailedException e) {
             throw new TelegramApiException(e);
         }
     }
@@ -326,7 +453,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                     .messageId(reactionMessage.getMessageId())
                     .reactionTypes(reactionMessage.getReactionTypes())
                     .build());
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiFailedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -336,7 +463,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         forwardMessage.setProtectContent(true);
         try {
             executeCommand(forwardMessage);
-        } catch (TelegramApiRequestException e) {
+        } catch (TelegramApiFailedException e) {
             throw new TelegramApiException(e);
         }
     }

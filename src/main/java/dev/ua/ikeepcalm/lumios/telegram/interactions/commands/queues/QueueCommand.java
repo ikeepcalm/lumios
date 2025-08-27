@@ -7,6 +7,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.MessageFormatter;
 import dev.ua.ikeepcalm.lumios.telegram.utils.markup.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
@@ -29,12 +30,14 @@ public class QueueCommand extends ServicesShortcut implements Interaction {
                     .toUpperCase();
 
             if (alias.isBlank() || alias.length() > 20) {
-                sendMessage("Назва черги повинна бути від 1 до 20 символів!", message);
+                sendMessage(MessageFormatter.formatWarningMessage(
+                    "Назва черги повинна бути від 1 до 20 символів!"), message);
                 return;
             }
             simpleQueue = new SimpleQueue(alias);
         } else {
-            sendMessage("Введіть назву черги після команди! Черги без назви були поміченими застарілими починаючи із версії 2.0.0!", message);
+            sendMessage(MessageFormatter.formatInfoMessage(
+                "Введіть назву черги після команди! Черги без назви були поміченими застарілими починаючи із версії 2.0.0!"), message);
             return;
         }
 
@@ -50,13 +53,11 @@ public class QueueCommand extends ServicesShortcut implements Interaction {
         TextMessage queueMessage = new TextMessage();
         queueMessage.setChatId(message.getChatId());
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(">>> ").append(simpleQueue.getAlias()).append(" <<<\n\n");
+        stringBuilder.append(MessageFormatter.formatTitle(simpleQueue.getAlias()));
         int id = 1;
         for (SimpleUser iteSimpleUser : simpleQueue.getContents()) {
-            stringBuilder.append("ID: ")
-                    .append(id).append(" - ")
-                    .append(iteSimpleUser.getName())
-                    .append(" (@").append(iteSimpleUser.getUsername()).append(")\n");
+            stringBuilder.append(MessageFormatter.formatQueueEntry(
+                id, iteSimpleUser.getName(), iteSimpleUser.getUsername()));
             ++id;
         }
         queueMessage.setText(stringBuilder.toString());
@@ -65,7 +66,8 @@ public class QueueCommand extends ServicesShortcut implements Interaction {
         try {
             this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         } catch (TelegramApiException e) {
-            sendMessage("Якщо ви хочете, щоб повідомлення було закріплено автоматично, надайте мені необхідні дозволи!", message);
+            sendMessage(MessageFormatter.formatInfoMessage(
+                "Якщо ви хочете, щоб повідомлення було закріплено автоматично, надайте мені необхідні дозволи!"), message);
         }
         simpleQueue.setMessageId(sendTextMessage.getMessageId());
         simpleQueue.setChatId(message.getChatId());

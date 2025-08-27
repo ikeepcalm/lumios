@@ -107,7 +107,7 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
         reactionMessage.setChatId(message.getChatId());
         reactionMessage.setMessageId(message.getMessageId());
         List<ReactionType> reactionTypes = new ArrayList<>();
-        reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "👾"));
+        reactionTypes.add(new ReactionTypeEmoji("👾"));
         reactionMessage.setReactionTypes(reactionTypes);
         telegramClient.sendReaction(reactionMessage);
     }
@@ -117,7 +117,7 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
         reactionMessage.setChatId(message.getChatId());
         reactionMessage.setMessageId(message.getMessageId());
         List<ReactionType> reactionTypes = new ArrayList<>();
-        reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "\uD83E\uDD2E"));
+        reactionTypes.add(new ReactionTypeEmoji("\uD83E\uDD2E"));
         reactionMessage.setReactionTypes(reactionTypes);
         telegramClient.sendReaction(reactionMessage);
     }
@@ -127,7 +127,7 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
         reactionMessage.setChatId(message.getChatId());
         reactionMessage.setMessageId(message.getMessageId());
         List<ReactionType> reactionTypes = new ArrayList<>();
-        reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "\uD83D\uDD95"));
+        reactionTypes.add(new ReactionTypeEmoji("\uD83D\uDD95"));
         reactionMessage.setReactionTypes(reactionTypes);
         telegramClient.sendReaction(reactionMessage);
     }
@@ -137,7 +137,7 @@ public class DiceUpdate extends ServicesShortcut implements Interaction {
         reactionMessage.setChatId(message.getChatId());
         reactionMessage.setMessageId(message.getMessageId());
         List<ReactionType> reactionTypes = new ArrayList<>();
-        reactionTypes.add(new ReactionTypeEmoji(ReactionType.EMOJI_TYPE, "🐳"));
+        reactionTypes.add(new ReactionTypeEmoji("🐳"));
         reactionMessage.setReactionTypes(reactionTypes);
         telegramClient.sendReaction(reactionMessage);
     }

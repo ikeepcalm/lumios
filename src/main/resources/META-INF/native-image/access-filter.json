@@ -1,0 +1,13 @@
+{
+  "rules": [
+    {
+      "excludeClasses": "**$$Lambda$*"
+    },
+    {
+      "excludeClasses": "**$$serializedLambda$$*"  
+    },
+    {
+      "excludeClasses": "**$AuxiliaryType$*"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.MessageFormatter;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -39,7 +40,7 @@ public class HelpCommand extends ServicesShortcut implements Interaction {
                         """;
                 TextMessage textMessage = new TextMessage();
                 textMessage.setText(helloText);
-                textMessage.setParseMode(ParseMode.MARKDOWN);
+                textMessage.setParseMode(MessageFormatter.getDefaultParseMode());
                 textMessage.setChatId(message.getChatId());
                 sendMessage(textMessage, message);
             }

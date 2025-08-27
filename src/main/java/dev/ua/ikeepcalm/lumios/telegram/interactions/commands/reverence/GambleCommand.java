@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.exceptions.MessageProcessingException;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TenorUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.MediaMessage;
@@ -130,6 +131,8 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         } catch (RuntimeException e) {
             sent = telegramClient.sendTextMessage(new TextMessage("Never stop gambling, because next time you might hit a jackpot!", message.getChatId(), message.getMessageId(), null, null, null));
             isCaption = false;
+        } catch (MessageProcessingException e) {
+            throw new RuntimeException(e);
         }
 
         user.setReverence(newReverence);

@@ -11,6 +11,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.wrappers.UserWrapper;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoBindSpecifiedException;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
+import dev.ua.ikeepcalm.lumios.telegram.exceptions.TelegramApiFailedException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -104,6 +105,8 @@ public class UsersController {
                     .body(photoBytes);
         } catch (IOException | TelegramApiException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (TelegramApiFailedException e) {
+            throw new RuntimeException(e);
         }
     }
 

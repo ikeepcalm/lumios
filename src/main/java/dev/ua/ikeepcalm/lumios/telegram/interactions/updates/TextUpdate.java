@@ -18,11 +18,14 @@ public class TextUpdate extends ServicesShortcut implements Interaction {
     public void fireInteraction(Update update) {
         MessageRecord messageRecord = new MessageRecord();
         if (update.hasMessage() && update.getMessage().hasText()) {
-            if (update.getMessage().getText().length() > 30000)
-                messageRecord.setText(update.getMessage().getText().substring(1, 30000));
-            else {
-                messageRecord.setText(update.getMessage().getText());
-            }
+
+//            if (update.getMessage().getText().length() > 30000)
+//                messageRecord.setText(update.getMessage().getText().substring(1, 30000));
+//            else {
+//                messageRecord.setText(update.getMessage().getText());
+//            }
+
+            messageRecord.setText("REPLACED MESSAGE TEXT HERE");
 
             if (update.getMessage().isReply()) {
                 messageRecord.setReplyToMessageId(Long.valueOf(update.getMessage().getReplyToMessage().getMessageId()));
