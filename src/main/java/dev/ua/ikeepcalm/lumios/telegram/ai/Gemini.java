@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,6 +54,17 @@ public class Gemini {
 
     public CompletableFuture<String> getChatResponseForReply(String inputText, Long chatId, Long replyToMessageId) {
         return getChatResponse(inputText, chatId, null, replyToMessageId);
+    }
+
+    public CompletableFuture<String> getChatSummary(long chatId, int amountOfMessages) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return executeSummary(chatId, amountOfMessages);
+            } catch (Exception e) {
+                log.error("Failed to generate chat summary with Gemini", e);
+                throw new RuntimeException("Failed to generate chat summary", e);
+            }
+        }, executorService);
     }
 
     public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData, Long replyToMessageId) {
@@ -225,6 +237,102 @@ public class Gemini {
             log.error("Failed to extract text from response", e);
             return "Виникла помилка при обробці відповіді від Gemini.";
         }
+    }
+
+    private String executeSummary(long chatId, int amountOfMessages) throws Exception {
+        List<MessageRecord> userMessages = recordService.findLastMessagesByChatId(chatId, amountOfMessages);
+        userMessages.sort(Comparator.comparing(MessageRecord::getDate));
+
+        StringBuilder messagesToSummarize = new StringBuilder();
+        for (MessageRecord message : userMessages) {
+            if (message.getText().contains("MEDIA") || message.getText().contains("lumios")) {
+                continue;
+            }
+
+            String fullName = message.getUser().getFullName() == null ? message.getUser().getUsername() : message.getUser().getFullName();
+            messagesToSummarize.append(fullName).append(": ").append(message.getText()).append("\n");
+        }
+
+        String prompt = """
+                As a professional summarizer, create a concise and comprehensive summary of the provided conversation in group chat, while adhering to these guidelines:
+                    1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
+                    2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
+                    3. Rely strictly on the provided text, without including external information.
+                    4. Format the summary in paragraph form for easy understanding.
+                    5. Summary should be divided into paragraphs, each covering a different aspect of the conversation including names or tags of the participants.
+                By following this optimized prompt, you will generate an effective summary that encapsulates the essence of the given text in a clear, concise, and reader-friendly manner.
+                
+                """ + ":\n" + messagesToSummarize;
+
+        JSONObject jsonPayload = createSummaryPayload(prompt);
+
+        for (String key : apiKey) {
+            try {
+                URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(30000);
+
+                try (OutputStream os = connection.getOutputStream()) {
+                    os.write(jsonPayload.toString().getBytes());
+                    os.flush();
+                }
+
+                StringBuilder response = new StringBuilder();
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                }
+
+                return extractTextFromResponse(response.toString());
+            } catch (Exception e) {
+                log.error("Failed to get summary with key: {}", key.substring(0, 8) + "...", e);
+                if (key.equals(apiKey.get(apiKey.size() - 1))) {
+                    throw e;
+                }
+            }
+        }
+        throw new RuntimeException("All API keys failed for summary generation");
+    }
+
+    private JSONObject createSummaryPayload(String prompt) {
+        JSONObject jsonPayload = new JSONObject();
+        JSONArray contentsArray = new JSONArray();
+
+        JSONObject userMessage = new JSONObject();
+        userMessage.put("role", "user");
+        JSONArray parts = new JSONArray();
+
+        JSONObject textPart = new JSONObject();
+        textPart.put("text", prompt);
+        parts.put(textPart);
+
+        userMessage.put("parts", parts);
+        contentsArray.put(userMessage);
+        jsonPayload.put("contents", contentsArray);
+
+        JSONObject systemInstruction = new JSONObject();
+        systemInstruction.put("role", "user");
+        JSONArray systemParts = new JSONArray();
+        JSONObject systemPart = new JSONObject();
+        systemPart.put("text", "You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).");
+        systemParts.put(systemPart);
+        systemInstruction.put("parts", systemParts);
+        jsonPayload.put("systemInstruction", systemInstruction);
+
+        JSONObject genConfig = new JSONObject();
+        genConfig.put("temperature", 0.4);
+        genConfig.put("maxOutputTokens", 8000);
+        genConfig.put("topP", 0.9);
+        genConfig.put("topK", 40);
+        jsonPayload.put("generationConfig", genConfig);
+
+        return jsonPayload;
     }
 
     public void destroy() {

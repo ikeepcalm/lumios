@@ -4,6 +4,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.source.AiModel;
+import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.ai.Gemini;
 import dev.ua.ikeepcalm.lumios.telegram.ai.OpenAI;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
@@ -43,8 +44,6 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
     private static final int MAX_CONCURRENT_REQUESTS = 5;
     private final AtomicInteger activeRequests = new AtomicInteger(0);
 
-    private static final int MAX_IMAGE_WIDTH = 800;
-    private static final int MAX_IMAGE_HEIGHT = 800;
     private static final int MAX_IMAGE_SIZE_BYTES = 1024 * 1024; // 1MB
 
     public AssistantUpdate(OpenAI openAI, Gemini gemini, Environment environment) {
@@ -60,13 +59,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
             return;
         }
 
-        LumiosChat chat;
-        try {
-            chat = chatService.findByChatId(update.getMessage().getChatId());
-        } catch (Exception e) {
-            log.error("Failed to get chat by chatId", e);
-            return;
-        }
+        LumiosChat chat = getOrCreateChat(update.getMessage().getChatId(), update.getMessage().getChat().getTitle());
 
         if (!chat.isAiEnabled()) {
             return;
@@ -316,5 +309,20 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
             log.info("Downloaded image size: {} bytes", imageData.length);
             return imageData;
         }
+    }
+
+    private LumiosChat getOrCreateChat(Long chatId, String chatTitle) {
+        LumiosChat chat;
+        try {
+            chat = chatService.findByChatId(chatId);
+        } catch (NoSuchEntityException e) {
+            chat = new LumiosChat();
+            chat.setChatId(chatId);
+            chat.setName(chatTitle);
+            chat.setTimetableEnabled(true);
+            chatService.save(chat);
+            log.info("Created new chat with ID: {}", chatId);
+        }
+        return chat;
     }
 }

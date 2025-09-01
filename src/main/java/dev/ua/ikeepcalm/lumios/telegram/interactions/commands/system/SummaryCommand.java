@@ -2,6 +2,8 @@ package dev.ua.ikeepcalm.lumios.telegram.interactions.commands.system;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.source.AiModel;
+import dev.ua.ikeepcalm.lumios.telegram.ai.Gemini;
 import dev.ua.ikeepcalm.lumios.telegram.ai.OpenAI;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
@@ -20,9 +22,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class SummaryCommand extends ServicesShortcut implements Interaction {
 
     private final OpenAI openAI;
+    private final Gemini gemini;
 
-    public SummaryCommand(OpenAI openAI) {
+    public SummaryCommand(OpenAI openAI, Gemini gemini) {
         this.openAI = openAI;
+        this.gemini = gemini;
     }
 
     @Override
@@ -38,8 +42,8 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
 
         try {
             int count = Integer.parseInt(parts[1]);
-            if (count < 1 || count > 100) {
-                sendMessage("Кількість повідомлень повинна бути від 1 до 100!", update.getMessage());
+            if (count < 1 || count > 200) {
+                sendMessage("Кількість повідомлень повинна бути від 1 до 200!", update.getMessage());
                 return;
             }
 
@@ -67,17 +71,38 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
                 log.error("Failed to send chat action", e);
             }
 
-            openAI.getChatSummary(chat.getChatId(), count).thenAccept(response -> {
-                if (response != null) {
-                    sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
-                    chat.setSummaryLimit(chat.getSummaryLimit() - 1);
-                    chatService.save(chat);
+            if (chat.getAiModel() == null) {
+                chat.setAiModel(AiModel.OPENAI);
+            }
+
+            switch (chat.getAiModel()) {
+                case GEMINI -> {
+                    gemini.getChatSummary(chat.getChatId(), count).thenAccept(response -> {
+                        if (response != null) {
+                            sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
+                            chat.setSummaryLimit(chat.getSummaryLimit() - 1);
+                            chatService.save(chat);
+                        }
+                    }).exceptionally(ex -> {
+                        log.error("Failed to get summary from Gemini", ex);
+                        sendMessage("Виникла помилка при спробі взаємодії з Gemini.", update.getMessage());
+                        return null;
+                    });
                 }
-            }).exceptionally(ex -> {
-                log.error("Failed to get summary", ex);
-                sendMessage("Виникла помилка при спробі взаємодії з Open AI.", update.getMessage());
-                return null;
-            });
+                case OPENAI -> {
+                    openAI.getChatSummary(chat.getChatId(), count).thenAccept(response -> {
+                        if (response != null) {
+                            sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
+                            chat.setSummaryLimit(chat.getSummaryLimit() - 1);
+                            chatService.save(chat);
+                        }
+                    }).exceptionally(ex -> {
+                        log.error("Failed to get summary from OpenAI", ex);
+                        sendMessage("Виникла помилка при спробі взаємодії з OpenAI.", update.getMessage());
+                        return null;
+                    });
+                }
+            }
 
 
         } catch (NumberFormatException e) {

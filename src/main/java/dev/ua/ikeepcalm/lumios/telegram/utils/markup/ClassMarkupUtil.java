@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ClassMarkupUtil {
 
@@ -70,6 +71,94 @@ public class ClassMarkupUtil {
         }
         firstRow.add(notify);
         keyboard.add(firstRow);
+        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
+        textMessage.setParseMode(ParseMode.MARKDOWN);
+        return textMessage;
+    }
+
+    public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, Long chatId) {
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(chatId);
+        
+        String classesText = classEntries.stream()
+                .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
+                .collect(Collectors.joining("\n"));
+        
+        textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
+                            + "Шановне панство, незабаром почнуться / вже проходять пари: \n"
+                            + classesText + "\n\n"
+                            + "Посилання на конференції ⬇️"
+        );
+
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        
+        for (ClassEntry classEntry : classEntries) {
+            InlineKeyboardRow row = new InlineKeyboardRow();
+            InlineKeyboardButton button;
+            
+            if (classEntry.getUrl() == null) {
+                button = new InlineKeyboardButton("Fice Advisor - " + classEntry.getName());
+                button.setUrl("https://ficeadvisor.com/schedule?week=1");
+            } else {
+                button = new InlineKeyboardButton("\uD83C\uDF10 " + classEntry.getName());
+                button.setUrl(classEntry.getUrl());
+            }
+            row.add(button);
+            keyboard.add(row);
+            
+            if (classEntry.getUrl() == null) {
+                InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
+                InlineKeyboardButton addLinkButton = new InlineKeyboardButton("Додати посилання для " + classEntry.getName() + " \uD83D\uDD17");
+                addLinkButton.setCallbackData("classlink-add-" + classEntry.getId());
+                addLinkRow.add(addLinkButton);
+                keyboard.add(addLinkRow);
+            }
+        }
+
+        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
+        textMessage.setParseMode(ParseMode.MARKDOWN);
+        return textMessage;
+    }
+
+    public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, Long chatId) {
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(chatId);
+        
+        String classesText = classEntries.stream()
+                .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
+                .collect(Collectors.joining("\n"));
+        
+        textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
+                            + "Наступні пари починаються о " + classEntries.get(0).getStartTime() + " і мають назви:" + "\n"
+                            + classesText + "\n\n"
+                            + "Посилання на конференції ⬇️"
+        );
+
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        
+        for (ClassEntry classEntry : classEntries) {
+            InlineKeyboardRow row = new InlineKeyboardRow();
+            InlineKeyboardButton button;
+            
+            if (classEntry.getUrl() == null) {
+                button = new InlineKeyboardButton("Fice Advisor - " + classEntry.getName());
+                button.setUrl("https://ficeadvisor.com/schedule?week=1");
+            } else {
+                button = new InlineKeyboardButton("\uD83C\uDF10 " + classEntry.getName());
+                button.setUrl(classEntry.getUrl());
+            }
+            row.add(button);
+            keyboard.add(row);
+            
+            if (classEntry.getUrl() == null) {
+                InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
+                InlineKeyboardButton addLinkButton = new InlineKeyboardButton("Додати посилання для " + classEntry.getName() + " \uD83D\uDD17");
+                addLinkButton.setCallbackData("classlink-add-" + classEntry.getId());
+                addLinkRow.add(addLinkButton);
+                keyboard.add(addLinkRow);
+            }
+        }
+
         textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         return textMessage;

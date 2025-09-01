@@ -19,6 +19,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @BotCommand(command = "now")
@@ -33,22 +35,27 @@ public class NowCommand extends ServicesShortcut implements Interaction {
                             WeekValidator.determineWeekDay());
             DayOfWeek dayOfWeek = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
             LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
-            boolean isClassNow = false;
+            List<ClassEntry> currentClasses = new ArrayList<>();
+            
             for (DayEntry dayEntry : timetableEntry.getDays()) {
                 if (dayEntry.getDayName().equals(dayOfWeek)) {
                     for (ClassEntry classEntry : dayEntry.getClassEntries()) {
                         LocalTime startTime = classEntry.getStartTime();
                         LocalTime endTime = classEntry.getEndTime();
                         if (currentTime.isAfter(startTime) && currentTime.isBefore(endTime)) {
-                            isClassNow = true;
-                            sendMessage(ClassMarkupUtil.createNowNotification(classEntry, message.getChatId()), message);
-                            break;
+                            currentClasses.add(classEntry);
                         }
                     }
                 }
             }
 
-            if (!isClassNow) {
+            if (!currentClasses.isEmpty()) {
+                if (currentClasses.size() == 1) {
+                    sendMessage(ClassMarkupUtil.createNowNotification(currentClasses.getFirst(), message.getChatId()), message);
+                } else {
+                    sendMessage(ClassMarkupUtil.createMultipleNowNotification(currentClasses, message.getChatId()), message);
+                }
+            } else {
                 sendMessage("Наразі жодної пари за розкладом не проходить!", message);
             }
         } catch (NoSuchEntityException e) {
