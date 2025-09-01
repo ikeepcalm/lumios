@@ -245,7 +245,11 @@ public class Gemini {
 
         StringBuilder messagesToSummarize = new StringBuilder();
         for (MessageRecord message : userMessages) {
-            if (message.getText().contains("MEDIA") || message.getText().contains("lumios")) {
+            if ( message.getText().contains("MEDIA") || message.getText().contains("lumios")) {
+                continue;
+            }
+
+            if (message.getUser() == null) {
                 continue;
             }
 
