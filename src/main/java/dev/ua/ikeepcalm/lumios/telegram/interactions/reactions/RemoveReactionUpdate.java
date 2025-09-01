@@ -14,7 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.reactions.MessageReactionUpdat
 
 @Slf4j
 @Component
-@BotReaction
+@BotReaction(isPlus = false)
 public class RemoveReactionUpdate extends ServicesShortcut implements Interaction {
 
     @Override

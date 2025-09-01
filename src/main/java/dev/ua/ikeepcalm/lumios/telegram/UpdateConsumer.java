@@ -151,13 +151,21 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private void handleReaction(Update update, boolean isPlus) {
+        log.info("Handling reaction update: isPlus={}, messageId={}, chatId={}, userId={}", 
+            isPlus, update.getMessageReaction().getMessageId(), 
+            update.getMessageReaction().getChat().getId(), 
+            update.getMessageReaction().getUser().getId());
+            
         for (Interaction handler : reactionHandlers) {
             Class<?> targetClass = AopProxyUtils.ultimateTargetClass(handler);
             BotReaction annotation = targetClass.getAnnotation(BotReaction.class);
-            if (!annotation.isPlus() && isPlus) {
-                return;
+            if (annotation.isPlus() != isPlus) {
+                log.debug("Skipping handler {} (isPlus={}) for reaction (isPlus={})", 
+                    targetClass.getSimpleName(), annotation.isPlus(), isPlus);
+                continue;
             }
 
+            log.debug("Processing reaction with handler: {}", targetClass.getSimpleName());
             LumiosChat chat = getOrCreateChat(update.getMessageReaction().getChat().getId(), update.getMessageReaction().getChat().getTitle());
             LumiosUser user = getOrCreateUser(update.getMessageReaction().getUser().getId(), chat, update.getMessageReaction().getUser().getUserName());
 
@@ -262,10 +270,17 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
             MessageReactionUpdated reactionUpdated = update.getMessageReaction();
             int oldCount = reactionUpdated.getOldReaction().size();
             int newCount = reactionUpdated.getNewReaction().size();
+            log.info("Message reaction detected: oldCount={}, newCount={}, messageId={}, chatId={}, userId={}", 
+                oldCount, newCount, reactionUpdated.getMessageId(), 
+                reactionUpdated.getChat().getId(), reactionUpdated.getUser().getId());
             if (oldCount < newCount) {
+                log.info("Detected REACTION_PLUS");
                 return InteractionType.REACTION_PLUS;
             } else if (oldCount > newCount) {
+                log.info("Detected REACTION_MINUS");
                 return InteractionType.REACTION_MINUS;
+            } else {
+                log.warn("Reaction count unchanged: oldCount={}, newCount={}", oldCount, newCount);
             }
         }
         return null;
