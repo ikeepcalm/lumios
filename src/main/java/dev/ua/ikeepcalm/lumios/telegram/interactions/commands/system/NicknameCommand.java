@@ -7,6 +7,7 @@ import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
@@ -24,7 +25,7 @@ public class NicknameCommand extends ServicesShortcut implements Interaction {
             if (chat.getBotNickname() == null || chat.getBotNickname().trim().isEmpty()) {
                 sendMessage("Зараз бот не має псевдоніма. Використовуйте `/nickname [псевдонім]` щоб встановити псевдонім для зручного звертання.", message);
             } else {
-                sendMessage("Поточний псевдонім бота: **" + chat.getBotNickname() + "**\n\nВи можете звертатися до мене або як @" + getBotUsername() + " або як " + chat.getBotNickname(), message);
+                sendMessage("Поточний псевдонім бота: **" + chat.getBotNickname() + "**\n\nВи можете звертатися до мене або як " + getBotUsername() + " або як " + chat.getBotNickname(), ParseMode.MARKDOWN, message);
             }
             return;
         }

@@ -14,15 +14,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.Comparator;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.*;
 
 @Slf4j
 @Component
@@ -215,6 +210,7 @@ public class Gemini {
                 "- Якщо потрібно показати символи *, _, [, ] як звичайний текст - екрануй їх зворотним слешем: \\*, \\_, \\[, \\]\n" +
                 "- Для коду використовуй `код` або ```блок коду```\n" +
                 "- НЕ залишай незакриті теги форматування!\n" +
+                "- Для списків використовуй символ `-`, а не `*` на початку!\n" +
                 "\n" +
                 "Можеш ділитися зі мною кодом, скріншотами, або просто задавати питання - я завжди радий допомогти! 💻");
         systemParts.put(systemPart);
