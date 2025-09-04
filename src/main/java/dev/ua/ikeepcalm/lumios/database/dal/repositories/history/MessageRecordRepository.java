@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Repository
 public interface MessageRecordRepository extends CrudRepository<MessageRecord, UUID> {
-    Optional<MessageRecord> findByMessageIdAndChatId(Long id, Long chatId);
+    Optional<MessageRecord> findFirstByMessageIdAndChatIdOrderByDateDesc(Long id, Long chatId);
 
     List<MessageRecord> findAllByChatIdAndDateBetween(Long chatId, LocalDateTime date, LocalDateTime date2);
 

@@ -33,7 +33,7 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public MessageRecord findByMessageIdAndChatId(Long id, Long chatId) throws NoSuchEntityException {
-        return this.messageRecordRepository.findByMessageIdAndChatId(id, chatId).orElseThrow(() -> new NoSuchEntityException("No such record with id: " + id));
+        return this.messageRecordRepository.findFirstByMessageIdAndChatIdOrderByDateDesc(id, chatId).orElseThrow(() -> new NoSuchEntityException("No such record with id: " + id));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class RecordServiceImpl implements RecordService {
         List<MessageRecord> replyChain = new ArrayList<>();
         MessageRecord currentMessage;
         try {
-            currentMessage = messageRecordRepository.findByMessageIdAndChatId(messageId, chatId)
+            currentMessage = messageRecordRepository.findFirstByMessageIdAndChatIdOrderByDateDesc(messageId, chatId)
                     .orElseThrow(() -> new NoSuchEntityException("No such record with id: " + messageId));
         } catch (NoSuchEntityException e) {
             return replyChain;
@@ -71,7 +71,7 @@ public class RecordServiceImpl implements RecordService {
                 if (replyChain.size() >= maxChainLength) {
                     break;
                 }
-                currentMessage = messageRecordRepository.findByMessageIdAndChatId(currentMessage.getReplyToMessageId(), chatId)
+                currentMessage = messageRecordRepository.findFirstByMessageIdAndChatIdOrderByDateDesc(currentMessage.getReplyToMessageId(), chatId)
                         .orElseThrow(() -> new NoSuchEntityException("No such record with id: "));
                 replyChain.add(currentMessage);
             } catch (NoSuchEntityException e) {

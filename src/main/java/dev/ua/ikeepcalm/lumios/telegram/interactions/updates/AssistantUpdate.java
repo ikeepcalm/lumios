@@ -10,6 +10,7 @@ import dev.ua.ikeepcalm.lumios.telegram.ai.OpenAI;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.BotDetectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -78,14 +79,8 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
             return;
         }
 
-        boolean isBotMentioned = !textMessage.isEmpty() && (
-                textMessage.matches(".*\\B" + botName + "\\b.*") ||
-                (chat.getBotNickname() != null && !chat.getBotNickname().trim().isEmpty() && 
-                 textMessage.toLowerCase().contains(chat.getBotNickname().toLowerCase()))
-        );
-        boolean isReplyToBot = update.getMessage().isReply() &&
-                update.getMessage().getReplyToMessage().getFrom().getIsBot() &&
-                update.getMessage().getReplyToMessage().getFrom().getUserName().equals(botName.replace("@", ""));
+        boolean isBotMentioned = BotDetectionUtils.isBotMentionedInText(textMessage, botName, chat);
+        boolean isReplyToBot = BotDetectionUtils.isReplyToBot(update.getMessage(), botName);
         
         boolean isReplyToMessage = update.getMessage().isReply() && 
                 !update.getMessage().getReplyToMessage().getFrom().getIsBot();
@@ -191,16 +186,17 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
 
                                     if (sentMessage != null) {
                                         try {
-                                            List<MessageRecord> records = recordService.findLastMessagesByChatId(chat.getChatId(), 1);
-                                            if (!records.isEmpty()) {
-                                                MessageRecord record = records.getFirst();
-                                                if (record.getUser() == null && record.getMessageId() == null) {
-                                                    record.setMessageId(Long.valueOf(sentMessage.getMessageId()));
-                                                    recordService.save(record);
-                                                }
+                                            MessageRecord botMessageRecord = new MessageRecord();
+                                            botMessageRecord.setMessageId(Long.valueOf(sentMessage.getMessageId()));
+                                            botMessageRecord.setChatId(chat.getChatId());
+                                            botMessageRecord.setText(response);
+                                            botMessageRecord.setDate(LocalDateTime.now());
+                                            if (isReplyToBot) {
+                                                botMessageRecord.setReplyToMessageId(Long.valueOf(update.getMessage().getReplyToMessage().getMessageId()));
                                             }
+                                            recordService.save(botMessageRecord);
                                         } catch (Exception e) {
-                                            log.error("Failed to update message ID in database", e);
+                                            log.error("Failed to save bot message to database", e);
                                         }
                                     }
 
@@ -229,6 +225,20 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                     try {
                                         if (response != null) {
                                             Message sentMessage = sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
+                                            
+                                            if (sentMessage != null) {
+                                                try {
+                                                    MessageRecord botMessageRecord = new MessageRecord();
+                                                    botMessageRecord.setMessageId(Long.valueOf(sentMessage.getMessageId()));
+                                                    botMessageRecord.setChatId(chat.getChatId());
+                                                    botMessageRecord.setText(response);
+                                                    botMessageRecord.setDate(LocalDateTime.now());
+                                                    recordService.save(botMessageRecord);
+                                                } catch (Exception e) {
+                                                    log.error("Failed to save bot message to database", e);
+                                                }
+                                            }
+                                            
                                             chat.setCommunicationLimit(chat.getCommunicationLimit() - 1);
                                             chatService.save(chat);
                                         }
@@ -310,6 +320,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
             return imageData;
         }
     }
+
 
     private LumiosChat getOrCreateChat(Long chatId, String chatTitle) {
         LumiosChat chat;
