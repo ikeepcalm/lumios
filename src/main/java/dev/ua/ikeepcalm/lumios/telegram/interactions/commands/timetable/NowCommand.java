@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@BotCommand(command = "now")
+@BotCommand(command = "now", aliases = {"meow"})
 public class NowCommand extends ServicesShortcut implements Interaction {
 
     @Override
