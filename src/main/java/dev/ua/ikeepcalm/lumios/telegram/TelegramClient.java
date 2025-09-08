@@ -97,6 +97,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("tomorrow", "Показати розклад на завтра"),
                                 new BotCommand("week", "Показати розклад тижня"),
                                 new BotCommand("now", "Посилання на заняття, яке йде зараз"),
+                                new BotCommand("meow", "Посилання на заняття, яке йде зараз (альтернатива /now)"),
                                 new BotCommand("next", "Посилання на наступне заняття"),
                                 new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
                                 
