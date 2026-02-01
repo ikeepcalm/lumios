@@ -89,7 +89,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                 update.getMessage().getReplyToMessage().hasPhoto() && 
                 isBotMentioned;
 
-        if (isBotMentioned || isReplyToBot || hasRepliedImageToAnalyze) {
+        if (isBotMentioned || isReplyToBot) {
             if (activeRequests.get() >= MAX_CONCURRENT_REQUESTS) {
                 sendMessage("Я зараз опрацьовую багато запитів. Будь ласка, спробуйте пізніше.", update.getMessage());
                 return;

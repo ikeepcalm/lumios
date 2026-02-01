@@ -2,7 +2,14 @@ package dev.ua.ikeepcalm.lumios.telegram.utils;
 
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class MessageFormatter {
+
+    private static final int MAX_MESSAGE_LENGTH = 4096;
     
     public static final String BOT_NAME = "Lumios";
     public static final String SUCCESS_EMOJI = "✅";
@@ -85,5 +92,207 @@ public class MessageFormatter {
     
     public static String getDefaultParseMode() {
         return ParseMode.MARKDOWNV2;
+    }
+
+    /**
+     * Sanitizes AI-generated Markdown to prevent Telegram parsing errors
+     */
+    public static String sanitizeMarkdownForAI(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+
+        // Fix unclosed code blocks
+        text = fixUncloseCodeBlocks(text);
+
+        // Fix unclosed bold/italic markers
+        text = fixUnclosedFormatting(text);
+
+        // Remove triple or more consecutive formatting markers
+        text = text.replaceAll("\\*{3,}", "**");
+        text = text.replaceAll("_{3,}", "__");
+
+        // Fix standalone periods that need escaping in MarkdownV2
+        text = text.replaceAll("(?<!\\\\)\\.(?![a-zA-Z0-9])", "\\\\.");
+
+        return text;
+    }
+
+    /**
+     * Fixes unclosed code blocks in text
+     */
+    private static String fixUncloseCodeBlocks(String text) {
+        int tripleBacktickCount = countOccurrences(text, "```");
+        if (tripleBacktickCount % 2 != 0) {
+            text += "\n```";
+        }
+
+        int singleBacktickCount = countOccurrences(text, "`") - (tripleBacktickCount * 3);
+        if (singleBacktickCount % 2 != 0) {
+            text += "`";
+        }
+
+        return text;
+    }
+
+    /**
+     * Fixes unclosed bold and italic markers
+     */
+    private static String fixUnclosedFormatting(String text) {
+        // Fix bold markers (**)
+        int doubleStar = countNonEscapedOccurrences(text, "\\*\\*");
+        if (doubleStar % 2 != 0) {
+            text += "**";
+        }
+
+        // Fix italic markers (_)
+        int underscore = countNonEscapedOccurrences(text, "_");
+        if (underscore % 2 != 0) {
+            text += "_";
+        }
+
+        return text;
+    }
+
+    /**
+     * Counts occurrences of a substring
+     */
+    private static int countOccurrences(String text, String substring) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(substring, index)) != -1) {
+            count++;
+            index += substring.length();
+        }
+        return count;
+    }
+
+    /**
+     * Counts non-escaped occurrences using regex
+     */
+    private static int countNonEscapedOccurrences(String text, String regex) {
+        Pattern pattern = Pattern.compile("(?<!\\\\)" + regex);
+        Matcher matcher = pattern.matcher(text);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * Splits long messages into chunks that fit within Telegram's limit
+     */
+    public static List<String> chunkMessage(String text, String parseMode) {
+        List<String> chunks = new ArrayList<>();
+
+        if (text == null || text.length() <= MAX_MESSAGE_LENGTH) {
+            chunks.add(text);
+            return chunks;
+        }
+
+        // Try to split at paragraph boundaries first
+        String[] paragraphs = text.split("\n\n");
+        StringBuilder currentChunk = new StringBuilder();
+
+        for (String paragraph : paragraphs) {
+            // If single paragraph is too long, split at sentence boundaries
+            if (paragraph.length() > MAX_MESSAGE_LENGTH) {
+                if (currentChunk.length() > 0) {
+                    chunks.add(sanitizeChunk(currentChunk.toString(), parseMode));
+                    currentChunk = new StringBuilder();
+                }
+                chunks.addAll(splitLongParagraph(paragraph, parseMode));
+                continue;
+            }
+
+            // Check if adding this paragraph exceeds limit
+            if (currentChunk.length() + paragraph.length() + 2 > MAX_MESSAGE_LENGTH) {
+                chunks.add(sanitizeChunk(currentChunk.toString(), parseMode));
+                currentChunk = new StringBuilder(paragraph);
+            } else {
+                if (currentChunk.length() > 0) {
+                    currentChunk.append("\n\n");
+                }
+                currentChunk.append(paragraph);
+            }
+        }
+
+        if (currentChunk.length() > 0) {
+            chunks.add(sanitizeChunk(currentChunk.toString(), parseMode));
+        }
+
+        // Add continuation markers
+        for (int i = 0; i < chunks.size(); i++) {
+            if (i < chunks.size() - 1) {
+                chunks.set(i, chunks.get(i) + "\n\n_(продовження...)_");
+            }
+            if (i > 0) {
+                chunks.set(i, "_(продовження)_\n\n" + chunks.get(i));
+            }
+        }
+
+        return chunks;
+    }
+
+    /**
+     * Splits a long paragraph at sentence boundaries
+     */
+    private static List<String> splitLongParagraph(String paragraph, String parseMode) {
+        List<String> chunks = new ArrayList<>();
+        String[] sentences = paragraph.split("(?<=[.!?])\\s+");
+        StringBuilder currentChunk = new StringBuilder();
+
+        for (String sentence : sentences) {
+            if (sentence.length() > MAX_MESSAGE_LENGTH) {
+                // Sentence itself is too long, do hard split
+                if (currentChunk.length() > 0) {
+                    chunks.add(sanitizeChunk(currentChunk.toString(), parseMode));
+                    currentChunk = new StringBuilder();
+                }
+                chunks.addAll(hardSplitText(sentence, MAX_MESSAGE_LENGTH - 100));
+                continue;
+            }
+
+            if (currentChunk.length() + sentence.length() + 1 > MAX_MESSAGE_LENGTH) {
+                chunks.add(sanitizeChunk(currentChunk.toString(), parseMode));
+                currentChunk = new StringBuilder(sentence);
+            } else {
+                if (currentChunk.length() > 0) {
+                    currentChunk.append(" ");
+                }
+                currentChunk.append(sentence);
+            }
+        }
+
+        if (currentChunk.length() > 0) {
+            chunks.add(sanitizeChunk(currentChunk.toString(), parseMode));
+        }
+
+        return chunks;
+    }
+
+    /**
+     * Hard splits text at character boundaries (last resort)
+     */
+    private static List<String> hardSplitText(String text, int maxLength) {
+        List<String> chunks = new ArrayList<>();
+        int start = 0;
+        while (start < text.length()) {
+            int end = Math.min(start + maxLength, text.length());
+            chunks.add(text.substring(start, end));
+            start = end;
+        }
+        return chunks;
+    }
+
+    /**
+     * Sanitizes a chunk based on parse mode
+     */
+    private static String sanitizeChunk(String chunk, String parseMode) {
+        if (ParseMode.MARKDOWN.equals(parseMode) || ParseMode.MARKDOWNV2.equals(parseMode)) {
+            return sanitizeMarkdownForAI(chunk);
+        }
+        return chunk;
     }
 }

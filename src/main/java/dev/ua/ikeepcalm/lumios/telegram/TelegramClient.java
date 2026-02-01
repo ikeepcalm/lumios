@@ -328,13 +328,65 @@ public class TelegramClient extends OkHttpTelegramClient {
     }
 
     public Message sendTextMessage(TextMessage textMessage) {
+        // Check if message needs to be chunked
+        if (textMessage.getText() != null && textMessage.getText().length() > 4096) {
+            return sendChunkedMessage(textMessage);
+        }
+
+        // Sanitize Markdown for AI responses
+        if (textMessage.getParseMode() != null && !textMessage.getParseMode().isEmpty()) {
+            textMessage.setText(MessageFormatter.sanitizeMarkdownForAI(textMessage.getText()));
+        }
+
         return sendTextMessageWithRetry(textMessage, 3);
+    }
+
+    private Message sendChunkedMessage(TextMessage textMessage) {
+        List<String> chunks = MessageFormatter.chunkMessage(textMessage.getText(), textMessage.getParseMode());
+        log.info("Splitting long message into {} chunks for chat {}", chunks.size(), textMessage.getChatId());
+
+        Message lastSentMessage = null;
+        for (int i = 0; i < chunks.size(); i++) {
+            TextMessage chunkMessage = new TextMessage();
+            chunkMessage.setChatId(textMessage.getChatId());
+            chunkMessage.setText(chunks.get(i));
+            chunkMessage.setParseMode(textMessage.getParseMode());
+
+            // Only add keyboard to the last chunk
+            if (i == chunks.size() - 1) {
+                chunkMessage.setReplyKeyboard(textMessage.getReplyKeyboard());
+            }
+
+            // Reply to original message only for first chunk
+            if (i == 0 && textMessage.getMessageId() != null) {
+                chunkMessage.setMessageId(textMessage.getMessageId());
+            }
+
+            lastSentMessage = sendTextMessageWithRetry(chunkMessage, 3);
+
+            if (lastSentMessage == null) {
+                log.error("Failed to send chunk {} of {} for chat {}", i + 1, chunks.size(), textMessage.getChatId());
+                break;
+            }
+
+            // Small delay between chunks to avoid rate limiting
+            if (i < chunks.size() - 1) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+
+        return lastSentMessage;
     }
 
     private Message sendTextMessageWithRetry(TextMessage textMessage, int maxRetries) {
         int currentRetry = 0;
         String originalParseMode = textMessage.getParseMode();
-        
+
         while (currentRetry < maxRetries) {
             try {
                 Message sentMessage = (Message) executeCommand(SendMessage.builder()
@@ -351,7 +403,7 @@ public class TelegramClient extends OkHttpTelegramClient {
             } catch (TelegramApiFailedException e) {
                 currentRetry++;
                 log.warn("Attempt {} failed for chat {}: {}", currentRetry, textMessage.getChatId(), e.getMessage());
-                
+
                 if (!handleApiError(e, textMessage, currentRetry)) {
                     break;
                 }
@@ -360,7 +412,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                 break;
             }
         }
-        
+
         textMessage.setParseMode(originalParseMode);
         return handleFallbackMessage(textMessage);
     }
@@ -425,6 +477,20 @@ public class TelegramClient extends OkHttpTelegramClient {
     private void cleanupInvalidChat(Long chatId) {
         try {
             LumiosChat chat = chatService.findByChatId(chatId);
+
+            // Delete all message records for this chat first to avoid foreign key constraint
+            try {
+                // Use a large number to get all message records for this chat
+                List<MessageRecord> messageRecords = recordService.findLastMessagesByChatId(chatId, Integer.MAX_VALUE);
+                for (MessageRecord record : messageRecords) {
+                    recordService.delete(record);
+                }
+                log.info("Deleted {} message records for chat {}", messageRecords.size(), chatId);
+            } catch (Exception e) {
+                log.warn("Failed to delete message records for chat {}: {}", chatId, e.getMessage());
+            }
+
+            // Now delete the chat
             chatService.delete(chat);
             log.info("Cleaned up invalid chat: {}", chatId);
         } catch (NoSuchEntityException e) {
