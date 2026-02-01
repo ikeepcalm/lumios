@@ -30,9 +30,10 @@ public class LinkUpdate extends ServicesShortcut implements Interaction {
                 UpdateConsumer.waitingLinks.remove(userId);
                 timetableService.save(entry);
 
-                sendMessage("Посилання успішно додано!", update.getMessage());
+                sendMessage("✅ Посилання успішно додано!", update.getMessage());
             } else {
-                sendMessage("Невірний формат посилання. Спробуйте ще раз", update.getMessage());
+                UpdateConsumer.waitingLinks.remove(userId);
+                sendMessage("❌ Невірний формат посилання. Ви були видалені зі списку очікування. Спробуйте ще раз, натиснувши на пару.", update.getMessage());
             }
         }
     }

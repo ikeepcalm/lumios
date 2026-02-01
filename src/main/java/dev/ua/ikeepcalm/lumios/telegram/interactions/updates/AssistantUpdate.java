@@ -133,6 +133,14 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
 
             saveUserMessage(update.getMessage(), inputText);
 
+            // Get user context for enhanced AI responses
+            LumiosUser currentUser = null;
+            try {
+                currentUser = userService.findById(update.getMessage().getFrom().getId(), chat);
+            } catch (Exception e) {
+                log.warn("Could not find user for AI context: {}", e.getMessage());
+            }
+
             String tag = "@" + update.getMessage().getFrom().getUserName();
             String fullName = update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName();
             fullName = fullName.replace("null", "");
@@ -171,12 +179,12 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                             Long replyToMessageId = Long.valueOf(update.getMessage().getReplyToMessage().getMessageId());
                             log.info("Processing reply to bot, message ID: {}", replyToMessageId);
                             if (shouldProcessImage) {
-                                responseFuture = gemini.getChatResponse(formattedInput, update.getMessage().getChatId(), imageData, replyToMessageId);
+                                responseFuture = gemini.getChatResponse(formattedInput, update.getMessage().getChatId(), imageData, replyToMessageId, currentUser, chat);
                             } else {
-                                responseFuture = gemini.getChatResponseForReply(formattedInput, update.getMessage().getChatId(), replyToMessageId);
+                                responseFuture = gemini.getChatResponseForReply(formattedInput, update.getMessage().getChatId(), replyToMessageId, currentUser, chat);
                             }
                         } else {
-                            responseFuture = gemini.getChatResponse(formattedInput, update.getMessage().getChatId(), imageData);
+                            responseFuture = gemini.getChatResponse(formattedInput, update.getMessage().getChatId(), imageData, currentUser, chat);
                         }
 
                         responseFuture.thenAccept(response -> {

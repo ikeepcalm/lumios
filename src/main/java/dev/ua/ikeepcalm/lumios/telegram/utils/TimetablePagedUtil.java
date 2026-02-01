@@ -85,12 +85,12 @@ public class TimetablePagedUtil {
             InlineKeyboardRow row = new InlineKeyboardRow();
             InlineKeyboardButton button = new InlineKeyboardButton(buttonText);
 
-            button.setText(buttonText);
-
             if (classEntry.getUrl() != null && !classEntry.getUrl().isEmpty()) {
+                // Class has URL - make it a clickable link
                 button.setUrl(classEntry.getUrl());
             } else {
-                button.setUrl("https://ficeadvisor.com/schedule?week=1");
+                // Class has no URL - make it a callback to add URL
+                button.setCallbackData("classlink-add-" + classEntry.getId());
             }
 
             row.add(button);

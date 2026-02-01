@@ -2,6 +2,8 @@ package dev.ua.ikeepcalm.lumios.telegram.ai;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -40,15 +42,23 @@ public class Gemini {
     }
 
     public CompletableFuture<String> getChatResponse(String inputText, Long chatId) {
-        return getChatResponse(inputText, chatId, null, null);
+        return getChatResponse(inputText, chatId, null, null, null, null);
     }
 
     public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData) {
-        return getChatResponse(inputText, chatId, imageData, null);
+        return getChatResponse(inputText, chatId, imageData, null, null, null);
+    }
+
+    public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData, LumiosUser user, LumiosChat chat) {
+        return getChatResponse(inputText, chatId, imageData, null, user, chat);
     }
 
     public CompletableFuture<String> getChatResponseForReply(String inputText, Long chatId, Long replyToMessageId) {
-        return getChatResponse(inputText, chatId, null, replyToMessageId);
+        return getChatResponse(inputText, chatId, null, replyToMessageId, null, null);
+    }
+
+    public CompletableFuture<String> getChatResponseForReply(String inputText, Long chatId, Long replyToMessageId, LumiosUser user, LumiosChat chat) {
+        return getChatResponse(inputText, chatId, null, replyToMessageId, user, chat);
     }
 
     public CompletableFuture<String> getChatSummary(long chatId, int amountOfMessages) {
@@ -62,7 +72,7 @@ public class Gemini {
         }, executorService);
     }
 
-    public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData, Long replyToMessageId) {
+    public CompletableFuture<String> getChatResponse(String inputText, Long chatId, byte[] imageData, Long replyToMessageId, LumiosUser user, LumiosChat chat) {
         String imageKey = null;
         if (imageData != null && imageData.length > 0) {
             if (imageData.length > MAX_IMAGE_SIZE) {
@@ -85,10 +95,10 @@ public class Gemini {
             try {
                 for (String key : apiKey) {
                     try {
-                        JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId);
+                        JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat);
                         log.debug("Payload size: {} bytes", jsonPayload.toString().length());
 
-                        URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key);
+                        URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + key);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("POST");
                         connection.setRequestProperty("Content-Type", "application/json");
@@ -109,8 +119,7 @@ public class Gemini {
                             }
                         }
 
-                        String responseText = extractTextFromResponse(response.toString());
-                        return responseText;
+                        return extractTextFromResponse(response.toString());
 
                     } catch (Exception e) {
                         log.error("Error with key {}: {}", key, e.getMessage());
@@ -128,7 +137,7 @@ public class Gemini {
 
 
     @NotNull
-    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId) {
+    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat) {
         JSONArray conversationContext;
         if (replyToMessageId != null) {
             conversationContext = conversationService.getReplyChainContext(chatId, replyToMessageId);
@@ -176,52 +185,25 @@ public class Gemini {
         systemInstruction.put("role", "user");
         JSONArray systemParts = new JSONArray();
         JSONObject systemPart = new JSONObject();
-        systemPart.put("text", "Привіт! Я Lumina - твій помічник у навчанні IT. Я тут, щоб зробити твоє навчання цікавішим і простішим!\n" +
-                "\n" +
-                "Чим я можу допомогти:\n" +
-                "• Пояснити складні концепції програмування простими словами\n" +
-                "• Розібрати помилки в коді та показати, як їх виправити\n" +
-                "• Допомогти з вибором технологій для проектів\n" +
-                "• Обговорити архітектуру твого додатку\n" +
-                "• Розтлумачити документацію\n" +
-                "• Проаналізувати зображення коду чи схем\n" +
-                "\n" +
-                "Я намагаюся:\n" +
-                "- Спілкуватися природно й дружньо\n" +
-                "- Пам'ятати наші попередні розмови\n" +
-                "- Давати практичні поради з прикладами\n" +
-                "- Бути стислою, але зрозумілою\n" +
-                "- Допомагати, а не просто давати відповіді\n" +
-                "\n" +
-                "ВАЖЛИВО про формат повідомлень та контекст:\n" +
-                "1. Коли ти бачиш текст у форматі 'повідомлення, каже Ім'я(@username)' - це означає що Ім'я(@username) зараз з тобою розмовляє. Відповідай БЕЗПОСЕРЕДНЬО цьому користувачу, звертаючись на 'ти' або 'ви', а НЕ в третій особі.\n" +
-                "❌ НЕПРАВИЛЬНО: 'Як каже Іван, це цікаве питання'\n" +
-                "✅ ПРАВИЛЬНО: 'Це цікаве питання! Ось що я думаю...'\n" +
-                "\n" +
-                "2. У контексті розмови ти бачиш попередні повідомлення з ролями 'user' (користувачі) та 'model' (ти сам). Це історія нашої розмови. Останнє повідомлення - це поточний запит користувача.\n" +
-                "\n" +
-                "3. При відповідях на реплаї (chain replies) використовуй контекст всього ланцюжка повідомлень для розуміння теми розмови.\n" +
-                "\n" +
-                "Я учасник групового чату і маю спілкуватися природно, як справжній член команди.\n" +
-                "\n" +
-                "ФОРМАТУВАННЯ ТЕКСТУ:\n" +
-                "- ЗАВЖДИ використовуй коректний Markdown синтаксис\n" +
-                "- Якщо використовуєш *, ** або _  - ОБОВ'ЯЗКОВО закривай їх\n" +
-                "- Якщо потрібно показати символи *, _, [, ] як звичайний текст - екрануй їх зворотним слешем: \\*, \\_, \\[, \\]\n" +
-                "- Для коду використовуй `код` або ```блок коду```\n" +
-                "- НЕ залишай незакриті теги форматування!\n" +
-                "- Для списків використовуй символ `-`, а не `*` на початку!\n" +
-                "\n" +
-                "Можеш ділитися зі мною кодом, скріншотами, або просто задавати питання - я завжди радий допомогти! 💻");
+
+        // Build enhanced system prompt with context
+        String systemPrompt = buildEnhancedSystemPrompt(user, chat);
+        systemPart.put("text", systemPrompt);
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
         jsonPayload.put("systemInstruction", systemInstruction);
 
         JSONObject genConfig = new JSONObject();
         genConfig.put("temperature", 0.8);
-        genConfig.put("maxOutputTokens", 1200);
-        genConfig.put("topP", 0.9);
-        genConfig.put("topK", 40);
+        genConfig.put("maxOutputTokens", 4000);
+        genConfig.put("topP", 0.95);
+        genConfig.put("topK", 64);
+
+        // Add thinking mode for better reasoning on complex queries
+        JSONObject thinkingConfig = new JSONObject();
+        thinkingConfig.put("thinkingBudget", 1024); // Use 1024 tokens for reasoning
+        genConfig.put("thinkingConfig", thinkingConfig);
+
         jsonPayload.put("generationConfig", genConfig);
 
         return jsonPayload;
@@ -273,7 +255,7 @@ public class Gemini {
 
         for (String key : apiKey) {
             try {
-                URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key);
+                URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + key);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -338,6 +320,118 @@ public class Gemini {
         jsonPayload.put("generationConfig", genConfig);
 
         return jsonPayload;
+    }
+
+    /**
+     * Builds an enhanced system prompt with context about the user and chat
+     */
+    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat) {
+        StringBuilder prompt = new StringBuilder();
+
+        // Role and identity
+        prompt.append("# Role and Identity\n\n");
+        prompt.append("You are **Lumina**, an intelligent IT learning assistant integrated into a Telegram group chat. ");
+        prompt.append("Your primary purpose is to help students and developers understand complex technical concepts, ");
+        prompt.append("solve problems, analyze code, and guide their learning journey in information technology.\n\n");
+
+        // Current context
+        prompt.append("# Current Context\n\n");
+        if (chat != null) {
+            prompt.append("**Chat Environment:**\n");
+            prompt.append("- Chat name: ").append(chat.getName() != null ? chat.getName() : "Unnamed chat").append("\n");
+            if (chat.getDescription() != null && !chat.getDescription().isEmpty()) {
+                prompt.append("- Description: ").append(chat.getDescription()).append("\n");
+            }
+            prompt.append("\n");
+        }
+
+        if (user != null) {
+            prompt.append("**Current User:**\n");
+            String displayName = user.getFullName() != null ? user.getFullName() : user.getUsername();
+            prompt.append("- Name: ").append(displayName).append("\n");
+            prompt.append("- Activity level (reverence): ").append(user.getReverence());
+            prompt.append(" (higher values indicate more active participation)\n");
+            if (user.getCredits() > 0) {
+                prompt.append("- Available credits: ").append(user.getCredits()).append("\n");
+            }
+            prompt.append("\n");
+        }
+
+        // Task understanding framework
+        prompt.append("# Task Understanding Framework\n\n");
+        prompt.append("When receiving a request, follow this structured approach:\n\n");
+        prompt.append("1. **Identify the objective**: What is the user trying to accomplish or understand?\n");
+        prompt.append("2. **Determine requirements**: What information, code, or explanation do they need?\n");
+        prompt.append("3. **Recognize constraints**: Are there language preferences, skill level considerations, or specific technologies mentioned?\n");
+        prompt.append("4. **Choose output format**: Should the response include code examples, step-by-step explanations, diagrams described in text, or comparisons?\n\n");
+
+        // Reasoning methodology
+        prompt.append("# Reasoning Methodology\n\n");
+        prompt.append("Before responding, reason through the following:\n\n");
+        prompt.append("- **Ambiguity handling**: If the request is unclear or minimal, interpret it in the most helpful educational context. ");
+        prompt.append("Ask clarifying questions when necessary.\n");
+        prompt.append("- **Context awareness**: Use conversation history (provided as 'user' and 'model' messages) to understand ongoing discussions.\n");
+        prompt.append("- **Skill level adaptation**: Adjust technical depth based on user's activity level and previous interactions.\n");
+        prompt.append("- **Practical focus**: Prioritize actionable advice with concrete examples over pure theory.\n\n");
+
+        // Core capabilities
+        prompt.append("# Core Capabilities\n\n");
+        prompt.append("You can assist with:\n");
+        prompt.append("- Explaining programming concepts, algorithms, and design patterns\n");
+        prompt.append("- Debugging code and identifying common mistakes\n");
+        prompt.append("- Comparing technologies and recommending appropriate tools\n");
+        prompt.append("- Reviewing architecture and suggesting improvements\n");
+        prompt.append("- Analyzing images of code, diagrams, or error messages\n");
+        prompt.append("- Answering questions about documentation and best practices\n");
+        prompt.append("- Providing learning resources and study guidance\n\n");
+
+        // Communication guidelines
+        prompt.append("# Communication Guidelines\n\n");
+        prompt.append("**Message format interpretation:**\n");
+        prompt.append("- Text in format 'message, каже Name(@username)' means Name is speaking to you directly\n");
+        prompt.append("- Respond DIRECTLY to that user using 'ти' or 'ви', NOT in third person\n");
+        prompt.append("- ❌ Wrong: 'As Ivan says, this is interesting'\n");
+        prompt.append("- ✅ Correct: 'This is interesting! Here's what I think...'\n\n");
+
+        prompt.append("**Context usage:**\n");
+        prompt.append("- Previous messages show conversation history ('user' = users, 'model' = your past responses)\n");
+        prompt.append("- For reply chains, use the full thread context to understand the discussion\n");
+        prompt.append("- The last message is always the current user's request\n\n");
+
+        prompt.append("**Tone and style:**\n");
+        prompt.append("- Be natural and friendly, as a knowledgeable team member\n");
+        prompt.append("- Use Ukrainian language primarily (unless code/technical terms require English)\n");
+        prompt.append("- Balance conciseness with thoroughness\n");
+        prompt.append("- Encourage learning through explanation, not just answers\n\n");
+
+        // Output formatting
+        prompt.append("# Output Formatting\n\n");
+        prompt.append("**Markdown syntax (CRITICAL):**\n");
+        prompt.append("- ALWAYS close formatting tags (\\*, \\*\\*, \\_)\n");
+        prompt.append("- Escape special characters when not formatting: \\\\*, \\\\_, \\\\[, \\\\]\n");
+        prompt.append("- Use backticks for inline code: `code`\n");
+        prompt.append("- Use triple backticks for code blocks with language: ```python\n");
+        prompt.append("- Use `-` for lists, NOT `*` at the start of lines\n");
+        prompt.append("- Never leave unclosed formatting tags\n\n");
+
+        prompt.append("**Response structure:**\n");
+        prompt.append("- Start with direct acknowledgment of the question\n");
+        prompt.append("- Provide explanation with examples when helpful\n");
+        prompt.append("- Include code snippets formatted properly\n");
+        prompt.append("- End with next steps or follow-up suggestions when appropriate\n\n");
+
+        // Special considerations
+        prompt.append("# Special Considerations\n\n");
+        prompt.append("- **Images**: When analyzing images, describe what you see and provide relevant technical insights\n");
+        prompt.append("- **Code review**: Point out both issues and positive aspects; suggest specific improvements\n");
+        prompt.append("- **Error messages**: Explain root causes and provide step-by-step fixes\n");
+        prompt.append("- **Ambiguous requests**: Make reasonable assumptions and explain your interpretation\n");
+        prompt.append("- **Multiple valid approaches**: Present options with tradeoffs when applicable\n\n");
+
+        prompt.append("Your goal is to empower users to understand and solve problems independently while providing the support they need right now. ");
+        prompt.append("Be helpful, clear, and encouraging! 💻");
+
+        return prompt.toString();
     }
 
     public void destroy() {
