@@ -2,14 +2,17 @@ package dev.ua.ikeepcalm.lumios.telegram.interactions.commands.timetable;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TimetablePagedUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TimetableParser;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
+import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,6 +20,9 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @BotCommand(command = "today")
@@ -30,25 +36,41 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
                     WeekValidator.determineWeekDay());
             DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
 
-            StringBuilder messageBuilder = new StringBuilder("📅 *РОЗКЛАД НА СЬОГОДНІ* 📅\n\n");
-            messageBuilder.append(TimetableParser.EMOJI_LEGEND);
-
-            boolean hasClasses = false;
-
+            List<ClassEntry> todayClasses = new ArrayList<>();
             for (DayEntry dayEntry : timetableEntry.getDays()) {
                 if (dayEntry.getDayName().equals(dayOfWeek)) {
-                    if (!dayEntry.getClassEntries().isEmpty()) {
-                        messageBuilder.append("*{").append(dayOfWeek.toString()).append("}*\n\n");
-                        hasClasses = true;
-                        messageBuilder.append(TimetableParser.formatClassEntriesGroupedByTime(dayEntry.getClassEntries()));
-                    }
+                    todayClasses = dayEntry.getClassEntries();
+                    break;
                 }
             }
 
-            if (!hasClasses) {
-                messageBuilder.append("🎆 *Немає пар на сьогодні!* 🎆\n");
+            if (todayClasses.isEmpty()) {
+                sendMessage("📅 *РОЗКЛАД НА СЬОГОДНІ* 📅\n\n🎆 *Немає пар на сьогодні!* 🎆", ParseMode.MARKDOWN, message);
+                return;
             }
-            sendMessage(messageBuilder.toString(), ParseMode.MARKDOWN, message);
+
+            // Group classes by time slot
+            Map<String, List<ClassEntry>> groupedByTime = TimetableParser.groupClassesByTime(todayClasses);
+
+            // Calculate starting page based on current time
+            int startPage = TimetablePagedUtil.calculateCurrentPage(groupedByTime);
+
+            // Build paged message and keyboard
+            String messageText = TimetablePagedUtil.buildPagedTimetableMessage(groupedByTime, startPage, "РОЗКЛАД НА СЬОГОДНІ");
+
+            TextMessage textMessage = new TextMessage();
+            textMessage.setChatId(message.getChatId());
+            textMessage.setText(messageText);
+            textMessage.setParseMode(ParseMode.MARKDOWN);
+
+            // Add keyboard with class buttons and navigation
+            List<String> timeSlots = new ArrayList<>(groupedByTime.keySet());
+            if (!timeSlots.isEmpty()) {
+                List<ClassEntry> currentSlotClasses = groupedByTime.get(timeSlots.get(startPage - 1));
+                textMessage.setReplyKeyboard(TimetablePagedUtil.buildTimetableKeyboard(startPage, timeSlots.size(), currentSlotClasses, "today"));
+            }
+
+            sendMessage(textMessage, message);
         } catch (NoSuchEntityException e) {
             sendMessage("❌ Не знайдено розклад на сьогодні! Ви точно все налаштували?", message);
         }

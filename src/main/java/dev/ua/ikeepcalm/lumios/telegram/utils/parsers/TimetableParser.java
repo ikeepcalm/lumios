@@ -57,11 +57,7 @@ public class TimetableParser {
             return "";
         }
 
-        Map<String, List<ClassEntry>> groupedByTime = new LinkedHashMap<>();
-        for (ClassEntry entry : classEntries) {
-            String timeSlot = entry.getStartTime() + " - " + entry.getEndTime();
-            groupedByTime.computeIfAbsent(timeSlot, k -> new ArrayList<>()).add(entry);
-        }
+        Map<String, List<ClassEntry>> groupedByTime = groupClassesByTime(classEntries);
 
         StringBuilder result = new StringBuilder();
         for (Map.Entry<String, List<ClassEntry>> group : groupedByTime.entrySet()) {
@@ -75,6 +71,25 @@ public class TimetableParser {
         }
 
         return result.toString();
+    }
+
+    /**
+     * Groups class entries by their time slot (start time - end time)
+     * @param classEntries List of class entries to group
+     * @return LinkedHashMap preserving time order, mapping time slots to class lists
+     */
+    public static Map<String, List<ClassEntry>> groupClassesByTime(List<ClassEntry> classEntries) {
+        Map<String, List<ClassEntry>> groupedByTime = new LinkedHashMap<>();
+        if (classEntries == null || classEntries.isEmpty()) {
+            return groupedByTime;
+        }
+
+        for (ClassEntry entry : classEntries) {
+            String timeSlot = entry.getStartTime() + " - " + entry.getEndTime();
+            groupedByTime.computeIfAbsent(timeSlot, k -> new ArrayList<>()).add(entry);
+        }
+
+        return groupedByTime;
     }
 
     private static class LocalTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer {
