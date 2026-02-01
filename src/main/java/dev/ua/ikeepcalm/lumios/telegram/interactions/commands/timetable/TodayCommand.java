@@ -2,7 +2,6 @@ package dev.ua.ikeepcalm.lumios.telegram.interactions.commands.timetable;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
-import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
@@ -41,11 +40,7 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
                     if (!dayEntry.getClassEntries().isEmpty()) {
                         messageBuilder.append("*{").append(dayOfWeek.toString()).append("}*\n\n");
                         hasClasses = true;
-                        for (ClassEntry classEntry : dayEntry.getClassEntries()) {
-                            messageBuilder.append("*").append(classEntry.getStartTime()).append(" - ").append(classEntry.getEndTime()).append("*\n");
-                            messageBuilder.append(TimetableParser.parseClassEmoji(classEntry.getClassType())).append(" [").append(classEntry.getName()).append("](")
-                                    .append(classEntry.getUrl()).append(")\n\n");
-                        }
+                        messageBuilder.append(TimetableParser.formatClassEntriesGroupedByTime(dayEntry.getClassEntries()));
                     }
                 }
             }
