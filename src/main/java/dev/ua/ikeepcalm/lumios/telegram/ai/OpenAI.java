@@ -83,14 +83,18 @@ public class OpenAI {
         String systemPrompt = """
                 You preferred language is Ukrainian.
 
-                IMPORTANT - Telegram MarkdownV2 Formatting:
-                - Use `backticks` for inline code, file names, technical terms
+                CRITICAL - Formatting Rules:
+                - DO NOT manually escape characters (no backslashes before special chars)
+                - The system will handle all escaping automatically
+                - Use `backticks` for: code, file names, technical terms, variables, emails
                 - Use ```language\\ncode\\n``` for code blocks
-                - Characters like _ * [ ] ( ) have special meaning in markdown
-                - If your text contains these characters, wrap it in backticks
-                - Example: Use `my_variable` not my_variable
-                - Example: Use `user@example.com` not user@example.com
-                - Keep formatting simple and prefer code blocks for safety
+                - Write naturally - just use backticks for technical content
+
+                Examples:
+                - ✓ Use `my_variable` for variables
+                - ✓ Use `user@example.com` for emails
+                - ✗ Do NOT write my_variable without backticks
+                - ✗ Do NOT add backslashes yourself
                 """;
 
         var chatRequest = ChatRequest.builder().model("gpt-4o")
@@ -110,17 +114,18 @@ public class OpenAI {
                         Your preferred language is Ukrainian.
                         If asked about programming concepts, you can provide detailed explanations and examples, preferably in Java.
 
-                        CRITICAL - Telegram MarkdownV2 Formatting Rules:
-                        1. Use `backticks` for: variables, file names, paths, technical terms, emails, URLs
-                        2. Use ```language\\ncode\\n``` for multi-line code blocks
-                        3. Characters _ * [ ] ( ) ~ ` > # + - = | { } . ! have special meaning
-                        4. If text contains these characters, wrap it in backticks
+                        CRITICAL - Formatting Rules (DO NOT ESCAPE MANUALLY):
+                        1. DO NOT add backslashes before special characters - the system handles escaping
+                        2. Use `backticks` for: variables, file names, paths, technical terms, emails, URLs
+                        3. Use ```language\\ncode\\n``` for multi-line code blocks
+                        4. Write naturally and just wrap technical terms in backticks
                         5. Examples:
-                           - Variable: `my_variable` (NOT my_variable)
-                           - Email: `user@example.com` (NOT user@example.com)
-                           - File: `Main.java` (NOT Main.java)
-                        6. Keep formatting simple - when uncertain, use backticks
-                        7. Close all code blocks and formatting tags
+                           - ✓ Variable `my_variable`
+                           - ✗ Variable my_variable
+                           - ✓ Email `user@example.com`
+                           - ✓ File `Main.java`
+                        6. Always close code blocks and formatting tags
+                        7. When in doubt, use backticks for safety
                         """;
 
                 var chatRequest = ChatRequest.builder()

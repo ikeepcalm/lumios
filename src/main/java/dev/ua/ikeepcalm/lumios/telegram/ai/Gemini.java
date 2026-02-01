@@ -453,37 +453,44 @@ public class Gemini {
 
         // Critical formatting rules
         prompt.append("=== OUTPUT FORMATTING (CRITICAL) ===\n\n");
-        prompt.append("You MUST use Telegram MarkdownV2 format. Follow these rules EXACTLY:\n\n");
+        prompt.append("IMPORTANT: Do NOT manually escape any special characters!\n");
+        prompt.append("The system will automatically handle all escaping for Telegram.\n");
+        prompt.append("Just write naturally and use backticks for code/technical terms.\n\n");
 
         prompt.append("1. CODE FORMATTING:\n");
         prompt.append("   - Inline code: `code here`\n");
         prompt.append("   - Code blocks: ```language\\ncode\\n```\n");
-        prompt.append("   - ALWAYS use backticks for: variables, file paths, technical terms, URLs\n");
-        prompt.append("   - Example: Use `my_variable` not my_variable\n\n");
+        prompt.append("   - Use backticks for: variables, file paths, technical terms, URLs, model names\n");
+        prompt.append("   - Example: I'm using `gemini-2.5-flash` (NOT gemini-2.5-flash)\n");
+        prompt.append("   - Example: Variable `my_variable` (NOT my_variable)\n\n");
 
         prompt.append("2. TEXT FORMATTING:\n");
         prompt.append("   - Bold: *text* or **text**\n");
         prompt.append("   - Italic: _text_ or __text__\n");
-        prompt.append("   - IMPORTANT: Underscores in normal text will break formatting!\n");
-        prompt.append("   - If text contains _, [ ] ( ) or other special chars, wrap it in `code`\n\n");
+        prompt.append("   - CRITICAL: Never use underscores in plain text! Always wrap in backticks.\n\n");
 
-        prompt.append("3. SPECIAL CHARACTERS:\n");
-        prompt.append("   - These chars have special meaning: _ * [ ] ( ) ~ ` > # + - = | { } . !\n");
-        prompt.append("   - If you need to show them literally, wrap in backticks\n");
-        prompt.append("   - Example: Email should be: `user@example.com`\n\n");
+        prompt.append("3. WHAT TO PUT IN BACKTICKS:\n");
+        prompt.append("   - Any text with: _ - . @ # + = | { } ( )\n");
+        prompt.append("   - Technical terms: `variable_name`, `file.txt`, `user@email.com`\n");
+        prompt.append("   - Model names: `gemini-2.5-flash`, `gemma-3-12b`\n");
+        prompt.append("   - File paths: `src/main/java`\n");
+        prompt.append("   - Commands: `git commit`\n\n");
 
-        prompt.append("4. SAFE PRACTICES:\n");
-        prompt.append("   - Use code blocks for multi-line code\n");
-        prompt.append("   - Use inline code for file names, paths, commands\n");
-        prompt.append("   - Keep formatting simple - prefer code blocks over complex markdown\n");
-        prompt.append("   - When in doubt, use backticks\n\n");
+        prompt.append("4. WHAT NOT TO DO:\n");
+        prompt.append("   - DO NOT add backslashes yourself (\\\\., \\\\_, etc.)\n");
+        prompt.append("   - DO NOT escape characters - the system does this\n");
+        prompt.append("   - DO NOT use underscores outside backticks\n");
+        prompt.append("   - DO NOT leave code blocks unclosed\n\n");
 
         prompt.append("5. LANGUAGE:\n");
         prompt.append("   - Respond in Ukrainian unless the user writes in English\n");
         prompt.append("   - Be natural and conversational\n\n");
 
-        prompt.append("Remember: Your output will be processed by Telegram's MarkdownV2 parser. ");
-        prompt.append("Incorrect formatting will cause errors. When uncertain, use backticks.\n");
+        prompt.append("Example of correct formatting:\n");
+        prompt.append("- ✓ I'm using `gemini-2.5-flash`.\n");
+        prompt.append("- ✗ I'm using gemini-2.5-flash\\\\.\n");
+        prompt.append("- ✓ Variable `my_variable` is set.\n");
+        prompt.append("- ✗ Variable my_variable is set.\n");
 
         return prompt.toString();
     }

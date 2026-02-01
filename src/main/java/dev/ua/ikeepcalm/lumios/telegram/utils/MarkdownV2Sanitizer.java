@@ -1,12 +1,16 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Sanitizes text for Telegram MarkdownV2 format.
- * MarkdownV2 requires escaping these characters outside of code/pre entities:
- * _ * [ ] ( ) ~ ` > # + - = | { } . !
+@Slf4j
+
+/*
+  Sanitizes text for Telegram MarkdownV2 format.
+  MarkdownV2 requires escaping these characters outside of code/pre entities:
+  _ * [ ] ( ) ~ ` > # + - = | { } . !
  */
 public class MarkdownV2Sanitizer {
 
@@ -26,7 +30,15 @@ public class MarkdownV2Sanitizer {
             return text;
         }
 
-        // First, fix any unclosed code blocks
+        String originalText = text;
+
+        // First, remove any pre-existing escape sequences that the AI might have added
+        text = removePreExistingEscapes(text);
+        if (!text.equals(originalText)) {
+            log.debug("Removed pre-existing escapes. Before: '{}' After: '{}'", originalText, text);
+        }
+
+        // Then, fix any unclosed code blocks
         text = fixUncloseCodeBlocks(text);
 
         // Strategy: Replace code blocks with placeholders, escape special chars, then restore
@@ -72,7 +84,67 @@ public class MarkdownV2Sanitizer {
             result.append(escapeMarkdownV2(afterRegions));
         }
 
-        return result.toString();
+        String sanitized = result.toString();
+
+        // Log the sanitization for debugging
+        if (!originalText.equals(sanitized)) {
+            log.debug("MarkdownV2 sanitization: '{}' → '{}'", originalText, sanitized);
+        }
+
+        return sanitized;
+    }
+
+    /**
+     * Removes pre-existing escape sequences that might have been added by the AI.
+     * We want to start fresh and apply our own escaping.
+     */
+    private static String removePreExistingEscapes(String text) {
+        // Remove backslash-escaped special chars outside of code blocks
+        // We'll re-escape them properly afterwards
+        // Pattern: backslash followed by any of the special MarkdownV2 chars
+
+        // First, temporarily protect code blocks
+        java.util.List<String> codeBlocks = new java.util.ArrayList<>();
+        Matcher codeBlockMatcher = CODE_BLOCK_PATTERN.matcher(text);
+        StringBuilder sb = new StringBuilder();
+        int codeBlockIndex = 0;
+
+        while (codeBlockMatcher.find()) {
+            codeBlocks.add(codeBlockMatcher.group());
+            codeBlockMatcher.appendReplacement(sb, "§§§CODEBLOCK" + codeBlockIndex + "§§§");
+            codeBlockIndex++;
+        }
+        codeBlockMatcher.appendTail(sb);
+        text = sb.toString();
+
+        // Protect inline code
+        java.util.List<String> inlineCodes = new java.util.ArrayList<>();
+        Matcher inlineCodeMatcher = INLINE_CODE_PATTERN.matcher(text);
+        sb = new StringBuilder();
+        int inlineCodeIndex = 0;
+
+        while (inlineCodeMatcher.find()) {
+            inlineCodes.add(inlineCodeMatcher.group());
+            inlineCodeMatcher.appendReplacement(sb, "§§§INLINE" + inlineCodeIndex + "§§§");
+            inlineCodeIndex++;
+        }
+        inlineCodeMatcher.appendTail(sb);
+        text = sb.toString();
+
+        // Now remove escape sequences from the non-code parts
+        text = text.replaceAll("\\\\([_*\\[\\]()~`>#+=|{}.!-])", "$1");
+
+        // Restore inline code
+        for (int i = 0; i < inlineCodes.size(); i++) {
+            text = text.replace("§§§INLINE" + i + "§§§", inlineCodes.get(i));
+        }
+
+        // Restore code blocks
+        for (int i = 0; i < codeBlocks.size(); i++) {
+            text = text.replace("§§§CODEBLOCK" + i + "§§§", codeBlocks.get(i));
+        }
+
+        return text;
     }
 
     /**
