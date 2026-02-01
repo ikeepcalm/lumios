@@ -329,7 +329,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
         } catch (NoSuchEntityException e) {
             chat = new LumiosChat();
             chat.setChatId(chatId);
-            chat.setName(chatTitle);
+            chat.setName(chatTitle != null ? chatTitle : "Chat " + chatId);
             chat.setTimetableEnabled(true);
             chatService.save(chat);
             log.info("Created new chat with ID: {}", chatId);

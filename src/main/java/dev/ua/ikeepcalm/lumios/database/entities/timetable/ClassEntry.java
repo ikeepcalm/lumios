@@ -35,7 +35,7 @@ public class ClassEntry {
     @Column
     private LocalTime endTime;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private DayEntry dayEntry;
 
     public ClassEntry(ClassWrapper classWrapper) {

@@ -20,7 +20,7 @@ public class ImportUtil {
 
     public static Map<String, String> getGroupsByFilter(String filter) throws RuntimeException {
         try {
-            String response = sendGetRequest("https://api.campus.kpi.ua/schedule/groups", Map.of("filter", filter));
+            String response = sendGetRequest("https://api.campus.kpi.ua/group/find", Map.of("name", filter));
 
             if (response == null || response.trim().isEmpty()) {
                 throw new RuntimeException("Empty response from API");

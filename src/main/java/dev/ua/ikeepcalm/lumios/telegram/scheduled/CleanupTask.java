@@ -65,7 +65,11 @@ public class CleanupTask {
             log.info("Starting weekly chats cleanup task");
         Iterable<LumiosChat> chats = chatService.findAll();
         for (LumiosChat chat : chats) {
-            if (chat.getName() == null) {
+            // Only delete truly abandoned chats: null name AND no users AND no timetables
+            if (chat.getName() == null &&
+                (chat.getUsers() == null || chat.getUsers().isEmpty()) &&
+                (chat.getTimetables() == null || chat.getTimetables().isEmpty())) {
+                log.warn("Deleting abandoned chat with ID: {} (null name, no users, no timetables)", chat.getChatId());
                 chatService.delete(chat);
             }
         }

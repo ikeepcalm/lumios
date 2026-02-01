@@ -180,7 +180,7 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
         } catch (NoSuchEntityException e) {
             chat = new LumiosChat();
             chat.setChatId(chatId);
-            chat.setName(chatTitle);
+            chat.setName(chatTitle != null ? chatTitle : "Chat " + chatId);
             chat.setTimetableEnabled(true);
             chatService.save(chat);
         }
