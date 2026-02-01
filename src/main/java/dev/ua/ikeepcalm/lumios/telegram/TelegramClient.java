@@ -334,7 +334,9 @@ public class TelegramClient extends OkHttpTelegramClient {
         }
 
         // Sanitize Markdown for AI responses
-        if (textMessage.getParseMode() != null && !textMessage.getParseMode().isEmpty()) {
+        // Only sanitize if NOT using legacy Markdown (which is now handled by MarkdownValidator upstream)
+        // or if explicitly using MarkdownV2 which might need MessageFormatter's logic.
+        if (ParseMode.MARKDOWNV2.equals(textMessage.getParseMode())) {
             textMessage.setText(MessageFormatter.sanitizeMarkdownForAI(textMessage.getText()));
         }
 
@@ -386,6 +388,7 @@ public class TelegramClient extends OkHttpTelegramClient {
     private Message sendTextMessageWithRetry(TextMessage textMessage, int maxRetries) {
         int currentRetry = 0;
         String originalParseMode = textMessage.getParseMode();
+        String originalText = textMessage.getText(); // Keep original text for fallback
 
         while (currentRetry < maxRetries) {
             try {
@@ -407,6 +410,16 @@ public class TelegramClient extends OkHttpTelegramClient {
                 if (!handleApiError(e, textMessage, currentRetry)) {
                     break;
                 }
+                
+                // If handleApiError cleared the parse mode (fallback), we should restore the original text 
+                // IF the original text was modified for Markdown. 
+                // However, we don't know if it was modified upstream.
+                // But generally, if we fallback to NO parse mode, we want the raw text if possible, 
+                // or at least we want to avoid seeing backslashes.
+                // Since we can't easily "unescape", we just proceed.
+                // Ideally, AssistantUpdate should provide raw text, but it provides escaped text.
+                // If we really want to fix "visible backslashes" on fallback, we'd need to unescape.
+                // But for now, ensuring we don't double-escape is the main fix.
             } catch (Exception e) {
                 log.error("Unexpected error sending message to chat {}", textMessage.getChatId(), e);
                 break;
@@ -414,6 +427,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         }
 
         textMessage.setParseMode(originalParseMode);
+        textMessage.setText(originalText);
         return handleFallbackMessage(textMessage);
     }
     

@@ -112,9 +112,6 @@ public class MessageFormatter {
         text = text.replaceAll("\\*{3,}", "**");
         text = text.replaceAll("_{3,}", "__");
 
-        // Fix standalone periods that need escaping in MarkdownV2
-        text = text.replaceAll("(?<!\\\\)\\.(?![a-zA-Z0-9])", "\\\\.");
-
         return text;
     }
 

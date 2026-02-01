@@ -11,6 +11,7 @@ import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotUpdate;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.utils.BotDetectionUtils;
+import dev.ua.ikeepcalm.lumios.telegram.utils.MarkdownValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -190,7 +191,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                         responseFuture.thenAccept(response -> {
                             try {
                                 if (response != null) {
-                                    Message sentMessage = sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
+                                    Message sentMessage = sendMessage(MarkdownValidator.checkAndResolveMarkdown(response), ParseMode.MARKDOWN, update.getMessage());
 
                                     if (sentMessage != null) {
                                         try {
@@ -232,7 +233,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                 .thenAccept(response -> {
                                     try {
                                         if (response != null) {
-                                            Message sentMessage = sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
+                                            Message sentMessage = sendMessage(MarkdownValidator.checkAndResolveMarkdown(response), ParseMode.MARKDOWN, update.getMessage());
                                             
                                             if (sentMessage != null) {
                                                 try {
