@@ -4,8 +4,6 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MessageFormatter {
 
@@ -95,86 +93,11 @@ public class MessageFormatter {
     }
 
     /**
-     * Sanitizes AI-generated Markdown to prevent Telegram parsing errors
+     * Sanitizes AI-generated text for MarkdownV2 format.
+     * Use this for all AI responses to prevent Telegram parsing errors.
      */
-    public static String sanitizeMarkdownForAI(String text) {
-        if (text == null || text.isEmpty()) {
-            return text;
-        }
-
-        // Fix unclosed code blocks
-        text = fixUncloseCodeBlocks(text);
-
-        // Fix unclosed bold/italic markers
-        text = fixUnclosedFormatting(text);
-
-        // Remove triple or more consecutive formatting markers
-        text = text.replaceAll("\\*{3,}", "**");
-        text = text.replaceAll("_{3,}", "__");
-
-        return text;
-    }
-
-    /**
-     * Fixes unclosed code blocks in text
-     */
-    private static String fixUncloseCodeBlocks(String text) {
-        int tripleBacktickCount = countOccurrences(text, "```");
-        if (tripleBacktickCount % 2 != 0) {
-            text += "\n```";
-        }
-
-        int singleBacktickCount = countOccurrences(text, "`") - (tripleBacktickCount * 3);
-        if (singleBacktickCount % 2 != 0) {
-            text += "`";
-        }
-
-        return text;
-    }
-
-    /**
-     * Fixes unclosed bold and italic markers
-     */
-    private static String fixUnclosedFormatting(String text) {
-        // Fix bold markers (**)
-        int doubleStar = countNonEscapedOccurrences(text, "\\*\\*");
-        if (doubleStar % 2 != 0) {
-            text += "**";
-        }
-
-        // Fix italic markers (_)
-        int underscore = countNonEscapedOccurrences(text, "_");
-        if (underscore % 2 != 0) {
-            text += "_";
-        }
-
-        return text;
-    }
-
-    /**
-     * Counts occurrences of a substring
-     */
-    private static int countOccurrences(String text, String substring) {
-        int count = 0;
-        int index = 0;
-        while ((index = text.indexOf(substring, index)) != -1) {
-            count++;
-            index += substring.length();
-        }
-        return count;
-    }
-
-    /**
-     * Counts non-escaped occurrences using regex
-     */
-    private static int countNonEscapedOccurrences(String text, String regex) {
-        Pattern pattern = Pattern.compile("(?<!\\\\)" + regex);
-        Matcher matcher = pattern.matcher(text);
-        int count = 0;
-        while (matcher.find()) {
-            count++;
-        }
-        return count;
+    public static String sanitizeMarkdownV2(String text) {
+        return MarkdownV2Sanitizer.sanitize(text);
     }
 
     /**
@@ -288,7 +211,7 @@ public class MessageFormatter {
      */
     private static String sanitizeChunk(String chunk, String parseMode) {
         if (ParseMode.MARKDOWN.equals(parseMode) || ParseMode.MARKDOWNV2.equals(parseMode)) {
-            return sanitizeMarkdownForAI(chunk);
+            return sanitizeMarkdownV2(chunk);
         }
         return chunk;
     }

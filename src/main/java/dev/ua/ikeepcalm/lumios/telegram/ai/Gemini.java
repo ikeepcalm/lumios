@@ -1,9 +1,14 @@
 package dev.ua.ikeepcalm.lumios.telegram.ai;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TimetableService;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -16,9 +21,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.List;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
+import java.util.*;
 import java.util.concurrent.*;
 
 @Slf4j
@@ -31,14 +39,16 @@ public class Gemini {
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
     private final GeminiConversationService conversationService;
     private final RecordService recordService;
+    private final TimetableService timetableService;
 
     private static final int MAX_CACHE_ENTRIES = 10;
     private static final int MAX_IMAGE_SIZE = 1024 * 1024; // 1MB limit
     private final ConcurrentHashMap<String, byte[]> imageCache = new ConcurrentHashMap<>();
 
-    public Gemini(GeminiConversationService conversationService, RecordService recordService) {
+    public Gemini(GeminiConversationService conversationService, RecordService recordService, TimetableService timetableService) {
         this.conversationService = conversationService;
         this.recordService = recordService;
+        this.timetableService = timetableService;
     }
 
     public CompletableFuture<String> getChatResponse(String inputText, Long chatId) {
@@ -328,55 +338,173 @@ public class Gemini {
     private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat) {
         StringBuilder prompt = new StringBuilder();
 
-        // Current Date/Time
-        String currentDateTime = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        prompt.append("Current Date and Time: ").append(currentDateTime).append("\n\n");
+        // Current Date/Time and Week
+        LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/Kiev"));
+        LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
+        DayOfWeek currentDayOfWeek = currentDate.getDayOfWeek();
+        String currentDateTime = currentDate + " " + currentTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        String dayName = currentDayOfWeek.getDisplayName(TextStyle.FULL, new Locale("uk", "UA"));
+
+        prompt.append("=== CURRENT DATE & TIME ===\n");
+        prompt.append(currentDateTime).append(" (").append(dayName).append(")\n");
+        prompt.append("Academic week: ").append(WeekValidator.determineWeekDay()).append("\n\n");
 
         // Role and Identity
-        prompt.append("# Role and Identity\n\n");
-        prompt.append("Your responses must be **extremely concise, direct, and code-focused**.\n");
-        prompt.append("Do not waste tokens on pleasantries, conversational filler, or introductions unless explicitly asked.\n\n");
+        prompt.append("=== YOUR ROLE ===\n");
+        prompt.append("You are a helpful AI assistant in a Telegram group chat.\n");
+        prompt.append("Be concise, direct, and helpful. Avoid unnecessary pleasantries.\n\n");
 
         // Current context
-        prompt.append("# Current Context\n\n");
         if (chat != null) {
-            prompt.append("**Chat Environment:**\n");
-            prompt.append("- Chat name: ").append(chat.getName() != null ? chat.getName() : "Unnamed chat").append("\n");
+            prompt.append("=== CHAT ENVIRONMENT ===\n");
+            prompt.append("Chat: ").append(chat.getName() != null ? chat.getName() : "Unnamed chat").append("\n");
             if (chat.getDescription() != null && !chat.getDescription().isEmpty()) {
-                prompt.append("- Description: ").append(chat.getDescription()).append("\n");
+                prompt.append("Description: ").append(chat.getDescription()).append("\n");
+            }
+            if (chat.getBotNickname() != null && !chat.getBotNickname().isEmpty()) {
+                prompt.append("Your nickname in this chat: ").append(chat.getBotNickname()).append("\n");
             }
             prompt.append("\n");
+
+            // Add timetable context if available
+            String timetableContext = getTimetableContext(chat);
+            if (!timetableContext.isEmpty()) {
+                prompt.append(timetableContext);
+            }
         }
 
         if (user != null) {
-            prompt.append("**Current User:**\n");
+            prompt.append("=== CURRENT USER ===\n");
             String displayName = user.getFullName() != null ? user.getFullName() : user.getUsername();
-            prompt.append("- Name: ").append(displayName).append("\n");
-            prompt.append("- Activity level (reverence): ").append(user.getReverence());
-            prompt.append(" (higher values indicate more active participation)\n");
+            prompt.append("Name: ").append(displayName).append("\n");
+            prompt.append("Activity level: ").append(user.getReverence());
+            prompt.append(" (higher = more active in chat)\n");
             if (user.getCredits() > 0) {
-                prompt.append("- Available credits: ").append(user.getCredits()).append("\n");
+                prompt.append("Credits available: ").append(user.getCredits()).append("\n");
             }
             prompt.append("\n");
         }
 
-        // Output formatting
-        prompt.append("# Output Formatting & Style (CRITICAL)\n\n");
-        prompt.append("1. **Telegram Legacy Markdown:** You are communicating via a Telegram Bot using strict Legacy Markdown.\n");
-        prompt.append("   - **Bold:** `*text*`\n");
-        prompt.append("   - **Italic:** `_text_` (Avoid this if possible, it's prone to errors with underscores)\n");
-        prompt.append("   - **Inline Code:** ` `text` ` (Use this for ALL technical terms, variables, paths, etc.)\n");
-        prompt.append("   - **Code Blocks:** ```language\\ncode\\n```\n");
-        prompt.append("2. **Underscore Handling:** You MUST wrap any word containing an underscore in backticks. Example: `my_variable`, NOT my_variable. This is non-negotiable.\n");
-        prompt.append("3. **Conciseness:** \n");
-        prompt.append("   - If asked for code, provide ONLY the code and a minimal explanation.\n");
-        prompt.append("   - Do not say 'Here is the code' or 'I hope this helps'.\n");
-        prompt.append("   - Go straight to the point.\n");
-        prompt.append("4. **Language:** Ukrainian (unless asked in English).\n\n");
+        // Critical formatting rules
+        prompt.append("=== OUTPUT FORMATTING (CRITICAL) ===\n\n");
+        prompt.append("You MUST use Telegram MarkdownV2 format. Follow these rules EXACTLY:\n\n");
 
-        prompt.append("Your goal is to be a highly efficient, error-free coding companion. 💻");
+        prompt.append("1. CODE FORMATTING:\n");
+        prompt.append("   - Inline code: `code here`\n");
+        prompt.append("   - Code blocks: ```language\\ncode\\n```\n");
+        prompt.append("   - ALWAYS use backticks for: variables, file paths, technical terms, URLs\n");
+        prompt.append("   - Example: Use `my_variable` not my_variable\n\n");
+
+        prompt.append("2. TEXT FORMATTING:\n");
+        prompt.append("   - Bold: *text* or **text**\n");
+        prompt.append("   - Italic: _text_ or __text__\n");
+        prompt.append("   - IMPORTANT: Underscores in normal text will break formatting!\n");
+        prompt.append("   - If text contains _, [ ] ( ) or other special chars, wrap it in `code`\n\n");
+
+        prompt.append("3. SPECIAL CHARACTERS:\n");
+        prompt.append("   - These chars have special meaning: _ * [ ] ( ) ~ ` > # + - = | { } . !\n");
+        prompt.append("   - If you need to show them literally, wrap in backticks\n");
+        prompt.append("   - Example: Email should be: `user@example.com`\n\n");
+
+        prompt.append("4. SAFE PRACTICES:\n");
+        prompt.append("   - Use code blocks for multi-line code\n");
+        prompt.append("   - Use inline code for file names, paths, commands\n");
+        prompt.append("   - Keep formatting simple - prefer code blocks over complex markdown\n");
+        prompt.append("   - When in doubt, use backticks\n\n");
+
+        prompt.append("5. LANGUAGE:\n");
+        prompt.append("   - Respond in Ukrainian unless the user writes in English\n");
+        prompt.append("   - Be natural and conversational\n\n");
+
+        prompt.append("Remember: Your output will be processed by Telegram's MarkdownV2 parser. ");
+        prompt.append("Incorrect formatting will cause errors. When uncertain, use backticks.\n");
 
         return prompt.toString();
+    }
+
+    /**
+     * Gets timetable context for the current day and upcoming classes
+     */
+    private String getTimetableContext(LumiosChat chat) {
+        if (chat == null || !chat.isTimetableEnabled()) {
+            return "";
+        }
+
+        try {
+            StringBuilder context = new StringBuilder();
+            context.append("=== SCHEDULE & CLASSES ===\n");
+
+            // Get current week's timetable
+            TimetableEntry timetable = timetableService.findByChatIdAndWeekType(
+                chat.getChatId(),
+                WeekValidator.determineWeekDay()
+            );
+
+            LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
+            DayOfWeek today = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
+
+            // Find today's classes
+            List<ClassEntry> todaysClasses = new ArrayList<>();
+            for (DayEntry day : timetable.getDays()) {
+                if (day.getDayName().equals(today)) {
+                    todaysClasses.addAll(day.getClassEntries());
+                    break;
+                }
+            }
+
+            if (todaysClasses.isEmpty()) {
+                context.append("No classes scheduled for today.\n\n");
+                return context.toString();
+            }
+
+            // Sort by time
+            todaysClasses.sort(Comparator.comparing(ClassEntry::getStartTime));
+
+            // Find current class
+            ClassEntry currentClass = null;
+            ClassEntry nextClass = null;
+
+            for (ClassEntry classEntry : todaysClasses) {
+                if (currentTime.isAfter(classEntry.getStartTime()) &&
+                    currentTime.isBefore(classEntry.getEndTime())) {
+                    currentClass = classEntry;
+                } else if (currentTime.isBefore(classEntry.getStartTime())) {
+                    if (nextClass == null) {
+                        nextClass = classEntry;
+                    }
+                }
+            }
+
+            if (currentClass != null) {
+                context.append("CURRENT CLASS (").append(currentClass.getStartTime())
+                       .append("-").append(currentClass.getEndTime()).append("):\n");
+                context.append("  ").append(currentClass.getName())
+                       .append(" (").append(currentClass.getClassType()).append(")\n");
+            }
+
+            if (nextClass != null) {
+                context.append("NEXT CLASS (").append(nextClass.getStartTime())
+                       .append("-").append(nextClass.getEndTime()).append("):\n");
+                context.append("  ").append(nextClass.getName())
+                       .append(" (").append(nextClass.getClassType()).append(")\n");
+            }
+
+            // Add all today's classes summary
+            context.append("\nAll classes today:\n");
+            for (ClassEntry classEntry : todaysClasses) {
+                context.append("  ").append(classEntry.getStartTime())
+                       .append("-").append(classEntry.getEndTime())
+                       .append(" ").append(classEntry.getName())
+                       .append(" (").append(classEntry.getClassType()).append(")\n");
+            }
+
+            context.append("\n");
+            return context.toString();
+
+        } catch (Exception e) {
+            log.debug("Could not fetch timetable context: {}", e.getMessage());
+            return "";
+        }
     }
 
     public void destroy() {

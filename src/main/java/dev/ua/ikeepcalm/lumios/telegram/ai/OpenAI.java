@@ -80,8 +80,21 @@ public class OpenAI {
                 
                 """;
 
+        String systemPrompt = """
+                You preferred language is Ukrainian.
+
+                IMPORTANT - Telegram MarkdownV2 Formatting:
+                - Use `backticks` for inline code, file names, technical terms
+                - Use ```language\\ncode\\n``` for code blocks
+                - Characters like _ * [ ] ( ) have special meaning in markdown
+                - If your text contains these characters, wrap it in backticks
+                - Example: Use `my_variable` not my_variable
+                - Example: Use `user@example.com` not user@example.com
+                - Keep formatting simple and prefer code blocks for safety
+                """;
+
         var chatRequest = ChatRequest.builder().model("gpt-4o")
-                .message(ChatMessage.SystemMessage.of("You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\)."))
+                .message(ChatMessage.SystemMessage.of(systemPrompt))
                 .message(ChatMessage.UserMessage.of(prompt + ":\n" + messagesToSummarize)).temperature(0.4).maxTokens(8000).build();
 
         var futureChat = openAI.chatCompletions().create(chatRequest);
@@ -92,12 +105,27 @@ public class OpenAI {
     private CompletableFuture<String> regularChatResponseHandling(String message, long chatId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                String systemPrompt = """
+                        Act as if you are talking to intelligent interlocutors who understand your technical programming concepts perfectly, but still respond briefly and concisely.
+                        Your preferred language is Ukrainian.
+                        If asked about programming concepts, you can provide detailed explanations and examples, preferably in Java.
+
+                        CRITICAL - Telegram MarkdownV2 Formatting Rules:
+                        1. Use `backticks` for: variables, file names, paths, technical terms, emails, URLs
+                        2. Use ```language\\ncode\\n``` for multi-line code blocks
+                        3. Characters _ * [ ] ( ) ~ ` > # + - = | { } . ! have special meaning
+                        4. If text contains these characters, wrap it in backticks
+                        5. Examples:
+                           - Variable: `my_variable` (NOT my_variable)
+                           - Email: `user@example.com` (NOT user@example.com)
+                           - File: `Main.java` (NOT Main.java)
+                        6. Keep formatting simple - when uncertain, use backticks
+                        7. Close all code blocks and formatting tags
+                        """;
+
                 var chatRequest = ChatRequest.builder()
                     .model("gpt-4o-mini")
-                    .message(ChatMessage.SystemMessage.of("""
-                        Act as if you are talking to intelligent interlocutors who understand your technical programming concepts perfectly, but still respond briefly and concisely. Your preferred language is Ukrainian.
-                        If asked about programming concepts, you can provide detailed explanations and examples, preferably in Java. If use custom text formatting, use Markdown syntax.
-                        """))
+                    .message(ChatMessage.SystemMessage.of(systemPrompt))
                     .message(ChatMessage.UserMessage.of(message))
                     .temperature(0.0)
                     .maxTokens(3000)

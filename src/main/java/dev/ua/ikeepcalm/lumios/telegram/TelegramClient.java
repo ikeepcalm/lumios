@@ -333,11 +333,9 @@ public class TelegramClient extends OkHttpTelegramClient {
             return sendChunkedMessage(textMessage);
         }
 
-        // Sanitize Markdown for AI responses
-        // Only sanitize if NOT using legacy Markdown (which is now handled by MarkdownValidator upstream)
-        // or if explicitly using MarkdownV2 which might need MessageFormatter's logic.
+        // Sanitize Markdown for AI responses using MarkdownV2
         if (ParseMode.MARKDOWNV2.equals(textMessage.getParseMode())) {
-            textMessage.setText(MessageFormatter.sanitizeMarkdownForAI(textMessage.getText()));
+            textMessage.setText(MessageFormatter.sanitizeMarkdownV2(textMessage.getText()));
         }
 
         return sendTextMessageWithRetry(textMessage, 3);
