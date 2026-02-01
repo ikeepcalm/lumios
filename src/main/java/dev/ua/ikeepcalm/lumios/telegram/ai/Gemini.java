@@ -45,6 +45,15 @@ public class Gemini {
     private static final int MAX_IMAGE_SIZE = 1024 * 1024; // 1MB limit
     private final ConcurrentHashMap<String, byte[]> imageCache = new ConcurrentHashMap<>();
 
+    // Models to try in order (fallback on 429 rate limit errors)
+    private static final String[] GEMINI_MODELS = {
+        "gemini-2.5-flash-lite",
+        "gemini-2.5-flash",
+        "gemini-3-flash",
+        "gemma-3-12b",
+        "gemma-3-27b"
+    };
+
     public Gemini(GeminiConversationService conversationService, RecordService recordService, TimetableService timetableService) {
         this.conversationService = conversationService;
         this.recordService = recordService;
@@ -103,39 +112,67 @@ public class Gemini {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                for (String key : apiKey) {
-                    try {
-                        JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat);
-                        log.debug("Payload size: {} bytes", jsonPayload.toString().length());
+                Exception lastException = null;
 
-                        URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + key);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setRequestMethod("POST");
-                        connection.setRequestProperty("Content-Type", "application/json");
-                        connection.setDoOutput(true);
-                        connection.setConnectTimeout(30000);
-                        connection.setReadTimeout(30000);
+                // Try each model in order
+                for (String model : GEMINI_MODELS) {
+                    for (String key : apiKey) {
+                        try {
+                            JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, model);
+                            log.debug("Trying model {} with payload size: {} bytes", model, jsonPayload.toString().length());
 
-                        try (OutputStream os = connection.getOutputStream()) {
-                            os.write(jsonPayload.toString().getBytes());
-                            os.flush();
-                        }
+                            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setRequestMethod("POST");
+                            connection.setRequestProperty("Content-Type", "application/json");
+                            connection.setDoOutput(true);
+                            connection.setConnectTimeout(30000);
+                            connection.setReadTimeout(30000);
 
-                        StringBuilder response = new StringBuilder();
-                        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                            String inputLine;
-                            while ((inputLine = in.readLine()) != null) {
-                                response.append(inputLine);
+                            try (OutputStream os = connection.getOutputStream()) {
+                                os.write(jsonPayload.toString().getBytes());
+                                os.flush();
                             }
+
+                            int responseCode = connection.getResponseCode();
+
+                            // Check for rate limit error
+                            if (responseCode == 429) {
+                                log.warn("Rate limit (429) reached for model {} with key {}, trying next option", model, key.substring(0, Math.min(8, key.length())));
+                                lastException = new RuntimeException("Rate limit reached for model " + model);
+                                continue; // Try next key for this model
+                            }
+
+                            // Check for other HTTP errors
+                            if (responseCode >= 400) {
+                                log.error("HTTP error {} for model {} with key {}", responseCode, model, key.substring(0, Math.min(8, key.length())));
+                                lastException = new RuntimeException("HTTP error " + responseCode + " for model " + model);
+                                continue; // Try next key
+                            }
+
+                            // Success - read response
+                            StringBuilder response = new StringBuilder();
+                            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                                String inputLine;
+                                while ((inputLine = in.readLine()) != null) {
+                                    response.append(inputLine);
+                                }
+                            }
+
+                            log.info("Successfully got response from model {} with key {}", model, key.substring(0, Math.min(8, key.length())));
+                            return extractTextFromResponse(response.toString());
+
+                        } catch (Exception e) {
+                            log.error("Error with model {} and key {}: {}", model, key.substring(0, Math.min(8, key.length())), e.getMessage());
+                            lastException = e;
                         }
-
-                        return extractTextFromResponse(response.toString());
-
-                    } catch (Exception e) {
-                        log.error("Error with key {}: {}", key, e.getMessage());
                     }
+                    // All keys failed for this model, try next model
+                    log.warn("All API keys failed for model {}, trying next model", model);
                 }
-                throw new RuntimeException("Failed to get response from Gemini with all provided API keys");
+
+                // All models and keys failed
+                throw new RuntimeException("Failed to get response from Gemini with all models and API keys", lastException);
             } finally {
                 if (finalImageKey != null) {
                     imageCache.remove(finalImageKey);
@@ -147,7 +184,7 @@ public class Gemini {
 
 
     @NotNull
-    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat) {
+    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat, String modelName) {
         JSONArray conversationContext;
         if (replyToMessageId != null) {
             conversationContext = conversationService.getReplyChainContext(chatId, replyToMessageId);
@@ -196,8 +233,8 @@ public class Gemini {
         JSONArray systemParts = new JSONArray();
         JSONObject systemPart = new JSONObject();
 
-        // Build enhanced system prompt with context
-        String systemPrompt = buildEnhancedSystemPrompt(user, chat);
+        // Build enhanced system prompt with context including current model
+        String systemPrompt = buildEnhancedSystemPrompt(user, chat, modelName);
         systemPart.put("text", systemPrompt);
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
@@ -262,39 +299,63 @@ public class Gemini {
                 """ + ":\n" + messagesToSummarize;
 
         JSONObject jsonPayload = createSummaryPayload(prompt);
+        Exception lastException = null;
 
-        for (String key : apiKey) {
-            try {
-                URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + key);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setDoOutput(true);
-                connection.setConnectTimeout(30000);
-                connection.setReadTimeout(30000);
+        // Try each model in order
+        for (String model : GEMINI_MODELS) {
+            for (String key : apiKey) {
+                try {
+                    log.debug("Trying model {} for summary generation", model);
 
-                try (OutputStream os = connection.getOutputStream()) {
-                    os.write(jsonPayload.toString().getBytes());
-                    os.flush();
-                }
+                    URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.setDoOutput(true);
+                    connection.setConnectTimeout(30000);
+                    connection.setReadTimeout(30000);
 
-                StringBuilder response = new StringBuilder();
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                    String inputLine;
-                    while ((inputLine = in.readLine()) != null) {
-                        response.append(inputLine);
+                    try (OutputStream os = connection.getOutputStream()) {
+                        os.write(jsonPayload.toString().getBytes());
+                        os.flush();
                     }
-                }
 
-                return extractTextFromResponse(response.toString());
-            } catch (Exception e) {
-                log.error("Failed to get summary with key: {}", key.substring(0, 8) + "...", e);
-                if (key.equals(apiKey.get(apiKey.size() - 1))) {
-                    throw e;
+                    int responseCode = connection.getResponseCode();
+
+                    // Check for rate limit error
+                    if (responseCode == 429) {
+                        log.warn("Rate limit (429) for summary with model {}, trying next option", model);
+                        lastException = new RuntimeException("Rate limit reached for model " + model);
+                        continue;
+                    }
+
+                    // Check for other HTTP errors
+                    if (responseCode >= 400) {
+                        log.error("HTTP error {} for summary with model {}", responseCode, model);
+                        lastException = new RuntimeException("HTTP error " + responseCode);
+                        continue;
+                    }
+
+                    StringBuilder response = new StringBuilder();
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                        String inputLine;
+                        while ((inputLine = in.readLine()) != null) {
+                            response.append(inputLine);
+                        }
+                    }
+
+                    log.info("Successfully generated summary with model {}", model);
+                    return extractTextFromResponse(response.toString());
+
+                } catch (Exception e) {
+                    log.error("Failed to get summary with model {} and key: {}", model, key.substring(0, Math.min(8, key.length())) + "...", e);
+                    lastException = e;
                 }
             }
+            log.warn("All API keys failed for summary with model {}, trying next model", model);
         }
-        throw new RuntimeException("All API keys failed for summary generation");
+
+        throw new RuntimeException("All models and API keys failed for summary generation", lastException);
     }
 
     private JSONObject createSummaryPayload(String prompt) {
@@ -335,7 +396,7 @@ public class Gemini {
     /**
      * Builds an enhanced system prompt with context about the user and chat
      */
-    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat) {
+    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat, String modelName) {
         StringBuilder prompt = new StringBuilder();
 
         // Current Date/Time and Week
@@ -348,6 +409,11 @@ public class Gemini {
         prompt.append("=== CURRENT DATE & TIME ===\n");
         prompt.append(currentDateTime).append(" (").append(dayName).append(")\n");
         prompt.append("Academic week: ").append(WeekValidator.determineWeekDay()).append("\n\n");
+
+        // Current AI Model
+        prompt.append("=== YOUR CURRENT MODEL ===\n");
+        prompt.append("You are currently running on: ").append(modelName).append("\n");
+        prompt.append("If asked which model you are, respond with this exact model name.\n\n");
 
         // Role and Identity
         prompt.append("=== YOUR ROLE ===\n");
