@@ -2,7 +2,6 @@ package dev.ua.ikeepcalm.lumios.telegram.interactions.commands.timetable;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
-import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
@@ -15,8 +14,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-
-import java.util.List;
 
 @Component
 @BotCommand(command = "week")
@@ -34,17 +31,7 @@ public class WeekCommand extends ServicesShortcut implements Interaction {
             for (DayEntry dayEntry : timetableEntry.getDays()) {
                 if (!dayEntry.getClassEntries().isEmpty()) {
                     messageBuilder.append("*{").append(dayEntry.getDayName()).append("}*\n");
-                    List<ClassEntry> classEntries = dayEntry.getClassEntries();
-                    for (int i = 0; i < classEntries.size(); i++) {
-                        ClassEntry classEntry = classEntries.get(i);
-                        messageBuilder.append("*").append(classEntry.getStartTime()).append(" - ").append(classEntry.getEndTime()).append("*\n");
-                        messageBuilder.append(TimetableParser.parseClassEmoji(classEntry.getClassType())).append(" [").append(classEntry.getName()).append("](")
-                                .append(classEntry.getUrl()).append(")");
-                        if (i < classEntries.size() - 1) {
-                            messageBuilder.append("\n\n");
-                        }
-                    }
-                    messageBuilder.append("\n\n");
+                    messageBuilder.append(TimetableParser.formatClassEntriesGroupedByTime(dayEntry.getClassEntries()));
                 }
             }
 

@@ -8,10 +8,14 @@ import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.ClassType;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.wrappers.TimetableWrapper;
 
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TimetableParser {
 
@@ -46,6 +50,31 @@ public class TimetableParser {
             case "LAB" -> "\uD83D\uDFE2";
             default -> "?";
         };
+    }
+
+    public static String formatClassEntriesGroupedByTime(List<ClassEntry> classEntries) {
+        if (classEntries == null || classEntries.isEmpty()) {
+            return "";
+        }
+
+        Map<String, List<ClassEntry>> groupedByTime = new LinkedHashMap<>();
+        for (ClassEntry entry : classEntries) {
+            String timeSlot = entry.getStartTime() + " - " + entry.getEndTime();
+            groupedByTime.computeIfAbsent(timeSlot, k -> new ArrayList<>()).add(entry);
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, List<ClassEntry>> group : groupedByTime.entrySet()) {
+            result.append("*").append(group.getKey()).append("*\n");
+            for (ClassEntry entry : group.getValue()) {
+                result.append(parseClassEmoji(entry.getClassType()))
+                        .append(" [").append(entry.getName()).append("](")
+                        .append(entry.getUrl()).append(")\n");
+            }
+            result.append("\n");
+        }
+
+        return result.toString();
     }
 
     private static class LocalTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer {
