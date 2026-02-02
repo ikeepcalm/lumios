@@ -50,8 +50,7 @@ public class Gemini {
         "gemini-2.5-flash-lite",
         "gemini-2.5-flash",
         "gemini-3-flash",
-        "gemma-3-12b",
-        "gemma-3-27b"
+        "gemma-3-27b-it"
     };
 
     public Gemini(GeminiConversationService conversationService, RecordService recordService, TimetableService timetableService) {
