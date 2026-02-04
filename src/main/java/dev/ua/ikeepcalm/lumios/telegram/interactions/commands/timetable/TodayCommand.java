@@ -49,6 +49,11 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
                 return;
             }
 
+            if (chat.isPlainTimetableEnabled()) {
+                sendMessage(TimetablePagedUtil.buildPlainDayMessage(todayClasses, "РОЗКЛАД НА СЬОГОДНІ"), ParseMode.MARKDOWN, message);
+                return;
+            }
+
             // Group classes by time slot
             Map<String, List<ClassEntry>> groupedByTime = TimetableParser.groupClassesByTime(todayClasses);
 

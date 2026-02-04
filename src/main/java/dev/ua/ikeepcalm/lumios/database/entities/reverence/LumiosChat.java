@@ -43,6 +43,9 @@ public class LumiosChat {
     @Column(columnDefinition = "boolean default false")
     private boolean isAiEnabled;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean isPlainTimetableEnabled;
+
     @Column
     private AiModel aiModel;
 

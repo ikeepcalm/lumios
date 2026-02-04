@@ -69,6 +69,21 @@ public class SettingsMarkupUtil {
         thirdRow.add(aiEnabled);
 
         keyboard.add(firstRow);
+
+        if (lumiosChat.isTimetableEnabled()) {
+            InlineKeyboardRow plainRow = new InlineKeyboardRow();
+            InlineKeyboardButton plainTimetable;
+            if (lumiosChat.isPlainTimetableEnabled()) {
+                plainTimetable = new InlineKeyboardButton("Розклад текстом ✅");
+                plainTimetable.setCallbackData("settings-plain-timetable-disable");
+            } else {
+                plainTimetable = new InlineKeyboardButton("Розклад текстом ❌");
+                plainTimetable.setCallbackData("settings-plain-timetable-enable");
+            }
+            plainRow.add(plainTimetable);
+            keyboard.add(plainRow);
+        }
+
         keyboard.add(secondRow);
         keyboard.add(thirdRow);
         keyboard.add(fourthRow);

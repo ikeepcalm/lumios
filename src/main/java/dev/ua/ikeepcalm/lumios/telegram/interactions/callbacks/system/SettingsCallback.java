@@ -33,6 +33,12 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
             chat.setTimetableEnabled(false);
         }
 
+        if (data.equals("settings-plain-timetable-enable")) {
+            chat.setPlainTimetableEnabled(true);
+        } else if (data.equals("settings-plain-timetable-disable")) {
+            chat.setPlainTimetableEnabled(false);
+        }
+
         if (data.equals("settings-dice-enable")) {
             chat.setDiceEnabled(true);
         } else if (data.equals("settings-dice-disable")) {

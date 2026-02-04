@@ -49,6 +49,11 @@ public class TomorrowCommand extends ServicesShortcut implements Interaction {
                 return;
             }
 
+            if (chat.isPlainTimetableEnabled()) {
+                sendMessage(TimetablePagedUtil.buildPlainDayMessage(tomorrowClasses, "РОЗКЛАД НА ЗАВТРА"), ParseMode.MARKDOWN, message);
+                return;
+            }
+
             // Group classes by time slot
             Map<String, List<ClassEntry>> groupedByTime = TimetableParser.groupClassesByTime(tomorrowClasses);
 

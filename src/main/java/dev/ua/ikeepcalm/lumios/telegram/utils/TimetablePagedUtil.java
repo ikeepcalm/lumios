@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -208,5 +209,59 @@ public class TimetablePagedUtil {
             // Ignore parse errors
         }
         return null;
+    }
+
+    public static String getDayNameUkrainian(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> "Понеділок";
+            case TUESDAY -> "Вівторок";
+            case WEDNESDAY -> "Середа";
+            case THURSDAY -> "Четвер";
+            case FRIDAY -> "П'ятниця";
+            case SATURDAY -> "Субота";
+            case SUNDAY -> "Неділя";
+        };
+    }
+
+    public static String buildPlainDayMessage(List<ClassEntry> classes, String title) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("📅 *").append(title).append("* 📅\n\n");
+        for (ClassEntry entry : classes) {
+            builder.append(TimetableParser.parseClassEmoji(entry.getClassType()))
+                    .append(" *").append(entry.getStartTime()).append(" - ").append(entry.getEndTime()).append("* ")
+                    .append(entry.getName()).append("\n");
+        }
+        return builder.toString();
+    }
+
+    public static String buildWeekDayMessage(DayOfWeek dayOfWeek, List<ClassEntry> classes, int dayIndex, int totalDays) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("📅 *РОЗКЛАД НА ТИЖДЕНЬ* 📅\n\n");
+        builder.append("*").append(getDayNameUkrainian(dayOfWeek)).append("* (").append(dayIndex).append("/").append(totalDays).append(")\n\n");
+        for (ClassEntry entry : classes) {
+            builder.append(TimetableParser.parseClassEmoji(entry.getClassType()))
+                    .append(" *").append(entry.getStartTime()).append(" - ").append(entry.getEndTime()).append("* ")
+                    .append(entry.getName()).append("\n");
+        }
+        return builder.toString();
+    }
+
+    public static InlineKeyboardMarkup buildWeekDayKeyboard(int page, int totalPages) {
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        if (totalPages > 1) {
+            InlineKeyboardRow navRow = new InlineKeyboardRow();
+            if (page > 1) {
+                InlineKeyboardButton back = new InlineKeyboardButton("⬅️");
+                back.setCallbackData("timetable-week-" + page + "-back");
+                navRow.add(back);
+            }
+            if (page < totalPages) {
+                InlineKeyboardButton forward = new InlineKeyboardButton("➡️");
+                forward.setCallbackData("timetable-week-" + page + "-forward");
+                navRow.add(forward);
+            }
+            keyboard.add(navRow);
+        }
+        return new InlineKeyboardMarkup(keyboard);
     }
 }

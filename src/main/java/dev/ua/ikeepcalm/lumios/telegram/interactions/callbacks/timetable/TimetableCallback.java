@@ -21,6 +21,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
 import java.util.Map;
 
 @Component
@@ -40,37 +41,32 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
         int newPage = direction.equals("forward") ? currentPage + 1 : currentPage - 1;
 
         try {
-            // Fetch timetable data
             TimetableEntry timetableEntry = timetableService.findByChatIdAndWeekType(
                     callbackQuery.getMessage().getChatId(),
                     WeekValidator.determineWeekDay()
             );
 
-            // Get classes based on command type
-            List<ClassEntry> classes = getClassesForCommandType(timetableEntry, commandType);
+            if ("week".equals(commandType)) {
+                handleWeekNavigation(callbackQuery, timetableEntry, newPage);
+                return;
+            }
 
+            List<ClassEntry> classes = getClassesForCommandType(timetableEntry, commandType);
             if (classes.isEmpty()) {
                 return;
             }
 
-            // Group classes by time slot
             Map<String, List<ClassEntry>> groupedByTime = TimetableParser.groupClassesByTime(classes);
             List<String> timeSlots = new ArrayList<>(groupedByTime.keySet());
-
-            // Validate page number
             int maxPage = timeSlots.size();
             if (newPage < 1 || newPage > maxPage) {
                 return;
             }
 
-            // Build message text
             String title = getTitleForCommandType(commandType);
             String messageText = TimetablePagedUtil.buildPagedTimetableMessage(groupedByTime, newPage, title);
-
-            // Build keyboard
             List<ClassEntry> pageClasses = groupedByTime.get(timeSlots.get(newPage - 1));
 
-            // Edit message
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(callbackQuery.getMessage().getChatId());
             editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
@@ -85,6 +81,30 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
         }
     }
 
+    private void handleWeekNavigation(CallbackQuery callbackQuery, TimetableEntry timetableEntry, int newPage) {
+        List<DayEntry> daysWithClasses = timetableEntry.getDays().stream()
+                .filter(day -> !day.getClassEntries().isEmpty())
+                .sorted(Comparator.comparingInt(day -> day.getDayName().getValue()))
+                .toList();
+
+        if (newPage < 1 || newPage > daysWithClasses.size()) {
+            return;
+        }
+
+        DayEntry dayEntry = daysWithClasses.get(newPage - 1);
+        String messageText = TimetablePagedUtil.buildWeekDayMessage(
+                dayEntry.getDayName(), dayEntry.getClassEntries(), newPage, daysWithClasses.size());
+
+        EditMessage editMessage = new EditMessage();
+        editMessage.setChatId(callbackQuery.getMessage().getChatId());
+        editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+        editMessage.setText(messageText);
+        editMessage.setParseMode(ParseMode.MARKDOWN);
+        editMessage.setReplyKeyboard(TimetablePagedUtil.buildWeekDayKeyboard(newPage, daysWithClasses.size()));
+
+        editMessage(editMessage);
+    }
+
     private List<ClassEntry> getClassesForCommandType(TimetableEntry timetableEntry, String commandType) {
         return switch (commandType) {
             case "today" -> {
@@ -94,13 +114,6 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
             case "tomorrow" -> {
                 DayOfWeek tomorrow = LocalDate.now().plusDays(1).getDayOfWeek();
                 yield getClassesForDay(timetableEntry, tomorrow);
-            }
-            case "week" -> {
-                List<ClassEntry> allClasses = new ArrayList<>();
-                for (DayEntry dayEntry : timetableEntry.getDays()) {
-                    allClasses.addAll(dayEntry.getClassEntries());
-                }
-                yield allClasses;
             }
             default -> new ArrayList<>();
         };
