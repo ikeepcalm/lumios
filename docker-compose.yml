@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: lumios-bot
+    cpuset: "8-19"
     deploy:
       resources:
         limits:

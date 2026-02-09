@@ -108,6 +108,7 @@ public class Gemini {
         }
 
         final String finalImageKey = imageKey;
+        final boolean needsTimetableContext = containsTimetableKeywords(inputText);
 
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -117,7 +118,7 @@ public class Gemini {
                 for (String model : GEMINI_MODELS) {
                     for (String key : apiKey) {
                         try {
-                            JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, model);
+                            JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, model, needsTimetableContext);
                             log.debug("Trying model {} with payload size: {} bytes", model, jsonPayload.toString().length());
 
                             URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
@@ -183,7 +184,7 @@ public class Gemini {
 
 
     @NotNull
-    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat, String modelName) {
+    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat, String modelName, boolean includeTimetableContext) {
         JSONArray conversationContext;
         if (replyToMessageId != null) {
             conversationContext = conversationService.getReplyChainContext(chatId, replyToMessageId);
@@ -233,7 +234,7 @@ public class Gemini {
         JSONObject systemPart = new JSONObject();
 
         // Build enhanced system prompt with context including current model
-        String systemPrompt = buildEnhancedSystemPrompt(user, chat, modelName);
+        String systemPrompt = buildEnhancedSystemPrompt(user, chat, modelName, includeTimetableContext);
         systemPart.put("text", systemPrompt);
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
@@ -241,7 +242,7 @@ public class Gemini {
 
         JSONObject genConfig = new JSONObject();
         genConfig.put("temperature", 0.8);
-        genConfig.put("maxOutputTokens", 900);
+        genConfig.put("maxOutputTokens", 2048); // Increased from 900 to allow longer responses
         genConfig.put("topP", 0.95);
         genConfig.put("topK", 64);
 
@@ -259,7 +260,23 @@ public class Gemini {
         try {
             JSONObject jsonObject = new JSONObject(jsonResponse);
             JSONArray candidates = jsonObject.getJSONArray("candidates");
-            JSONObject content = candidates.getJSONObject(0).getJSONObject("content");
+            JSONObject candidate = candidates.getJSONObject(0);
+
+            // Check finish reason to detect truncation
+            if (candidate.has("finishReason")) {
+                String finishReason = candidate.getString("finishReason");
+                log.debug("Response finish reason: {}", finishReason);
+
+                if ("MAX_TOKENS".equals(finishReason)) {
+                    log.warn("Response was truncated due to MAX_TOKENS limit");
+                } else if ("SAFETY".equals(finishReason)) {
+                    log.warn("Response was blocked due to safety filters");
+                } else if (!"STOP".equals(finishReason)) {
+                    log.warn("Unexpected finish reason: {}", finishReason);
+                }
+            }
+
+            JSONObject content = candidate.getJSONObject("content");
             JSONArray parts = content.getJSONArray("parts");
             return parts.getJSONObject(0).getString("text");
         } catch (Exception e) {
@@ -395,7 +412,7 @@ public class Gemini {
     /**
      * Builds an enhanced system prompt with context about the user and chat
      */
-    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat, String modelName) {
+    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat, String modelName, boolean includeTimetableContext) {
         StringBuilder prompt = new StringBuilder();
 
         // Current Date/Time and Week
@@ -431,10 +448,16 @@ public class Gemini {
             }
             prompt.append("\n");
 
-            // Add timetable context if available
-            String timetableContext = getTimetableContext(chat);
-            if (!timetableContext.isEmpty()) {
-                prompt.append(timetableContext);
+            // Add timetable context if requested and available
+            if (includeTimetableContext) {
+                String timetableContext = getTimetableContext(chat);
+                if (!timetableContext.isEmpty()) {
+                    prompt.append(timetableContext);
+                } else {
+                    // Explicitly tell the AI that timetable is not available
+                    prompt.append("=== SCHEDULE & CLASSES ===\n");
+                    prompt.append("Timetable information is not available for this chat.\n\n");
+                }
             }
         }
 
@@ -574,9 +597,48 @@ public class Gemini {
             return context.toString();
 
         } catch (Exception e) {
-            log.debug("Could not fetch timetable context: {}", e.getMessage());
+            log.warn("Could not fetch timetable context for chat {}: {}", chat.getChatId(), e.getMessage());
+            log.debug("Timetable fetch error details", e);
             return "";
         }
+    }
+
+    /**
+     * Checks if the input text contains timetable-related keywords
+     */
+    private boolean containsTimetableKeywords(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+
+        String lowerText = text.toLowerCase();
+
+        // Ukrainian keywords for timetable queries
+        String[] keywords = {
+            "розклад",      // schedule
+            "пара", "пари", // class/classes
+            "заняття",      // lessons
+            "лекція", "лекції", // lecture/lectures
+            "практика",     // practice
+            "сьогодні",     // today
+            "завтра",       // tomorrow
+            "тиждень",      // week
+            "урок", "уроки", // lesson/lessons
+            "коли пара",    // when is class
+            "яка пара",     // what class
+            "який розклад", // what schedule
+            "наступна пара", // next class
+            "зараз пара"    // current class
+        };
+
+        for (String keyword : keywords) {
+            if (lowerText.contains(keyword)) {
+                log.debug("Timetable keyword detected: {}", keyword);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void destroy() {

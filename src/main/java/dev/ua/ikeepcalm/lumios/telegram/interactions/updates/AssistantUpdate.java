@@ -191,12 +191,18 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                         responseFuture.thenAccept(response -> {
                             try {
                                 if (response != null) {
-                                    Message sentMessage = sendMessage(MessageFormatter.sanitizeMarkdownV2(response), ParseMode.MARKDOWNV2, update.getMessage());
+                                    // Split long messages into chunks
+                                    List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2);
+                                    Message lastSentMessage = null;
 
-                                    if (sentMessage != null) {
+                                    for (String chunk : chunks) {
+                                        lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage());
+                                    }
+
+                                    if (lastSentMessage != null) {
                                         try {
                                             MessageRecord botMessageRecord = new MessageRecord();
-                                            botMessageRecord.setMessageId(Long.valueOf(sentMessage.getMessageId()));
+                                            botMessageRecord.setMessageId(Long.valueOf(lastSentMessage.getMessageId()));
                                             botMessageRecord.setChatId(chat.getChatId());
                                             botMessageRecord.setText(response);
                                             botMessageRecord.setDate(LocalDateTime.now());
@@ -233,12 +239,18 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                 .thenAccept(response -> {
                                     try {
                                         if (response != null) {
-                                            Message sentMessage = sendMessage(MessageFormatter.sanitizeMarkdownV2(response), ParseMode.MARKDOWNV2, update.getMessage());
-                                            
-                                            if (sentMessage != null) {
+                                            // Split long messages into chunks
+                                            List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2);
+                                            Message lastSentMessage = null;
+
+                                            for (String chunk : chunks) {
+                                                lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage());
+                                            }
+
+                                            if (lastSentMessage != null) {
                                                 try {
                                                     MessageRecord botMessageRecord = new MessageRecord();
-                                                    botMessageRecord.setMessageId(Long.valueOf(sentMessage.getMessageId()));
+                                                    botMessageRecord.setMessageId(Long.valueOf(lastSentMessage.getMessageId()));
                                                     botMessageRecord.setChatId(chat.getChatId());
                                                     botMessageRecord.setText(response);
                                                     botMessageRecord.setDate(LocalDateTime.now());
@@ -247,7 +259,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                                     log.error("Failed to save bot message to database", e);
                                                 }
                                             }
-                                            
+
                                             chat.setCommunicationLimit(chat.getCommunicationLimit() - 1);
                                             chatService.save(chat);
                                         }
