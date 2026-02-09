@@ -477,7 +477,8 @@ public class Gemini {
         prompt.append("=== OUTPUT FORMATTING (CRITICAL) ===\n\n");
         prompt.append("IMPORTANT: Do NOT manually escape any special characters!\n");
         prompt.append("The system will automatically handle all escaping for Telegram.\n");
-        prompt.append("Just write naturally and use backticks for code/technical terms.\n\n");
+        prompt.append("Just write naturally and use backticks for code/technical terms.\n");
+        prompt.append("When providing URLs (like class links), format them as: [Link text](URL)\n\n");
 
         prompt.append("1. CODE FORMATTING:\n");
         prompt.append("   - Inline code: `code here`\n");
@@ -575,6 +576,9 @@ public class Gemini {
                        .append("-").append(currentClass.getEndTime()).append("):\n");
                 context.append("  ").append(currentClass.getName())
                        .append(" (").append(currentClass.getClassType()).append(")\n");
+                if (currentClass.getUrl() != null && !currentClass.getUrl().isEmpty()) {
+                    context.append("  URL: ").append(currentClass.getUrl()).append("\n");
+                }
             }
 
             if (nextClass != null) {
@@ -582,6 +586,9 @@ public class Gemini {
                        .append("-").append(nextClass.getEndTime()).append("):\n");
                 context.append("  ").append(nextClass.getName())
                        .append(" (").append(nextClass.getClassType()).append(")\n");
+                if (nextClass.getUrl() != null && !nextClass.getUrl().isEmpty()) {
+                    context.append("  URL: ").append(nextClass.getUrl()).append("\n");
+                }
             }
 
             // Add all today's classes summary
@@ -590,7 +597,11 @@ public class Gemini {
                 context.append("  ").append(classEntry.getStartTime())
                        .append("-").append(classEntry.getEndTime())
                        .append(" ").append(classEntry.getName())
-                       .append(" (").append(classEntry.getClassType()).append(")\n");
+                       .append(" (").append(classEntry.getClassType()).append(")");
+                if (classEntry.getUrl() != null && !classEntry.getUrl().isEmpty()) {
+                    context.append(" - URL: ").append(classEntry.getUrl());
+                }
+                context.append("\n");
             }
 
             context.append("\n");

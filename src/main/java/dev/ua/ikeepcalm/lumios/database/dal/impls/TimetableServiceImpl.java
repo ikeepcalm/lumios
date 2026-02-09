@@ -6,10 +6,13 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TimetableService;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.ClassEntryRepository;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.TimetableRepository;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,9 +69,17 @@ public class TimetableServiceImpl implements TimetableService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TimetableEntry findByChatIdAndWeekTypeWithDays(Long chatId, WeekType weekType) throws NoSuchEntityException {
         Optional<TimetableEntry> timetable = timetableRepository.findByChatAndWeekTypeWithDays(chatService.findByChatId(chatId), weekType);
-        return timetable.orElseThrow(() -> new NoSuchEntityException("Timetable for chat with id " + chatId + " not found!"));
+        TimetableEntry entry = timetable.orElseThrow(() -> new NoSuchEntityException("Timetable for chat with id " + chatId + " not found!"));
+
+        // Eagerly initialize the classEntries collections to avoid lazy loading issues in async context
+        for (DayEntry day : entry.getDays()) {
+            Hibernate.initialize(day.getClassEntries());
+        }
+
+        return entry;
     }
 
     @Override

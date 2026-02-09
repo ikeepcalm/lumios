@@ -17,8 +17,7 @@ public interface TimetableRepository extends CrudRepository<TimetableEntry, Long
     Optional<TimetableEntry> findByChatAndWeekType(LumiosChat chat, WeekType weekType);
 
     @Query("SELECT DISTINCT t FROM timetableEntries t " +
-           "LEFT JOIN FETCH t.days d " +
-           "LEFT JOIN FETCH d.classEntries " +
+           "LEFT JOIN FETCH t.days " +
            "WHERE t.chat = :chat AND t.weekType = :weekType")
     Optional<TimetableEntry> findByChatAndWeekTypeWithDays(@Param("chat") LumiosChat chat, @Param("weekType") WeekType weekType);
 
