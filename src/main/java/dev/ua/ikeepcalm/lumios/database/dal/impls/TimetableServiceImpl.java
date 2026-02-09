@@ -66,6 +66,12 @@ public class TimetableServiceImpl implements TimetableService {
     }
 
     @Override
+    public TimetableEntry findByChatIdAndWeekTypeWithDays(Long chatId, WeekType weekType) throws NoSuchEntityException {
+        Optional<TimetableEntry> timetable = timetableRepository.findByChatAndWeekTypeWithDays(chatService.findByChatId(chatId), weekType);
+        return timetable.orElseThrow(() -> new NoSuchEntityException("Timetable for chat with id " + chatId + " not found!"));
+    }
+
+    @Override
     public List<TimetableEntry> findAllByChatId(Long chatId) throws NoSuchEntityException {
         List<TimetableEntry> timetableEntries = timetableRepository.findAllByChat(chatService.findByChatId(chatId));
         if (timetableEntries.isEmpty()) {

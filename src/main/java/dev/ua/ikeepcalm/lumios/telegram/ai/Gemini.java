@@ -529,8 +529,8 @@ public class Gemini {
             StringBuilder context = new StringBuilder();
             context.append("=== SCHEDULE & CLASSES ===\n");
 
-            // Get current week's timetable
-            TimetableEntry timetable = timetableService.findByChatIdAndWeekType(
+            // Get current week's timetable with eagerly loaded days and classes
+            TimetableEntry timetable = timetableService.findByChatIdAndWeekTypeWithDays(
                 chat.getChatId(),
                 WeekValidator.determineWeekDay()
             );

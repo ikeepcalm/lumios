@@ -22,6 +22,8 @@ public interface TimetableService {
 
     TimetableEntry findByChatIdAndWeekType(Long chatId, WeekType weekType) throws NoSuchEntityException;
 
+    TimetableEntry findByChatIdAndWeekTypeWithDays(Long chatId, WeekType weekType) throws NoSuchEntityException;
+
     List<TimetableEntry> findAllByChatId(Long chatId) throws NoSuchEntityException;
 
     ClassEntry findClassById(Long classId) throws NoSuchEntityException;
