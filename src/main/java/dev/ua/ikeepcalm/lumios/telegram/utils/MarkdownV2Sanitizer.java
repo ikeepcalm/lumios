@@ -14,9 +14,10 @@ import java.util.regex.Pattern;
  */
 public class MarkdownV2Sanitizer {
 
-    // Patterns to identify code blocks and inline code
+    // Patterns to identify code blocks, inline code, and markdown links
     private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("```[\\s\\S]*?```", Pattern.DOTALL);
     private static final Pattern INLINE_CODE_PATTERN = Pattern.compile("`[^`\n]+?`");
+    private static final Pattern MARKDOWN_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^)]+)\\)");
 
     // Characters that must be escaped in MarkdownV2 (outside code blocks)
     private static final String CHARS_TO_ESCAPE = "_*[]()~`>#+-=|{}.!";
@@ -45,11 +46,12 @@ public class MarkdownV2Sanitizer {
         StringBuilder result = new StringBuilder();
         int lastEnd = 0;
 
-        // Find all code blocks (both ``` and `)
+        // Find all code blocks, inline code, and markdown links
         Matcher codeBlockMatcher = CODE_BLOCK_PATTERN.matcher(text);
         Matcher inlineCodeMatcher = INLINE_CODE_PATTERN.matcher(text);
+        Matcher linkMatcher = MARKDOWN_LINK_PATTERN.matcher(text);
 
-        // Combine both matchers into a list of protected regions
+        // Combine into a list of protected regions
         java.util.List<Region> protectedRegions = new java.util.ArrayList<>();
 
         while (codeBlockMatcher.find()) {
@@ -58,6 +60,19 @@ public class MarkdownV2Sanitizer {
 
         while (inlineCodeMatcher.find()) {
             protectedRegions.add(new Region(inlineCodeMatcher.start(), inlineCodeMatcher.end(), inlineCodeMatcher.group()));
+        }
+
+        // Handle markdown links specially
+        while (linkMatcher.find()) {
+            String linkText = linkMatcher.group(1);
+            String linkUrl = linkMatcher.group(2);
+
+            // Escape link text normally, escape only ) and \ in URL
+            String escapedLinkText = escapeMarkdownV2(linkText);
+            String escapedUrl = escapeLinkUrl(linkUrl);
+            String formattedLink = "[" + escapedLinkText + "](" + escapedUrl + ")";
+
+            protectedRegions.add(new Region(linkMatcher.start(), linkMatcher.end(), formattedLink));
         }
 
         // Sort regions by start position
@@ -159,6 +174,13 @@ public class MarkdownV2Sanitizer {
             escaped.append(c);
         }
         return escaped.toString();
+    }
+
+    /**
+     * Escapes only ) and \ in URLs (as per Telegram MarkdownV2 spec for link URLs)
+     */
+    private static String escapeLinkUrl(String url) {
+        return url.replace("\\", "\\\\").replace(")", "\\)");
     }
 
     /**

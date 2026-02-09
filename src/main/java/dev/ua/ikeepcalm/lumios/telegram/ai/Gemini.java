@@ -477,8 +477,14 @@ public class Gemini {
         prompt.append("=== OUTPUT FORMATTING (CRITICAL) ===\n\n");
         prompt.append("IMPORTANT: Do NOT manually escape any special characters!\n");
         prompt.append("The system will automatically handle all escaping for Telegram.\n");
-        prompt.append("Just write naturally and use backticks for code/technical terms.\n");
-        prompt.append("When providing URLs (like class links), format them as: [Link text](URL)\n\n");
+        prompt.append("Just write naturally and use backticks for code/technical terms.\n\n");
+
+        prompt.append("URLS AND LINKS:\n");
+        prompt.append("   - For class/meeting URLs, use format: [Посилання на пару](URL)\n");
+        prompt.append("   - NEVER use the URL itself as link text\n");
+        prompt.append("   - Good: [Посилання](https://meet.google.com/abc)\n");
+        prompt.append("   - Bad: [https://meet.google.com/abc](https://meet.google.com/abc)\n");
+        prompt.append("   - You can also just provide the raw URL on its own line\n\n");
 
         prompt.append("1. CODE FORMATTING:\n");
         prompt.append("   - Inline code: `code here`\n");

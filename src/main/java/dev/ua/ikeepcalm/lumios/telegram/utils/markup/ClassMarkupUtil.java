@@ -36,6 +36,12 @@ public class ClassMarkupUtil {
             keyboard.add(secondRow);
         } else {
             notify.setUrl(classEntry.getUrl());
+            // Add remove link button when URL exists
+            InlineKeyboardRow removeRow = new InlineKeyboardRow();
+            InlineKeyboardButton removeButton = new InlineKeyboardButton("Видалити посилання ❌");
+            removeButton.setCallbackData("classlink-remove-" + classEntry.getId());
+            removeRow.add(removeButton);
+            keyboard.add(removeRow);
         }
         firstRow.add(notify);
         keyboard.add(firstRow);
@@ -68,6 +74,12 @@ public class ClassMarkupUtil {
             keyboard.add(secondRow);
         } else {
             notify.setUrl(classEntry.getUrl());
+            // Add remove link button when URL exists
+            InlineKeyboardRow removeRow = new InlineKeyboardRow();
+            InlineKeyboardButton removeButton = new InlineKeyboardButton("Видалити посилання ❌");
+            removeButton.setCallbackData("classlink-remove-" + classEntry.getId());
+            removeRow.add(removeButton);
+            keyboard.add(removeRow);
         }
         firstRow.add(notify);
         keyboard.add(firstRow);
@@ -79,11 +91,11 @@ public class ClassMarkupUtil {
     public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, Long chatId) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
-        
+
         String classesText = classEntries.stream()
                 .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
                 .collect(Collectors.joining("\n"));
-        
+
         textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
                             + "Шановне панство, незабаром почнуться / вже проходять пари: \n"
                             + classesText + "\n\n"
@@ -91,11 +103,11 @@ public class ClassMarkupUtil {
         );
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
-        
+
         for (ClassEntry classEntry : classEntries) {
             InlineKeyboardRow row = new InlineKeyboardRow();
             InlineKeyboardButton button;
-            
+
             if (classEntry.getUrl() == null) {
                 button = new InlineKeyboardButton("Fice Advisor - " + classEntry.getName());
                 button.setUrl("https://ficeadvisor.com/schedule?week=1");
@@ -105,7 +117,8 @@ public class ClassMarkupUtil {
             }
             row.add(button);
             keyboard.add(row);
-            
+
+            // Only show "add link" button for multiple classes, not "remove" (to avoid clutter)
             if (classEntry.getUrl() == null) {
                 InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
                 InlineKeyboardButton addLinkButton = new InlineKeyboardButton("Додати посилання для " + classEntry.getName() + " \uD83D\uDD17");
@@ -123,11 +136,11 @@ public class ClassMarkupUtil {
     public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, Long chatId) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
-        
+
         String classesText = classEntries.stream()
                 .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
                 .collect(Collectors.joining("\n"));
-        
+
         textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
                             + "Наступні пари починаються о " + classEntries.get(0).getStartTime() + " і мають назви:" + "\n"
                             + classesText + "\n\n"
@@ -135,11 +148,11 @@ public class ClassMarkupUtil {
         );
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
-        
+
         for (ClassEntry classEntry : classEntries) {
             InlineKeyboardRow row = new InlineKeyboardRow();
             InlineKeyboardButton button;
-            
+
             if (classEntry.getUrl() == null) {
                 button = new InlineKeyboardButton("Fice Advisor - " + classEntry.getName());
                 button.setUrl("https://ficeadvisor.com/schedule?week=1");
@@ -149,7 +162,8 @@ public class ClassMarkupUtil {
             }
             row.add(button);
             keyboard.add(row);
-            
+
+            // Only show "add link" button for multiple classes, not "remove" (to avoid clutter)
             if (classEntry.getUrl() == null) {
                 InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
                 InlineKeyboardButton addLinkButton = new InlineKeyboardButton("Додати посилання для " + classEntry.getName() + " \uD83D\uDD17");
