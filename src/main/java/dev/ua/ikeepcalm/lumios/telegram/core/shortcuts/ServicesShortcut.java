@@ -47,6 +47,20 @@ public abstract class ServicesShortcut {
         this.queueService = queueService;
     }
 
+    public Message sendMessage(String text, String parseMode, Message message, boolean scheduleDeletion) {
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(message.getChatId());
+        textMessage.setMessageId(message.getMessageId());
+        textMessage.setParseMode(parseMode);
+        textMessage.setText(text);
+        Message sent = telegramClient.sendTextMessage(textMessage);
+        if (scheduleDeletion) {
+            scheduleMessageToDelete(message);
+            scheduleMessageToDelete(sent);
+        }
+        return sent;
+    }
+
     public Message sendMessage(String text, Message message) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());

@@ -77,8 +77,11 @@ public class TimetablesController {
             for (TimetableEntry timetableEntry : timetableEntries) {
                 try {
                     timetableEntry.setChat(chatService.findByChatId(chatId));
-                    TimetableEntry optionalTimetableEntry = timetableService.findByChatIdAndWeekType(chatId, timetableEntry.getWeekType());
-                    timetableService.delete(optionalTimetableEntry);
+                    TimetableEntry existingTimetable = timetableService.findByChatIdAndWeekTypeWithDays(chatId, timetableEntry.getWeekType());
+
+                    preserveUrls(existingTimetable, timetableEntry);
+
+                    timetableService.delete(existingTimetable);
                     timetableService.save(timetableEntry);
                 } catch (NoSuchEntityException e) {
                     timetableService.save(timetableEntry);
@@ -93,6 +96,34 @@ public class TimetablesController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON body format!");
         }
 
+    }
+
+    private void preserveUrls(TimetableEntry oldEntry, TimetableEntry newEntry) {
+        if (oldEntry == null || newEntry == null) return;
+
+        for (dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry newDay : newEntry.getDays()) {
+            for (dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry newClass : newDay.getClassEntries()) {
+                if (newClass.getUrl() == null || newClass.getUrl().isEmpty()) {
+                    String oldUrl = findUrlInOldTimetable(oldEntry, newDay.getDayName(), newClass.getStartTime());
+                    if (oldUrl != null && !oldUrl.isEmpty()) {
+                        newClass.setUrl(oldUrl);
+                    }
+                }
+            }
+        }
+    }
+
+    private String findUrlInOldTimetable(TimetableEntry oldEntry, java.time.DayOfWeek dayOfWeek, java.time.LocalTime startTime) {
+        for (dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry oldDay : oldEntry.getDays()) {
+            if (oldDay.getDayName() == dayOfWeek) {
+                for (dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry oldClass : oldDay.getClassEntries()) {
+                    if (oldClass.getStartTime() != null && oldClass.getStartTime().equals(startTime)) {
+                        return oldClass.getUrl();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @GetMapping("/retrieve")

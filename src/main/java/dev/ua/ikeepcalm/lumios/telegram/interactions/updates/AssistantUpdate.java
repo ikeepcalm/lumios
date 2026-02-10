@@ -172,6 +172,8 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
             activeRequests.incrementAndGet();
 
             try {
+                String finalInputText = inputText;
+                String finalInputText1 = inputText;
                 switch (chat.getAiModel()) {
                     case GEMINI -> {
                         CompletableFuture<String> responseFuture;
@@ -195,8 +197,10 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                     List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2);
                                     Message lastSentMessage = null;
 
+                                    boolean isTimetableQuery = isTimetableRelated(finalInputText);
+
                                     for (String chunk : chunks) {
-                                        lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage());
+                                        lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage(), !isTimetableQuery);
                                     }
 
                                     if (lastSentMessage != null) {
@@ -243,8 +247,10 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                             List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2);
                                             Message lastSentMessage = null;
 
+                                            boolean isTimetableQuery = isTimetableRelated(finalInputText1);
+
                                             for (String chunk : chunks) {
-                                                lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage());
+                                                lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage(), !isTimetableQuery);
                                             }
 
                                             if (lastSentMessage != null) {
@@ -280,6 +286,15 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                 sendMessage("Виникла неочікувана помилка при обробці запиту.", update.getMessage());
             }
         }
+    }
+
+    private boolean isTimetableRelated(String text) {
+        if (text == null) return false;
+        String lower = text.toLowerCase();
+        return lower.contains("розклад") || lower.contains("пари") || lower.contains("пара") ||
+               lower.contains("timetable") || lower.contains("schedule") ||
+               lower.contains("класи") || lower.contains("клас") ||
+               lower.contains("лекція") || lower.contains("практика") || lower.contains("лабораторна");
     }
 
     private void saveUserMessage(Message message, String inputText) {

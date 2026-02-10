@@ -61,18 +61,31 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
 
         CampusTimetable campusTimetable = ImportUtil.getScheduleByGroup(groupId);
         List<TimetableEntry> timetableEntries = convertToTimetableEntries(campusTimetable, chat);
-        List<TimetableEntry> allByChatId;
+        List<TimetableEntry> existingTimetables = new ArrayList<>();
         try {
-            allByChatId = timetableService.findAllByChatId(chat.getChatId());
+            existingTimetables = timetableService.findAllByChatId(chat.getChatId());
+            // Eagerly load all days and classes for all existing timetables
+            List<TimetableEntry> loadedTimetables = new ArrayList<>();
+            for (TimetableEntry te : existingTimetables) {
+                loadedTimetables.add(timetableService.findByChatIdAndWeekTypeWithDays(chat.getChatId(), te.getWeekType()));
+            }
+            existingTimetables = loadedTimetables;
         } catch (NoSuchEntityException e) {
-            allByChatId = new ArrayList<>();
+            log.debug("No existing timetables found for chat: {}", chat.getChatId());
         }
-        if (allByChatId.isEmpty()) {
-            timetableService.saveAll(timetableEntries);
-        } else {
-            timetableService.deleteAll(allByChatId);
-            timetableService.saveAll(timetableEntries);
+
+        if (!existingTimetables.isEmpty()) {
+            for (TimetableEntry newTe : timetableEntries) {
+                for (TimetableEntry oldTe : existingTimetables) {
+                    if (oldTe.getWeekType() == newTe.getWeekType()) {
+                        preserveUrls(oldTe, newTe);
+                        break;
+                    }
+                }
+            }
+            timetableService.deleteAll(existingTimetables);
         }
+        timetableService.saveAll(timetableEntries);
 
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(message.getChatId());
@@ -80,6 +93,34 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
         editMessage.setText("Розклад для `" + data.replace("import#", "") + "` був успішно імпортований!");
         editMessage.setParseMode(ParseMode.MARKDOWN);
         editMessage(editMessage);
+    }
+
+    private void preserveUrls(TimetableEntry oldEntry, TimetableEntry newEntry) {
+        if (oldEntry == null || newEntry == null) return;
+
+        for (DayEntry newDay : newEntry.getDays()) {
+            for (ClassEntry newClass : newDay.getClassEntries()) {
+                if (newClass.getUrl() == null || newClass.getUrl().isEmpty()) {
+                    String oldUrl = findUrlInOldTimetable(oldEntry, newDay.getDayName(), newClass.getStartTime());
+                    if (oldUrl != null && !oldUrl.isEmpty()) {
+                        newClass.setUrl(oldUrl);
+                    }
+                }
+            }
+        }
+    }
+
+    private String findUrlInOldTimetable(TimetableEntry oldEntry, DayOfWeek dayOfWeek, LocalTime startTime) {
+        for (DayEntry oldDay : oldEntry.getDays()) {
+            if (oldDay.getDayName() == dayOfWeek) {
+                for (ClassEntry oldClass : oldDay.getClassEntries()) {
+                    if (oldClass.getStartTime() != null && oldClass.getStartTime().equals(startTime)) {
+                        return oldClass.getUrl();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private List<TimetableEntry> convertToTimetableEntries(CampusTimetable timetableWrapper, LumiosChat chat) {
