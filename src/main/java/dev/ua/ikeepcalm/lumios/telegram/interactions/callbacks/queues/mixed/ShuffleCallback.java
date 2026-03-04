@@ -42,7 +42,6 @@ public class ShuffleCallback extends ServicesShortcut implements Interaction {
                         simpleQueue.setChatId(mixedQueue.getChatId());
                         for (MixedUser mixedUser : mixedQueue.getContents()) {
                             SimpleUser simpleUser = new SimpleUser();
-                            simpleUser.setId(mixedUser.getId());
                             simpleUser.setName(mixedUser.getName());
                             simpleUser.setUsername(mixedUser.getUsername());
                             simpleUser.setAccountId(mixedUser.getAccountId());

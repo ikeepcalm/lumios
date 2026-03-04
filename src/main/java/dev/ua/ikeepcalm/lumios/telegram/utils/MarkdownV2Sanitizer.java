@@ -35,9 +35,6 @@ public class MarkdownV2Sanitizer {
 
         // First, remove any pre-existing escape sequences that the AI might have added
         text = removePreExistingEscapes(text);
-        if (!text.equals(originalText)) {
-            log.debug("Removed pre-existing escapes. Before: '{}' After: '{}'", originalText, text);
-        }
 
         // Then, fix any unclosed code blocks
         text = fixUncloseCodeBlocks(text);
@@ -100,11 +97,6 @@ public class MarkdownV2Sanitizer {
         }
 
         String sanitized = result.toString();
-
-        // Log the sanitization for debugging
-        if (!originalText.equals(sanitized)) {
-            log.debug("MarkdownV2 sanitization: '{}' → '{}'", originalText, sanitized);
-        }
 
         return sanitized;
     }

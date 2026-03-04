@@ -20,20 +20,14 @@ public class RemoveReactionUpdate extends ServicesShortcut implements Interactio
     @Override
     public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
         if (update.getMessageReaction() == null) {
-            log.debug("MessageReaction is null, skipping");
             return;
         }
         
         try {
             MessageReactionUpdated message = update.getMessageReaction();
-            log.debug("Processing remove reaction from user {} in chat {}, message ID: {}", 
-                user.getUserId(), chat.getChatId(), message.getMessageId());
-            
+
             ReverenceReaction removedReaction = findNewReaction(message.getNewReaction(), message.getOldReaction());
             int reactionValue = ReverenceReaction.determineReactionValue(removedReaction);
-            
-            log.debug("Removed reaction: {}, value: {}, user credits: {}", 
-                removedReaction, reactionValue, user.getCredits());
 
             if (user.getCredits() >= Math.abs(reactionValue)) {
                 LumiosUser onUser = recordService.findByMessageIdAndChatId(Long.valueOf(message.getMessageId()), message.getChat().getId()).getUser();
@@ -59,8 +53,6 @@ public class RemoveReactionUpdate extends ServicesShortcut implements Interactio
                     log.info("Remove reaction processed: User {} (credits: {} -> {}) removed reaction from {} (reverence: {} -> {})", 
                         user.getUserId(), oldCredits, user.getCredits(), 
                         onUser.getUserId(), oldReverence, onUser.getReverence());
-                } else {
-                    log.debug("User {} tried to remove reaction from their own message", user.getUserId());
                 }
             } else {
                 log.warn("User {} has insufficient credits ({}) for removing reaction value {}", 

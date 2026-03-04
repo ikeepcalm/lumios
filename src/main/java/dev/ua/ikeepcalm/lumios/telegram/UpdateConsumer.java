@@ -160,12 +160,9 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
             Class<?> targetClass = AopProxyUtils.ultimateTargetClass(handler);
             BotReaction annotation = targetClass.getAnnotation(BotReaction.class);
             if (annotation.isPlus() != isPlus) {
-                log.debug("Skipping handler {} (isPlus={}) for reaction (isPlus={})", 
-                    targetClass.getSimpleName(), annotation.isPlus(), isPlus);
                 continue;
             }
 
-            log.debug("Processing reaction with handler: {}", targetClass.getSimpleName());
             LumiosChat chat = getOrCreateChat(update.getMessageReaction().getChat().getId(), update.getMessageReaction().getChat().getTitle());
             LumiosUser user = getOrCreateUser(update.getMessageReaction().getUser().getId(), chat, update.getMessageReaction().getUser().getUserName());
 

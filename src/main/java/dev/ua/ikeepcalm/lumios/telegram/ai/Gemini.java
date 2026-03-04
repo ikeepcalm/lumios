@@ -119,7 +119,6 @@ public class Gemini {
                     for (String key : apiKey) {
                         try {
                             JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, model, needsTimetableContext);
-                            log.debug("Trying model {} with payload size: {} bytes", model, jsonPayload.toString().length());
 
                             URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -265,7 +264,6 @@ public class Gemini {
             // Check finish reason to detect truncation
             if (candidate.has("finishReason")) {
                 String finishReason = candidate.getString("finishReason");
-                log.debug("Response finish reason: {}", finishReason);
 
                 if ("MAX_TOKENS".equals(finishReason)) {
                     log.warn("Response was truncated due to MAX_TOKENS limit");
@@ -321,8 +319,6 @@ public class Gemini {
         for (String model : GEMINI_MODELS) {
             for (String key : apiKey) {
                 try {
-                    log.debug("Trying model {} for summary generation", model);
-
                     URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("POST");
@@ -615,7 +611,6 @@ public class Gemini {
 
         } catch (Exception e) {
             log.warn("Could not fetch timetable context for chat {}: {}", chat.getChatId(), e.getMessage());
-            log.debug("Timetable fetch error details", e);
             return "";
         }
     }
@@ -650,7 +645,6 @@ public class Gemini {
 
         for (String keyword : keywords) {
             if (lowerText.contains(keyword)) {
-                log.debug("Timetable keyword detected: {}", keyword);
                 return true;
             }
         }
