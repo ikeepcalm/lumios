@@ -83,7 +83,8 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("settings", "Відкрити налаштування бота"),
                                 new BotCommand("help", "Відкрити довідку користувача"),
                                 new BotCommand("summary", "Підведення підсумку за останні повідомлення"),
-                                
+                                new BotCommand("everyone", "Тегнути всіх у поточному чатику"),
+
                                 // Queue Commands
                                 new BotCommand("queue", "Створити просту нумеровану чергу"),
                                 new BotCommand("mixed", "Створити мішану (випадкову) чергу"),
