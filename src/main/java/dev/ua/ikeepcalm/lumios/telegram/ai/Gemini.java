@@ -47,7 +47,7 @@ public class Gemini {
 
     // Models to try in order (fallback on 429 rate limit errors)
     private static final String[] GEMINI_MODELS = {
-        "gemini-3.1-flash-lite",
+        "gemini-3.1-flash-lite-preview",
         "gemini-2.5-flash-lite",
         "gemini-2.5-flash",
         "gemini-3-flash",

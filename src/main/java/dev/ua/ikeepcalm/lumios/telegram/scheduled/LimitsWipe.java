@@ -24,7 +24,7 @@ public class LimitsWipe {
         try {
             log.info("Starting daily limits reset");
             
-            int updatedChats = chatService.batchUpdateLimits(2, 10);
+            int updatedChats = chatService.batchUpdateLimits(2, 30);
             
             log.info("Successfully reset limits for {} chats", updatedChats);
         } catch (Exception e) {
