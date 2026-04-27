@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/records/**").permitAll()
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/campus/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session

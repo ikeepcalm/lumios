@@ -75,7 +75,9 @@ public class TelegramClient extends OkHttpTelegramClient {
                                 new BotCommand("me", "Подивитися персональну статистику"),
                                 new BotCommand("stats", "Подивитися загальну статистику"),
                                 new BotCommand("gamble", "Команда для лудоманів"),
-                                new BotCommand("wheel", "Щоденне колесо фортуни")
+                                new BotCommand("wheel", "Щоденне колесо фортуни"),
+                                new BotCommand("link", "Прив'язати аккаунт eCampus для сповіщень про оцінки"),
+                                new BotCommand("unlink", "Відв'язати аккаунт eCampus")
                         ))).scope(BotCommandScopeAllPrivateChats.builder().build())
                 .commands(
                         new ArrayList<>(List.of(
