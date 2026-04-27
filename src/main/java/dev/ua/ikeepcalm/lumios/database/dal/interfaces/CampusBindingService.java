@@ -9,6 +9,8 @@ public interface CampusBindingService {
 
     CampusBinding findByTelegramUserId(Long telegramUserId) throws NoSuchEntityException;
 
+    CampusBinding findByExternalId(String externalId) throws NoSuchEntityException;
+
     void deleteByTelegramUserId(Long telegramUserId);
 
     boolean existsByTelegramUserId(Long telegramUserId);

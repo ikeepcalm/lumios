@@ -19,6 +19,10 @@ public class CampusBinding {
     @Column(unique = true, nullable = false)
     private Long telegramUserId;
 
+    /** Opaque UUID passed to campus as the external user ID. Never expose Telegram IDs externally. */
+    @Column(unique = true, nullable = true)
+    private String externalId;
+
     @Column(nullable = false, length = 2048)
     private String accessToken;
 

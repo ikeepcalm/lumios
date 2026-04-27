@@ -33,7 +33,7 @@ public class UnlinkCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
 
         if (!message.getChat().getType().equals("private")) {
-            sendMessage("Команда /unlink доступна лише в приватних повідомленнях з ботом.", message);
+            sendMessage("🔒 Команда /unlink доступна лише в приватному чаті з ботом.", message);
             return;
         }
 
@@ -43,7 +43,7 @@ public class UnlinkCommand extends ServicesShortcut implements Interaction {
         try {
             binding = campusBindingService.findByTelegramUserId(userId);
         } catch (NoSuchEntityException e) {
-            sendMessage("Твій аккаунт не прив'язано до eCampus. Використай /link для прив'язки.", message);
+            sendMessage("ℹ️ Твій акаунт не прив'язано до eCampus. Використай /link для прив'язки.", message);
             return;
         }
 
@@ -51,11 +51,10 @@ public class UnlinkCommand extends ServicesShortcut implements Interaction {
             campusApiClient.unsubscribe(binding.getAccessToken());
         } catch (CampusAuthException e) {
             log.warn("Could not revoke campus subscription for userId={}: {}", userId, e.getMessage());
-            // Continue with local cleanup even if remote revocation fails
         }
 
         campusBindingService.deleteByTelegramUserId(userId);
-        sendMessage("Твій аккаунт успішно відв'язано від eCampus. Ти більше не будеш отримувати сповіщення про оцінки.", message);
+        sendMessage("✅ Акаунт успішно відв'язано від eCampus. Сповіщення про оцінки більше не надходитимуть.", message);
     }
 
 }

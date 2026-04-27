@@ -16,11 +16,13 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,11 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
 
-    /**
-     * Tracks users awaiting credential input.
-     * Key: Telegram user ID, Value: timestamp when the pending session was created.
-     * Entries expire automatically after 5 minutes.
-     */
     public static final Cache<Long, Long> pendingLinks = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .build();
@@ -70,7 +67,6 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
             return;
         }
 
-        // Guard against stale sessions that slipped through before Caffeine eviction
         if (System.currentTimeMillis() - sessionStart > PENDING_SESSION_TTL_MS) {
             pendingLinks.invalidate(userId);
             return;
@@ -78,7 +74,6 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
 
         pendingLinks.invalidate(userId);
 
-        // Delete the credentials message immediately before doing anything else
         try {
             telegramClient.sendRemoveMessage(new RemoveMessage(message.getMessageId(), message.getChatId()));
         } catch (TelegramApiException e) {
@@ -88,7 +83,7 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
         String text = message.getText().trim();
         String[] parts = text.split("\\s+", 2);
         if (parts.length < 2) {
-            sendDirectMessage(message.getChatId(), "Невірний формат. Очікується: `логін пароль`. Використай /link, щоб спробувати знову.");
+            sendDirectMessage(message.getChatId(), "❌ Невірний формат. Очікується: `логін пароль`\n\nСпробуй знову через /link.", ParseMode.MARKDOWN);
             return;
         }
 
@@ -97,44 +92,47 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
 
         if (webhookUrl == null || webhookUrl.isBlank()) {
             log.error("campus.webhook.url is not configured — cannot subscribe userId={}", userId);
-            sendDirectMessage(message.getChatId(), "Сервіс тимчасово недоступний. Спробуй пізніше.");
+            sendDirectMessage(message.getChatId(), "⚙️ Сервіс тимчасово недоступний. Спробуй пізніше.", null);
             return;
         }
 
         incrementRateLimitAttempt(userId);
 
+        String externalId = UUID.randomUUID().toString();
+
         CampusSubscriptionResult result;
         try {
-            result = campusApiClient.subscribe(username, password, webhookUrl, String.valueOf(userId));
+            result = campusApiClient.subscribe(username, password, webhookUrl, externalId);
         } catch (CampusAuthException e) {
             log.warn("Campus subscription failed for userId={}: {}", userId, e.getMessage());
-            sendDirectMessage(message.getChatId(), "Не вдалося підключитися до eCampus. Перевір логін та пароль і спробуй знову через /link.");
+            sendDirectMessage(message.getChatId(),
+                    "❌ Не вдалося підключитися до eCampus.\n\nПеревір логін та пароль і спробуй знову через /link.", null);
             return;
         } finally {
-            // Null out references so credentials become eligible for GC immediately
             username = null;
             password = null;
         }
 
         CampusBinding binding = new CampusBinding();
         binding.setTelegramUserId(userId);
+        binding.setExternalId(externalId);
         binding.setAccessToken(result.getAccessToken());
         binding.setSubscribedAt(LocalDateTime.now());
         campusBindingService.save(binding);
 
         sendDirectMessage(message.getChatId(), """
-                Аккаунт успішно прив'язано до eCampus!
+                ✅ *Акаунт успішно прив'язано до eCampus!*
 
-                Відтепер ти будеш отримувати сповіщення про нові оцінки прямо в цей чат.
-                Щоб відв'язати аккаунт, використай /unlink.
-                """);
+                Відтепер ти отримуватимеш сповіщення про нові оцінки прямо сюди.
+                Щоб відв'язати акаунт — використай /unlink.
+                """, ParseMode.MARKDOWN);
     }
 
-    /** Sends a message directly to a chat without replying to any deleted message. */
-    private void sendDirectMessage(long chatId, String text) {
+    private void sendDirectMessage(long chatId, String text, String parseMode) {
         TextMessage msg = new TextMessage();
         msg.setChatId(chatId);
         msg.setText(text);
+        msg.setParseMode(parseMode);
         telegramClient.sendTextMessage(msg);
     }
 

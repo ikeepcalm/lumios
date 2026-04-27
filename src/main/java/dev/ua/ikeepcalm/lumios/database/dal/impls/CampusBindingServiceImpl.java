@@ -28,6 +28,12 @@ public class CampusBindingServiceImpl implements CampusBindingService {
     }
 
     @Override
+    public CampusBinding findByExternalId(String externalId) throws NoSuchEntityException {
+        return campusBindingRepository.findByExternalId(externalId)
+                .orElseThrow(NoSuchEntityException::new);
+    }
+
+    @Override
     @Transactional
     public void deleteByTelegramUserId(Long telegramUserId) {
         campusBindingRepository.deleteByTelegramUserId(telegramUserId);

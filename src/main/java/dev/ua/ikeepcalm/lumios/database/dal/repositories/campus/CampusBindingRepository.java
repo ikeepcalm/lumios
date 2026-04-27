@@ -9,6 +9,8 @@ public interface CampusBindingRepository extends JpaRepository<CampusBinding, Lo
 
     Optional<CampusBinding> findByTelegramUserId(Long telegramUserId);
 
+    Optional<CampusBinding> findByExternalId(String externalId);
+
     void deleteByTelegramUserId(Long telegramUserId);
 
     boolean existsByTelegramUserId(Long telegramUserId);
