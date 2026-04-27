@@ -38,6 +38,10 @@ public class AuthenticationFilter extends GenericFilterBean {
             "v3/api-docs/",
             "/swagger-ui/",
             "swagger-ui/",
+            "/campus/",
+            "campus/",
+            "/auth/",
+            "auth/",
     };
 
     private final AuthenticationService authenticationService;
