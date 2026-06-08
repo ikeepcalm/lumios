@@ -27,7 +27,7 @@ public class PagedUtil {
             }
             LumiosUser user = sortedUsers.get(i);
             int rank = (page - 1) * 10 + count + 1;
-            String username = user.getUsername() != null ? "@" + user.getUsername() : "User#" + user.getUserId();
+            String username = user.getUsername() != null ? "`@" + user.getUsername() + "`" : "User#" + user.getUserId();
             builder.append(rank).append(". ").append(username).append(" — ").append(user.getReverence()).append(" ⭐\n");
             count++;
         }

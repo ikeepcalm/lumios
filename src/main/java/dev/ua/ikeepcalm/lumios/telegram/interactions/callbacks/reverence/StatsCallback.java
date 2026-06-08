@@ -59,7 +59,6 @@ public class StatsCallback extends ServicesShortcut implements Interaction {
         EditMessage editedMessage = new EditMessage();
         editedMessage.setChatId(message.getMessage().getChatId());
         editedMessage.setMessageId(message.getMessage().getMessageId());
-        editedMessage.setParseMode(ParseMode.MARKDOWN);
         editedMessage.setText(PagedUtil.buildStatsMessage(users, page, translationService, chat));
         editedMessage.setReplyKeyboard(PagedUtil.buildStatsKeyboard(page, maxPage, false, '-', chat.getChatId()));
         editMessage(editedMessage);
@@ -105,7 +104,6 @@ public class StatsCallback extends ServicesShortcut implements Interaction {
         EditMessage editedMessage = new EditMessage();
         editedMessage.setChatId(message.getMessage().getChatId());
         editedMessage.setMessageId(message.getMessage().getMessageId());
-        editedMessage.setParseMode(ParseMode.MARKDOWN);
         editedMessage.setText(PagedUtil.buildStatsMessage(users, page, translationService, chat));
         editedMessage.setReplyKeyboard(PagedUtil.buildStatsKeyboard(page, maxPage, true, '#', chatId));
         editMessage(editedMessage);

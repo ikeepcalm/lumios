@@ -27,7 +27,6 @@ public class StatsCommand extends ServicesShortcut implements Interaction {
         TextMessage message = new TextMessage();
         message.setChatId(update.getMessage().getChatId());
         message.setText(PagedUtil.buildStatsMessage(users, 1, translationService, chat));
-        message.setParseMode(ParseMode.MARKDOWN);
 
         if (users.size() > 10) {
             message.setReplyKeyboard(buildStatsKeyboard());
