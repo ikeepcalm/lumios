@@ -33,14 +33,14 @@ public class AlterCallback extends ServicesShortcut implements Interaction {
             try {
                 task = taskService.findTaskById(chat.getChatId(), taskId);
             } catch (NoSuchEntityException e) {
-                telegramClient.sendAnswerCallbackQuery("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", callbackQuery.getId());
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.error.not_found", chat), callbackQuery.getId());
                 return;
             }
 
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(callbackQuery.getMessage().getChatId());
             editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMessage.setText("Ви точно бажаєте видалити це завдання? Ця дія незворотня!");
+            editMessage.setText(translationService.getMessage("task.delete.confirm", chat));
             editMessage.setReplyKeyboard(TaskMarkupUtil.createDeleteTaskKeyboard(task.getId()));
 
             editMessage(editMessage);
@@ -71,7 +71,7 @@ public class AlterCallback extends ServicesShortcut implements Interaction {
                         try {
                             task = taskService.findTaskById(chat.getChatId(), taskId);
                         } catch (NoSuchEntityException e) {
-                            telegramClient.sendAnswerCallbackQuery("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", callbackQuery.getId());
+                            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.error.not_found", chat), callbackQuery.getId());
                             return;
                         }
 
@@ -81,25 +81,20 @@ public class AlterCallback extends ServicesShortcut implements Interaction {
                         EditMessage editMessage = new EditMessage();
                         editMessage.setChatId(callbackQuery.getMessage().getChatId());
                         editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-                        editMessage.setText("Діапазон актуальності завдання успішно змінено!");
+                        editMessage.setText(translationService.getMessage("task.range.success", chat));
                         editMessage(editMessage);
 
-                        TextMessage textMessage = TaskMarkupUtil.buildTaskTextMessage(task, task.getId());
+                        TextMessage textMessage = TaskMarkupUtil.buildTaskTextMessage(task, task.getId(), chat, translationService);
                         textMessage.setChatId(callbackQuery.getMessage().getChatId());
                         sendMessage(textMessage, (Message) callbackQuery.getMessage());
-                        telegramClient.sendAnswerCallbackQuery("Діапазон актуальності завдання успішно змінено!", callbackQuery.getId());
+                        telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.range.success", chat), callbackQuery.getId());
                     } else {
                         long taskId = Long.parseLong(data[3]);
                         EditMessage editMessage = new EditMessage();
                         editMessage.setChatId(callbackQuery.getMessage().getChatId());
                         editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
                         editMessage.setReplyKeyboard(TaskMarkupUtil.createScopeKeyboard(taskId));
-                        editMessage.setText("""
-                                Оберіть діапазон актуальності завдання:
-                                1. Лише для мене
-                                2. Для всіх в цьому чаті
-                                3. Для всіх окрім мене
-                                """);
+                        editMessage.setText(translationService.getMessage("task.edit.scope.select", chat));
                         editMessage(editMessage);
                     }
                 } else {
@@ -108,7 +103,7 @@ public class AlterCallback extends ServicesShortcut implements Interaction {
                     try {
                         task = taskService.findTaskById(chat.getChatId(), taskId);
                     } catch (NoSuchEntityException e) {
-                        telegramClient.sendAnswerCallbackQuery("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", callbackQuery.getId());
+                        telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.error.not_found", chat), callbackQuery.getId());
                         return;
                     }
 
@@ -116,13 +111,7 @@ public class AlterCallback extends ServicesShortcut implements Interaction {
                     EditMessage editMessage = new EditMessage();
                     editMessage.setChatId(callbackQuery.getMessage().getChatId());
                     editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-                    editMessage.setText("""
-                            Щоб змінити, надішліть нове значення або додаток:
-                            
-                            Зараховується лише перше повідомлення від автору!
-                            
-                            (P.S. Дата в форматі yyyy-MM-dd HH:mm)
-                            """);
+                    editMessage.setText(translationService.getMessage("task.edit.prompt", chat));
                     editMessage(editMessage);
                     UpdateConsumer.waitingTasks.put(user.getUserId(), task.getId());
                 }

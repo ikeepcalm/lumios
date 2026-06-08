@@ -51,15 +51,15 @@ public class NowCommand extends ServicesShortcut implements Interaction {
 
             if (!currentClasses.isEmpty()) {
                 if (currentClasses.size() == 1) {
-                    sendMessage(ClassMarkupUtil.createNowNotification(currentClasses.getFirst(), message.getChatId()), message);
+                    sendMessage(ClassMarkupUtil.createNowNotification(currentClasses.getFirst(), chat, translationService), message);
                 } else {
-                    sendMessage(ClassMarkupUtil.createMultipleNowNotification(currentClasses, message.getChatId()), message);
+                    sendMessage(ClassMarkupUtil.createMultipleNowNotification(currentClasses, chat, translationService), message);
                 }
             } else {
-                sendMessage("Наразі жодної пари за розкладом не проходить!", message);
+                sendMessage(translationService.getMessage("class.now.none", chat), message);
             }
         } catch (NoSuchEntityException e) {
-            sendMessage("Не знайдено розкладу на даний момент! Ви точно все налаштували?", message);
+            sendMessage(translationService.getMessage("class.now.error", chat), message);
         }
     }
 }

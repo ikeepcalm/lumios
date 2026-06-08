@@ -65,13 +65,19 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
         } else if (data.equals("settings-ai-openai")) {
             chat.setAiModel(AiModel.GEMINI);
         }
+
+        if (data.equals("settings-lang-en")) {
+            chat.setLanguage("en");
+        } else if (data.equals("settings-lang-uk")) {
+            chat.setLanguage("uk");
+        }
         
         if (data.equals("settings-nickname")) {
             String nicknameInfo = chat.getBotNickname() != null && !chat.getBotNickname().trim().isEmpty() 
-                ? "Поточний псевдонім: **" + chat.getBotNickname() + "**"
-                : "Псевдонім не встановлено";
+                ? translationService.getMessage("settings.nickname.current", chat, chat.getBotNickname())
+                : translationService.getMessage("settings.nickname.none", chat);
             
-            telegramClient.sendAnswerCallbackQuery(nicknameInfo + "\n\nВикористовуйте команду `/nickname [псевдонім]` для зміни", message.getId());
+            telegramClient.sendAnswerCallbackQuery(nicknameInfo + "\n\n" + translationService.getMessage("settings.nickname.usage", chat), message.getId());
             return;
         }
 
@@ -80,13 +86,9 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(message.getMessage().getChatId());
         editMessage.setMessageId(message.getMessage().getMessageId());
-        editMessage.setText("""
-                ≫ Налаштування ≪
-                
-                В цьому меню ви зможете налаштувати роботу бота в цьому чаті. Натискайте на відповідні кнопки, щоб змінити налаштування!
-                """);
+        editMessage.setText(translationService.getMessage("settings.title", chat));
         editMessage.setParseMode(ParseMode.MARKDOWN);
-        editMessage.setReplyKeyboard(SettingsMarkupUtil.getSettingsKeyboard(chat));
+        editMessage.setReplyKeyboard(SettingsMarkupUtil.getSettingsKeyboard(chat, translationService));
         editMessage(editMessage);
     }
 }

@@ -55,23 +55,23 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         try {
             betAmount = Integer.parseInt(parts[1]);
             if (betAmount > user.getReverence() * 0.3) {
-                sendMessage("Стривай-но! Ти не можеш грати на суму більше ніж 30% від свого рівня поваги. Спробуй ще раз", message);
+                sendMessage(translationService.getMessage("gamble.error.limit", chat), message);
                 return;
             }
         } catch (NumberFormatException e) {
             if (parts[1].equals("all")) {
                 betAmount = user.getReverence();
             } else {
-                sendMessage("Хіба це схоже на число? Спробуй ще раз. Наприклад: /gamble 100", message);
+                sendMessage(translationService.getMessage("gamble.error.not_number", chat), message);
                 return;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            sendMessage("Ти забув вказати суму ставки. Спробуй ще раз. Наприклад: /gamble 100", message);
+            sendMessage(translationService.getMessage("gamble.error.no_bet", chat), message);
             return;
         }
 
         if (betAmount <= 0) {
-            sendMessage("Ти не можеш грати з від'ємною або нульовою сумою. Спробуй ще раз", message);
+            sendMessage(translationService.getMessage("gamble.error.negative_bet", chat), message);
             return;
         }
 
@@ -87,7 +87,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
             } else {
                 newReverence = (int) (user.getReverence() + (betAmount * 0.5));
             }
-            resultMessage = resultMessage + generateWinMessage(betAmount, newReverence);
+            resultMessage = resultMessage + generateWinMessage(betAmount, newReverence, chat);
             JSONObject winGifs = tenorUtil.getSearchResults(generateWinKeyword(), 10);
             if (winGifs.isEmpty()) {
                 animation = new InputFile(new File("img/win.gif"));
@@ -106,7 +106,7 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
             } else {
                 newReverence = (int) (user.getReverence() - (betAmount * 0.7));
             }
-            resultMessage = resultMessage + generateLoseMessage(betAmount, newReverence);
+            resultMessage = resultMessage + generateLoseMessage(betAmount, newReverence, chat);
             JSONObject loseGifs = tenorUtil.getSearchResults(generateLoseKeyword(), 10);
             if (loseGifs.isEmpty()) {
                 animation = new InputFile(new File("img/lose.gif"));
@@ -161,40 +161,42 @@ public class GambleCommand extends ServicesShortcut implements Interaction {
         return Math.random() < 0.5;
     }
 
-    private String generateWinMessage(int betAmount, int newReverence) {
-        String[] messages = {
-                "Леді Фортуна посміхається тобі! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Ти справжній везунчик! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Продовжуй в тому ж дусі!",
-                "Ти продав свою душу дияволу, але це варте того! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не забувай, що справжній гравець ніколи не здавається!",
-                "Невже ти відкрив секрет великої перемоги? Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "...і він виграв! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Дідько його бери, як він це робить! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Не вірю очам, це що, знову перемога? Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Коли він народився, увесь світ прошептав його ім'я - переможець! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Хакарі б пишався тобою! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Зажди! Навчи мене! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
-                "Ти виграв, ти великий, ти найкращий! Ти виграв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Так тримати!",
+    private String generateWinMessage(int betAmount, int newReverence, LumiosChat chat) {
+        String[] keys = {
+                "gamble.win.1",
+                "gamble.win.2",
+                "gamble.win.3",
+                "gamble.win.4",
+                "gamble.win.5",
+                "gamble.win.6",
+                "gamble.win.7",
+                "gamble.win.8",
+                "gamble.win.9",
+                "gamble.win.10",
+                "gamble.win.11",
+                "gamble.win.12"
         };
-        return randomMessage(messages);
+        String key = keys[new Random().nextInt(keys.length)];
+        return translationService.getMessage(key, chat, betAmount, newReverence);
     }
 
-    private String generateLoseMessage(int betAmount, int newReverence) {
-        String[] messages = {
-                "Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Що таке? Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "ХА-ХА, ОЦЕ ЛУЗЕР! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Забув помолитися перед грою? Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Яка ж шкода! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Невезуча мавпа! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Сьогодні не твій день. Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "ХАХВАХВХАХАВХ ЦЕ Ж ТИ? Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "ЯКЕ ЖАЛЮГІДНЕ! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Ти програв, ти в нуліну, твоя мама тебе не любить, твій тато тебе не любить, твої друзі тебе не люблять, твій кіт тебе не любить, твій сусід тебе не любить, твій бос тебе не любить! Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!",
-                "Лісова мавпа... Ти програв ставку розміром " + betAmount + " поваги і тепер у тебе " + newReverence + " поваги. Не здавайся, у тебе ще є шанс відігратися!"
+    private String generateLoseMessage(int betAmount, int newReverence, LumiosChat chat) {
+        String[] keys = {
+                "gamble.lose.1",
+                "gamble.lose.2",
+                "gamble.lose.3",
+                "gamble.lose.4",
+                "gamble.lose.5",
+                "gamble.lose.6",
+                "gamble.lose.7",
+                "gamble.lose.8",
+                "gamble.lose.9",
+                "gamble.lose.10",
+                "gamble.lose.11",
+                "gamble.lose.12"
         };
-        return randomMessage(messages);
+        String key = keys[new Random().nextInt(keys.length)];
+        return translationService.getMessage(key, chat, betAmount, newReverence);
     }
 
     private String generateWinKeyword() {

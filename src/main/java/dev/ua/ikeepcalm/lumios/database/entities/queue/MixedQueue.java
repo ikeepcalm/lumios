@@ -36,7 +36,7 @@ public class MixedQueue {
     private List<MixedUser> contents = new LinkedList<>();
 
     public MixedQueue() {
-        this.alias = "ЗМІШАНА ЧЕРГА";
+        this.alias = "MIXED QUEUE";
         this.id = UUID.randomUUID();
     }
 

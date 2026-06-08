@@ -19,11 +19,7 @@ public class TasksCommand extends ServicesShortcut implements Interaction {
     public void fireInteraction(Update update, LumiosUser user, LumiosChat chat) {
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(update.getMessage().getChatId());
-        textMessage.setText("""
-                *Меню завдань*
-                
-                В цьому меню ви можете створити нове завдання, відредагувати або видалити існуюче, а також перейти до веб-порталу для управління завданнями. Навігація здійснюється за допомогою вбудованої клавіатурою під цим повідомленням.
-                """);
+        textMessage.setText(translationService.getMessage("tasks.menu.title", chat));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         textMessage.setReplyKeyboard(TaskMarkupUtil.getMenuMarkup());
         sendMessage(textMessage, update.getMessage());

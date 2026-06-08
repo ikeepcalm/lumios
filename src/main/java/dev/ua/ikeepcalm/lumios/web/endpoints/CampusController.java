@@ -1,9 +1,12 @@
 package dev.ua.ikeepcalm.lumios.web.endpoints;
 
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.CampusBindingService;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.entities.campus.CampusBinding;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import dev.ua.ikeepcalm.lumios.web.endpoints.campus.GradeEntry;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -20,10 +23,14 @@ public class CampusController {
 
     private final CampusBindingService campusBindingService;
     private final TelegramClient telegramClient;
+    private final ChatService chatService;
+    private final TranslationService translationService;
 
-    public CampusController(CampusBindingService campusBindingService, TelegramClient telegramClient) {
+    public CampusController(CampusBindingService campusBindingService, TelegramClient telegramClient, ChatService chatService, TranslationService translationService) {
         this.campusBindingService = campusBindingService;
         this.telegramClient = telegramClient;
+        this.chatService = chatService;
+        this.translationService = translationService;
     }
 
     @PostMapping("/webhook")
@@ -59,18 +66,28 @@ public class CampusController {
             return;
         }
 
+        LumiosChat chat = null;
+        try {
+            chat = chatService.findByChatId(binding.getTelegramUserId());
+        } catch (NoSuchEntityException e) {
+            log.debug("No chat found for telegramUserId={}", binding.getTelegramUserId());
+        }
+
         TextMessage message = new TextMessage();
         message.setChatId(binding.getTelegramUserId());
-        message.setText(buildNotificationText(entry));
+        message.setText(buildNotificationText(entry, chat));
         message.setParseMode(ParseMode.MARKDOWN);
         telegramClient.sendTextMessage(message);
     }
 
-    private String buildNotificationText(GradeEntry entry) {
+    private String buildNotificationText(GradeEntry entry, LumiosChat chat) {
         StringBuilder sb = new StringBuilder();
 
         boolean hasGrade = entry.getMark() != null;
-        sb.append(hasGrade ? "📊 *Нова оцінка в eCampus*" : "📋 *Нова відмітка в eCampus*").append("\n\n");
+        sb.append(hasGrade 
+            ? translationService.getMessage("campus.grade.new_grade", chat) 
+            : translationService.getMessage("campus.grade.new_mark", chat)
+        ).append("\n\n");
 
         if (entry.getDisciplineName() != null) {
             sb.append("📚 ").append(entry.getDisciplineName()).append("\n");
@@ -79,10 +96,10 @@ public class CampusController {
             sb.append("📝 ").append(entry.getDescription()).append("\n");
         }
         if (hasGrade) {
-            sb.append("⭐ Оцінка: *").append(entry.getMark()).append("*\n");
+            sb.append(translationService.getMessage("campus.grade.score", chat, entry.getMark()));
         }
         if (entry.getPresence() != null && !entry.getPresence().isBlank()) {
-            sb.append("✅ Присутність: ").append(entry.getPresence()).append("\n");
+            sb.append(translationService.getMessage("campus.grade.presence", chat, entry.getPresence()));
         }
         if (entry.getEmployeeFullName() != null) {
             sb.append("👨‍🏫 ").append(entry.getEmployeeFullName());

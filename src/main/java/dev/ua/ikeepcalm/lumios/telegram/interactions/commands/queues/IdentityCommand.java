@@ -18,14 +18,14 @@ public class IdentityCommand extends ServicesShortcut implements Interaction {
         String[] split = text.split(" ", 2);
 
         if (split.length == 1) {
-            sendMessage("Помилка! Введіть після команди своє ПІБ, щоб я зміг прив'язати його до вас!", update.getMessage());
+            sendMessage(translationService.getMessage("queue.identity.error", chat), update.getMessage());
             return;
         }
 
         user.setFullName(split[1]);
         userService.save(user);
 
-        sendMessage("Ваше ПІБ успішно встановлене на " + split[1], update.getMessage());
+        sendMessage(translationService.getMessage("queue.identity.success", chat, split[1]), update.getMessage());
     }
 
 }

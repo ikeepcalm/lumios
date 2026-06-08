@@ -20,9 +20,9 @@ public class UnlockCommand extends ServicesShortcut implements Interaction {
             chat.setCommunicationLimit(300);
             chat.setSummaryLimit(10);
             chatService.save(chat);
-            sendMessage("Ліміти на використання ШІ було знято!", update.getMessage());
+            sendMessage(translationService.getMessage("unlock.success", chat), update.getMessage());
         } else {
-            sendMessage("Ви не можете виконувати цю команду!", update.getMessage());
+            sendMessage(translationService.getMessage("unlock.error.forbidden", chat), update.getMessage());
         }
     }
 }

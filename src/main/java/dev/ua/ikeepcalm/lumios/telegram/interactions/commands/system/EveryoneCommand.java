@@ -27,7 +27,7 @@ public class EveryoneCommand extends ServicesShortcut implements Interaction {
                 .collect(Collectors.joining(" "));
 
         if (mentionText.isEmpty()) {
-            sendMessage("Нікого тегати, у всіх порожні юзернейми!", update.getMessage());
+            sendMessage(translationService.getMessage("everyone.empty", chat), update.getMessage());
             return;
         }
 

@@ -60,7 +60,7 @@ public class StatsCallback extends ServicesShortcut implements Interaction {
         editedMessage.setChatId(message.getMessage().getChatId());
         editedMessage.setMessageId(message.getMessage().getMessageId());
         editedMessage.setParseMode(ParseMode.MARKDOWN);
-        editedMessage.setText(PagedUtil.buildStatsMessage(users, page));
+        editedMessage.setText(PagedUtil.buildStatsMessage(users, page, translationService, chat));
         editedMessage.setReplyKeyboard(PagedUtil.buildStatsKeyboard(page, maxPage, false, '-', chat.getChatId()));
         editMessage(editedMessage);
     }
@@ -72,7 +72,7 @@ public class StatsCallback extends ServicesShortcut implements Interaction {
         try {
             chat = chatService.findByChatId(chatId);
         } catch (Exception e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("chat.error.not_found", "uk"), message.getId());
             return;
         }
 

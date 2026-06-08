@@ -45,14 +45,7 @@ public class WheelCommand extends ServicesShortcut implements Interaction {
             userService.save(winner);
             chat.setLastWheelDate(now);
             chatService.save(chat);
-            String text = """
-                    *КОЛЕСО ФОРТУНИ 🎡*
-                                        
-                    🎉 Переможець: %s
-                    💰 Виграш: __ %d __
-                                        
-                    _Не розказуйте нікому про це!_
-                    """.formatted(winner.getUsername()
+            String text = translationService.getMessage("wheel.success", chat, winner.getUsername()
                     .replace("_", "\\_")
                     .replace("*", "\\*"), winAmount);
             try {
@@ -61,7 +54,7 @@ public class WheelCommand extends ServicesShortcut implements Interaction {
                 sendMessage(text, message);
             }
         } else {
-            sendMessage("До наступної спроби залишилося %d годин(и) %d хвилин(и)".formatted(24 - duration.toHours(), 60 - duration.toMinutes() % 60), ParseMode.MARKDOWN, message);
+            sendMessage(translationService.getMessage("wheel.cooldown", chat, 24 - duration.toHours(), 60 - duration.toMinutes() % 60), ParseMode.MARKDOWN, message);
         }
     }
 }

@@ -42,7 +42,7 @@ public class LinkCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
 
         if (!message.getChat().getType().equals("private")) {
-            sendMessage("🔒 Команда /link доступна лише в приватному чаті з ботом.", message);
+            sendMessage(translationService.getMessage("command.link.private-only", chat), message);
             return;
         }
 
@@ -55,14 +55,7 @@ public class LinkCommand extends ServicesShortcut implements Interaction {
                 campusBindingService.save(existing);
             }
             String idLine = "`" + existing.getExternalId() + "`";
-            sendMessage("""
-                    ✅ *Акаунт вже прив'язано до eCampus*
-
-                    📅 Прив'язано: %s
-                    🆔 ID підписки: %s
-
-                    Щоб відв'язати і підключити інший — використай /unlink.
-                    """.formatted(existing.getSubscribedAt().format(DATE_FORMATTER), idLine),
+            sendMessage(translationService.getMessage("command.link.already-bound", chat, existing.getSubscribedAt().format(DATE_FORMATTER), idLine),
                     ParseMode.MARKDOWN, message);
             return;
         } catch (NoSuchEntityException ignored) {
@@ -70,24 +63,13 @@ public class LinkCommand extends ServicesShortcut implements Interaction {
 
         AtomicInteger attempts = rateLimitCache.get(userId, k -> new AtomicInteger(0));
         if (attempts.get() >= MAX_ATTEMPTS) {
-            sendMessage("⏳ Забагато спроб прив'язки. Спробуй знову через 30 хвилин.", message);
+            sendMessage(translationService.getMessage("command.link.too-many-attempts", chat), message);
             return;
         }
 
         CampusLinkUpdate.pendingLinks.put(userId, System.currentTimeMillis());
 
-        sendMessage("""
-                🔗 *Прив'язка акаунту eCampus*
-
-                Надішли свої дані для входу у форматі:
-                `логін пароль`
-
-                Наприклад: `ivan.petrenko mypassword123`
-
-                🔐 Повідомлення з паролем буде негайно видалено.
-                Дані не зберігаються на сервері.
-                ⏱ У тебе є 5 хвилин, після чого сесія скидається.
-                """, ParseMode.MARKDOWN, message);
+        sendMessage(translationService.getMessage("command.link.prompt", chat), ParseMode.MARKDOWN, message);
     }
 
     public static Cache<Long, AtomicInteger> getRateLimitCache() {

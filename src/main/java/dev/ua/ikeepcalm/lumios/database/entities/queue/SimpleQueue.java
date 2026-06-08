@@ -31,7 +31,7 @@ public class SimpleQueue {
     private List<SimpleUser> contents = new LinkedList<>();
 
     public SimpleQueue() {
-        this.alias = "СТАНДАРТНА ЧЕРГА";
+        this.alias = "STANDARD QUEUE";
         this.id = UUID.randomUUID();
     }
 

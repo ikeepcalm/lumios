@@ -36,19 +36,19 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
         String[] parts = text.split(" ");
 
         if (parts.length < 2) {
-            sendMessage("Введіть кількість повідомлень для підведення підсумку!", update.getMessage());
+            sendMessage(translationService.getMessage("summary.error.empty_count", chat), update.getMessage());
             return;
         }
 
         try {
             int count = Integer.parseInt(parts[1]);
             if (count < 1 || count > 200) {
-                sendMessage("Кількість повідомлень повинна бути від 1 до 200!", update.getMessage());
+                sendMessage(translationService.getMessage("summary.error.invalid_range", chat), update.getMessage());
                 return;
             }
 
             if (chat.getSummaryLimit() <= 0) {
-                sendMessage("Ви вже використали всі спроби підведення підсумку за повідомлення на сьогодні!", update.getMessage());
+                sendMessage(translationService.getMessage("summary.error.limit_reached", chat), update.getMessage());
                 return;
             }
 
@@ -58,7 +58,7 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
             if (foundMessages < count) {
                 System.out.println("foundMessages: " + foundMessages + " count: " + count);
 
-                sendMessage("Недостатньо повідомлень для підведення підсумку! Можливо у мене немає дозволів читати повідомлення в цій групі?", update.getMessage());
+                sendMessage(translationService.getMessage("summary.error.insufficient_messages", chat), update.getMessage());
                 return;
             }
 
@@ -77,7 +77,7 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
 
             switch (chat.getAiModel()) {
                 case GEMINI -> {
-                    gemini.getChatSummary(chat.getChatId(), count).thenAccept(response -> {
+                    gemini.getChatSummary(chat, count).thenAccept(response -> {
                         if (response != null) {
                             sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
                             chat.setSummaryLimit(chat.getSummaryLimit() - 1);
@@ -85,12 +85,12 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
                         }
                     }).exceptionally(ex -> {
                         log.error("Failed to get summary from Gemini", ex);
-                        sendMessage("Виникла помилка при спробі взаємодії з Gemini.", update.getMessage());
+                        sendMessage(translationService.getMessage("summary.error.gemini", chat), update.getMessage());
                         return null;
                     });
                 }
                 case OPENAI -> {
-                    openAI.getChatSummary(chat.getChatId(), count).thenAccept(response -> {
+                    openAI.getChatSummary(chat, count).thenAccept(response -> {
                         if (response != null) {
                             sendMessage(response, ParseMode.MARKDOWN, update.getMessage());
                             chat.setSummaryLimit(chat.getSummaryLimit() - 1);
@@ -98,7 +98,7 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
                         }
                     }).exceptionally(ex -> {
                         log.error("Failed to get summary from OpenAI", ex);
-                        sendMessage("Виникла помилка при спробі взаємодії з OpenAI.", update.getMessage());
+                        sendMessage(translationService.getMessage("summary.error.openai", chat), update.getMessage());
                         return null;
                     });
                 }
@@ -106,7 +106,7 @@ public class SummaryCommand extends ServicesShortcut implements Interaction {
 
 
         } catch (NumberFormatException e) {
-            sendMessage("Введіть коректне число повідомлень для підведення підсумку!", update.getMessage());
+            sendMessage(translationService.getMessage("summary.error.invalid_number", chat), update.getMessage());
         }
     }
 }

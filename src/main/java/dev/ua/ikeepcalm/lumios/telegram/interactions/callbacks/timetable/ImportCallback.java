@@ -55,7 +55,7 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
 
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(callbackQuery.getMessage().getChatId());
-        textMessage.setText("Імпортую розклад для `" + data.replace("import#", "") + "`");
+        textMessage.setText(translationService.getMessage("command.import.loading", chat, data.replace("import#", "")));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         Message message = telegramClient.sendTextMessage(textMessage);
 
@@ -90,7 +90,7 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(message.getChatId());
         editMessage.setMessageId(message.getMessageId());
-        editMessage.setText("Розклад для `" + data.replace("import#", "") + "` був успішно імпортований!");
+        editMessage.setText(translationService.getMessage("command.import.success", chat, data.replace("import#", "")));
         editMessage.setParseMode(ParseMode.MARKDOWN);
         editMessage(editMessage);
     }

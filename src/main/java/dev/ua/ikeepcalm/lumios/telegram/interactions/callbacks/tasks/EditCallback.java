@@ -33,7 +33,7 @@ public class EditCallback extends ServicesShortcut implements Interaction {
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(message.getMessage().getChatId());
             editMessage.setMessageId(message.getMessage().getMessageId());
-            editMessage.setText("Оберіть завдання для редагування:");
+            editMessage.setText(translationService.getMessage("task.edit.select", chat));
             editMessage.setReplyKeyboard(TaskMarkupUtil.createTasksKeyboard(taskMap));
             editMessage(editMessage);
         } else {
@@ -43,12 +43,12 @@ public class EditCallback extends ServicesShortcut implements Interaction {
             try {
                 task = taskService.findTaskById(chat.getChatId(), taskId);
             } catch (NoSuchEntityException e) {
-                telegramClient.sendAnswerCallbackQuery("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", message.getId());
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.error.not_found", chat), message.getId());
                 return;
             }
             task.setState(TaskState.NOT_COMPLETED);
             taskService.save(task);
-            EditMessage editMessage = TaskMarkupUtil.buildTaskEditMessage(task);
+            EditMessage editMessage = TaskMarkupUtil.buildTaskEditMessage(task, chat, translationService);
             editMessage.setChatId(message.getMessage().getChatId());
             editMessage.setMessageId(message.getMessage().getMessageId());
             editMessage(editMessage);

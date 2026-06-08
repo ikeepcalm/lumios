@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils;
 
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 
 import java.util.ArrayList;
@@ -74,13 +75,13 @@ public class MessageFormatter {
     
     public static String formatApiErrorMessage(int errorCode, String operation) {
         return switch (errorCode) {
-            case 400 -> formatErrorMessage("Невірний запит під час виконання операції: " + operation);
-            case 401 -> formatErrorMessage("Недійсний токен бота");
-            case 403 -> formatErrorMessage("Бот не має дозволу на виконання цієї дії");
-            case 404 -> formatErrorMessage("Ресурс не знайдено");
-            case 429 -> formatWarningMessage("Занадто багато запитів. Спробуйте пізніше");
-            case 500 -> formatErrorMessage("Внутрішня помилка сервера Telegram");
-            default -> formatErrorMessage("Помилка API: " + errorCode + " під час " + operation);
+            case 400 -> formatErrorMessage("Invalid request during operation: " + operation);
+            case 401 -> formatErrorMessage("Invalid bot token");
+            case 403 -> formatErrorMessage("Bot does not have permission to perform this action");
+            case 404 -> formatErrorMessage("Resource not found");
+            case 429 -> formatWarningMessage("Too many requests. Please try again later");
+            case 500 -> formatErrorMessage("Internal Telegram server error");
+            default -> formatErrorMessage("API Error: " + errorCode + " during " + operation);
         };
     }
     
@@ -104,6 +105,10 @@ public class MessageFormatter {
      * Splits long messages into chunks that fit within Telegram's limit
      */
     public static List<String> chunkMessage(String text, String parseMode) {
+        return chunkMessage(text, parseMode, null, null);
+    }
+
+    public static List<String> chunkMessage(String text, String parseMode, TranslationService translationService, LumiosChat chat) {
         List<String> chunks = new ArrayList<>();
 
         if (text == null || text.length() <= MAX_MESSAGE_LENGTH) {
@@ -143,12 +148,13 @@ public class MessageFormatter {
         }
 
         // Add continuation markers
+        String marker = (translationService != null) ? translationService.getMessage("message.continuation", chat) : "continued";
         for (int i = 0; i < chunks.size(); i++) {
             if (i < chunks.size() - 1) {
-                chunks.set(i, chunks.get(i) + "\n\n_(продовження...)_");
+                chunks.set(i, chunks.get(i) + "\n\n_(" + marker + "...)_");
             }
             if (i > 0) {
-                chunks.set(i, "_(продовження)_\n\n" + chunks.get(i));
+                chunks.set(i, "_(" + marker + ")_\n\n" + chunks.get(i));
             }
         }
 

@@ -38,7 +38,7 @@ public class ExitCallback extends ServicesShortcut implements Interaction {
             List<SimpleUser> queueContents = simpleQueue.getContents();
 
             if (queueContents.isEmpty()) {
-                telegramClient.sendAnswerCallbackQuery("Помилка! Черга порожня!", callbackQueryId);
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.empty", chat), callbackQueryId);
                 return;
             }
 
@@ -50,26 +50,26 @@ public class ExitCallback extends ServicesShortcut implements Interaction {
                     simpleQueue.setMessageId(this.telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue)).getMessageId());
                     queueService.save(simpleQueue);
 
-                    this.telegramClient.sendAnswerCallbackQuery("Йоу! Вітаю із виходом з цієї черги. Тепер можна і розслабитися...", callbackQueryId);
+                    this.telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.exit.head", chat), callbackQueryId);
 
                     if (queueContents.isEmpty()) {
                         RemoveMessage removeMessage = new RemoveMessage(simpleQueue.getMessageId(), message.getMessage().getChatId());
                         this.telegramClient.sendRemoveMessage(removeMessage);
                         queueService.deleteSimpleQueue(simpleQueue);
                     } else {
-                        this.telegramClient.sendTextMessage(QueueMarkupUtil.createNotification(message.getMessage().getChatId(), simpleQueue));
+                        this.telegramClient.sendTextMessage(QueueMarkupUtil.createNotification(message.getMessage().getChatId(), simpleQueue, chat, translationService));
                     }
                 }
             } else if (queueContents.contains(simpleUser)) {
                 queueContents.remove(simpleUser);
                 simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue)).getMessageId());
                 queueService.save(simpleQueue);
-                telegramClient.sendAnswerCallbackQuery("Хочеш вийти? Ну добре, виходь, ніхто ж тебе тут насильно не тримає...", callbackQueryId);
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.exit.body", chat), callbackQueryId);
             }
         } catch (IllegalArgumentException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Невірний формат ID черги!", callbackQueryId);
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.invalid_id", chat), callbackQueryId);
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.not_found", chat), callbackQueryId);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }

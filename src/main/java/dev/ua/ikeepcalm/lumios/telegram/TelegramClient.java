@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.exceptions.MessageProcessingException;
 import dev.ua.ikeepcalm.lumios.telegram.exceptions.TelegramApiFailedException;
 import dev.ua.ikeepcalm.lumios.telegram.utils.MessageFormatter;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,73 +53,74 @@ public class TelegramClient extends OkHttpTelegramClient {
 
     private final ChatService chatService;
     private final RecordService recordService;
+    private final TranslationService translationService;
 
-    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken, ChatService chatService, RecordService recordService) {
+    public TelegramClient(@Value(value = "${telegram.bot.token}") String botToken, ChatService chatService, RecordService recordService, TranslationService translationService) {
         super(botToken);
+        this.chatService = chatService;
+        this.recordService = recordService;
+        this.translationService = translationService;
         try {
-            executeCommand(setBotCommands());
+            executeCommand(setBotPrivateCommands("uk"));
+            executeCommand(setBotGroupCommands("uk"));
+            executeCommand(setBotPrivateCommands("en"));
+            executeCommand(setBotGroupCommands("en"));
             log.info("Bot commands set successfully");
         } catch (TelegramApiFailedException e) {
             log.error("Failed to set bot commands", e);
         }
-        this.chatService = chatService;
-        this.recordService = recordService;
     }
 
-    private SetMyCommands setBotCommands() {
+    private SetMyCommands setBotPrivateCommands(String lang) {
         return SetMyCommands.builder()
-                .commands(
-                        new ArrayList<>(List.of(
-                                new BotCommand("help", "Відкрити довідку користувача"),
-                                new BotCommand("tasks", "Відкрити меню завдань"),
-                                new BotCommand("due", "Переглянути список завдань"),
-                                new BotCommand("me", "Подивитися персональну статистику"),
-                                new BotCommand("stats", "Подивитися загальну статистику"),
-                                new BotCommand("gamble", "Команда для лудоманів"),
-                                new BotCommand("wheel", "Щоденне колесо фортуни"),
-                                new BotCommand("link", "Прив'язати аккаунт eCampus для сповіщень про оцінки"),
-                                new BotCommand("unlink", "Відв'язати аккаунт eCampus")
-                        ))).scope(BotCommandScopeAllPrivateChats.builder().build())
-                .commands(
-                        new ArrayList<>(List.of(
-                                // System Commands
-                                new BotCommand("settings", "Відкрити налаштування бота"),
-                                new BotCommand("help", "Відкрити довідку користувача"),
-                                new BotCommand("summary", "Підведення підсумку за останні повідомлення"),
-                                new BotCommand("everyone", "Тегнути всіх у поточному чатику"),
+                .commands(new ArrayList<>(List.of(
+                        new BotCommand("help", translationService.getMessage("command.desc.help", lang)),
+                        new BotCommand("tasks", translationService.getMessage("command.desc.tasks", lang)),
+                        new BotCommand("due", translationService.getMessage("command.desc.due", lang)),
+                        new BotCommand("me", translationService.getMessage("command.desc.me", lang)),
+                        new BotCommand("stats", translationService.getMessage("command.desc.stats", lang)),
+                        new BotCommand("gamble", translationService.getMessage("command.desc.gamble", lang)),
+                        new BotCommand("wheel", translationService.getMessage("command.desc.wheel", lang)),
+                        new BotCommand("link", translationService.getMessage("command.desc.link", lang)),
+                        new BotCommand("unlink", translationService.getMessage("command.desc.unlink", lang))
+                )))
+                .scope(BotCommandScopeAllPrivateChats.builder().build())
+                .languageCode(lang)
+                .build();
+    }
 
-                                // Queue Commands
-                                new BotCommand("queue", "Створити просту нумеровану чергу"),
-                                new BotCommand("mixed", "Створити мішану (випадкову) чергу"),
-                                new BotCommand("identity", "Прив'язати своє реальне ім'я до аккаунту"),
-                                new BotCommand("repin", "Прикріпити всі активні черги в групі (для адмінів)"),
-                                new BotCommand("revive", "Відновити всі активні черги в групі (для адмінів)"),
-                                
-                                // Timetable Commands  
-                                new BotCommand("editor", "Налаштувати розклад для чату"),
-                                new BotCommand("today", "Показати розклад на сьогодні"),
-                                new BotCommand("tomorrow", "Показати розклад на завтра"),
-                                new BotCommand("week", "Показати розклад тижня"),
-                                new BotCommand("now", "Посилання на заняття, яке йде зараз"),
-                                new BotCommand("meow", "Посилання на заняття, яке йде зараз (альтернатива /now)"),
-                                new BotCommand("next", "Посилання на наступне заняття"),
-                                new BotCommand("import", "Імпортувати розклад для групи з КПІ Кампусу"),
-                                
-                                // Task Commands
-                                new BotCommand("tasks", "Відкрити меню завдань"),
-                                new BotCommand("due", "Переглянути список завдань"),
-                                
-                                // Reverence Commands
-                                new BotCommand("me", "Подивитися персональну статистику"),
-                                new BotCommand("stats", "Подивитися загальну статистику"),
-                                new BotCommand("gamble", "Команда для лудоманів"),
-                                new BotCommand("gamble_all", "Команда для повних лудоманів"),
-                                new BotCommand("wheel", "Щоденне колесо фортуни"),
-
-                                // Ai
-                                new BotCommand("nickname", "Встановити нікнейм для бота")
-                        ))
-                ).scope(BotCommandScopeAllGroupChats.builder().build()).build();
+    private SetMyCommands setBotGroupCommands(String lang) {
+        return SetMyCommands.builder()
+                .commands(new ArrayList<>(List.of(
+                        new BotCommand("settings", translationService.getMessage("command.desc.settings", lang)),
+                        new BotCommand("help", translationService.getMessage("command.desc.help", lang)),
+                        new BotCommand("summary", translationService.getMessage("command.desc.summary", lang)),
+                        new BotCommand("everyone", translationService.getMessage("command.desc.everyone", lang)),
+                        new BotCommand("queue", translationService.getMessage("command.desc.queue", lang)),
+                        new BotCommand("mixed", translationService.getMessage("command.desc.mixed", lang)),
+                        new BotCommand("identity", translationService.getMessage("command.desc.identity", lang)),
+                        new BotCommand("repin", translationService.getMessage("command.desc.repin", lang)),
+                        new BotCommand("revive", translationService.getMessage("command.desc.revive", lang)),
+                        new BotCommand("editor", translationService.getMessage("command.desc.editor", lang)),
+                        new BotCommand("today", translationService.getMessage("command.desc.today", lang)),
+                        new BotCommand("tomorrow", translationService.getMessage("command.desc.tomorrow", lang)),
+                        new BotCommand("week", translationService.getMessage("command.desc.week", lang)),
+                        new BotCommand("now", translationService.getMessage("command.desc.now", lang)),
+                        new BotCommand("meow", translationService.getMessage("command.desc.meow", lang)),
+                        new BotCommand("next", translationService.getMessage("command.desc.next", lang)),
+                        new BotCommand("import", translationService.getMessage("command.desc.import", lang)),
+                        new BotCommand("tasks", translationService.getMessage("command.desc.tasks", lang)),
+                        new BotCommand("due", translationService.getMessage("command.desc.due", lang)),
+                        new BotCommand("me", translationService.getMessage("command.desc.me", lang)),
+                        new BotCommand("stats", translationService.getMessage("command.desc.stats", lang)),
+                        new BotCommand("gamble", translationService.getMessage("command.desc.gamble", lang)),
+                        new BotCommand("gamble_all", translationService.getMessage("command.desc.gamble_all", lang)),
+                        new BotCommand("wheel", translationService.getMessage("command.desc.wheel", lang)),
+                        new BotCommand("nickname", translationService.getMessage("command.desc.nickname", lang))
+                )))
+                .scope(BotCommandScopeAllGroupChats.builder().build())
+                .languageCode(lang)
+                .build();
     }
 
     private Object executeCommand(BotApiMethod<?> command) throws TelegramApiFailedException {
@@ -345,7 +347,12 @@ public class TelegramClient extends OkHttpTelegramClient {
     }
 
     private Message sendChunkedMessage(TextMessage textMessage) {
-        List<String> chunks = MessageFormatter.chunkMessage(textMessage.getText(), textMessage.getParseMode());
+        LumiosChat chat = null;
+        try {
+            chat = chatService.findById(textMessage.getChatId());
+        } catch (NoSuchEntityException ignored) {
+        }
+        List<String> chunks = MessageFormatter.chunkMessage(textMessage.getText(), textMessage.getParseMode(), translationService, chat);
         log.info("Splitting long message into {} chunks for chat {}", chunks.size(), textMessage.getChatId());
 
         Message lastSentMessage = null;
@@ -518,9 +525,15 @@ public class TelegramClient extends OkHttpTelegramClient {
     private Message handleFallbackMessage(TextMessage textMessage) {
         log.info("All retries failed for chat {}, attempting fallback", textMessage.getChatId());
         
+        LumiosChat chat = null;
+        try {
+            chat = chatService.findById(textMessage.getChatId());
+        } catch (NoSuchEntityException ignored) {
+        }
+
         try {
             textMessage.setText(MessageFormatter.formatErrorMessage(
-                "Сталася помилка при відправці повідомлення. Спробуйте ще раз пізніше."
+                translationService.getMessage("client.send.error", chat)
             ));
             textMessage.setParseMode(MessageFormatter.getDefaultParseMode());
             textMessage.setReplyKeyboard(null);

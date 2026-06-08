@@ -31,13 +31,13 @@ public class QueueCommand extends ServicesShortcut implements Interaction {
 
             if (alias.isBlank() || alias.length() > 20) {
                 sendMessage(MessageFormatter.formatWarningMessage(
-                    "Назва черги повинна бути від 1 до 20 символів!"), message);
+                    translationService.getMessage("queue.warning.name_length", chat)), message);
                 return;
             }
             simpleQueue = new SimpleQueue(alias);
         } else {
             sendMessage(MessageFormatter.formatInfoMessage(
-                "Введіть назву черги після команди! Черги без назви були поміченими застарілими починаючи із версії 2.0.0!"), message);
+                translationService.getMessage("queue.info.name_required", chat)), message);
             return;
         }
 
@@ -67,7 +67,7 @@ public class QueueCommand extends ServicesShortcut implements Interaction {
             this.telegramClient.pinChatMessage(sendTextMessage.getChatId(), sendTextMessage.getMessageId());
         } catch (TelegramApiException e) {
             sendMessage(MessageFormatter.formatInfoMessage(
-                "Якщо ви хочете, щоб повідомлення було закріплено автоматично, надайте мені необхідні дозволи!"), message);
+                translationService.getMessage("queue.info.pin_permission", chat)), message);
         }
         simpleQueue.setMessageId(sendTextMessage.getMessageId());
         simpleQueue.setChatId(message.getChatId());

@@ -39,12 +39,12 @@ public class JoinCallback extends ServicesShortcut implements Interaction {
                                 (QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue))
                         .getMessageId());
                 queueService.save(simpleQueue);
-                this.telegramClient.sendAnswerCallbackQuery("Успішно заброньовано місце у черзі!", callbackQueryId);
+                this.telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.join.success", chat), callbackQueryId);
             } else {
-                this.telegramClient.sendAnswerCallbackQuery("Ви вже знаходитесь у цій черзі!", callbackQueryId);
+                this.telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.join.already", chat), callbackQueryId);
             }
         } catch (NoSuchEntityException e) {
-            this.telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+            this.telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.not_found", chat), callbackQueryId);
         }
     }
 

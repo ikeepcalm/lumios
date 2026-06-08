@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.utils.markup.ClassMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,14 @@ public class ClassNotification {
 
     private final TelegramClient telegramClient;
     private final ClassEntryRepository classEntryRepository;
+    private final TranslationService translationService;
     
     private final Map<String, LocalDate> notificationCache = new ConcurrentHashMap<>();
 
-    public ClassNotification(TelegramClient telegramClient, ClassEntryRepository classEntryRepository) {
+    public ClassNotification(TelegramClient telegramClient, ClassEntryRepository classEntryRepository, TranslationService translationService) {
         this.telegramClient = telegramClient;
         this.classEntryRepository = classEntryRepository;
+        this.translationService = translationService;
     }
 
     @Scheduled(cron = "0 * 7-22 * * MON-FRI")
@@ -55,7 +58,7 @@ public class ClassNotification {
                             String cacheKey = generateCacheKey(classEntry, chat.getChatId());
                             notificationCache.put(cacheKey, currentDate);
                             
-                            telegramClient.sendTextMessage(ClassMarkupUtil.createNowNotification(classEntry, chat.getChatId()));
+                            telegramClient.sendTextMessage(ClassMarkupUtil.createNowNotification(classEntry, chat, translationService));
                             return 1L;
                         }
                         return 0L;

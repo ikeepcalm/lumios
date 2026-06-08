@@ -92,7 +92,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
 
         if (isBotMentioned || isReplyToBot) {
             if (activeRequests.get() >= MAX_CONCURRENT_REQUESTS) {
-                sendMessage("Я зараз опрацьовую багато запитів. Будь ласка, спробуйте пізніше.", update.getMessage());
+                sendMessage(translationService.getMessage("ai.assistant.busy", chat), update.getMessage());
                 return;
             }
 
@@ -109,16 +109,16 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                     inputText = update.getMessage().getReplyToMessage().getText();
                 }
             } else {
-                inputText = hasText ? textMessage : "Опиши, що зображено на фото";
+                inputText = hasText ? textMessage : translationService.getMessage("ai.assistant.describe_image", chat);
             }
 
             if (!hasPhoto && (inputText.isBlank() || inputText.length() < 2 || inputText.length() > 1000)) {
-                sendMessage("Некоректний текст для відправлення на обробку", update.getMessage());
+                sendMessage(translationService.getMessage("ai.assistant.invalid_text", chat), update.getMessage());
                 return;
             }
 
             if (chat.getCommunicationLimit() <= 0) {
-                sendMessage("Ви вже використали всі спроби спілкування з ботом на сьогодні!", update.getMessage());
+                sendMessage(translationService.getMessage("ai.assistant.limit_exceeded", chat), update.getMessage());
                 return;
             }
 
@@ -162,12 +162,12 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                     }
                 } catch (Exception e) {
                     log.error("Failed to download photo", e);
-                    sendMessage("Не вдалося завантажити зображення", update.getMessage());
+                    sendMessage(translationService.getMessage("ai.assistant.image_load_failed", chat), update.getMessage());
                     return;
                 }
             }
 
-            String formattedInput = inputText + ", каже " + fullName + "(" + tag + ")";
+            String formattedInput = inputText + translationService.getMessage("ai.assistant.says", chat) + fullName + "(" + tag + ")";
 
             activeRequests.incrementAndGet();
 
@@ -194,10 +194,10 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                             try {
                                 if (response != null) {
                                     // Split long messages into chunks
-                                    List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2);
+                                    List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2, translationService, chat);
                                     Message lastSentMessage = null;
 
-                                    boolean isTimetableQuery = isTimetableRelated(finalInputText);
+                                    boolean isTimetableQuery = isTimetableRelated(finalInputText, chat);
 
                                     for (String chunk : chunks) {
                                         lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage(), !isTimetableQuery);
@@ -228,26 +228,26 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                         }).exceptionally(ex -> {
                             activeRequests.decrementAndGet();
                             log.error("Failed to get response from Gemini", ex);
-                            sendMessage("Виникла помилка при спробі взаємодії з Gemini. Скоріше за все, перевищення ліміту на хвилину / годину / день. Спробуйте пізніше!", update.getMessage());
+                            sendMessage(translationService.getMessage("ai.gemini.error_limit", chat), update.getMessage());
                             return null;
                         });
                     }
                     case OPENAI -> {
                         if (shouldProcessImage) {
-                            sendMessage("На жаль, OpenAI модель не підтримує обробку зображень. Змініть модель на Gemini для цього функціоналу.", update.getMessage());
+                            sendMessage(translationService.getMessage("ai.openai.no_image_support", chat), update.getMessage());
                             activeRequests.decrementAndGet();
                             return;
                         }
 
-                        openAI.getChatResponse(formattedInput, chat.getChatId())
+                        openAI.getChatResponse(formattedInput, chat)
                                 .thenAccept(response -> {
                                     try {
                                         if (response != null) {
                                             // Split long messages into chunks
-                                            List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2);
+                                            List<String> chunks = MessageFormatter.chunkMessage(response, ParseMode.MARKDOWNV2, translationService, chat);
                                             Message lastSentMessage = null;
 
-                                            boolean isTimetableQuery = isTimetableRelated(finalInputText1);
+                                            boolean isTimetableQuery = isTimetableRelated(finalInputText1, chat);
 
                                             for (String chunk : chunks) {
                                                 lastSentMessage = sendMessage(chunk, ParseMode.MARKDOWNV2, update.getMessage(), !isTimetableQuery);
@@ -275,7 +275,7 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
                                 }).exceptionally(ex -> {
                                     activeRequests.decrementAndGet();
                                     log.error("Failed to get response from OpenAI", ex);
-                                    sendMessage("Виникла помилка при спробі взаємодії з Open AI.", update.getMessage());
+                                    sendMessage(translationService.getMessage("ai.openai.error", chat), update.getMessage());
                                     return null;
                                 });
                     }
@@ -283,18 +283,22 @@ public class AssistantUpdate extends ServicesShortcut implements Interaction {
             } catch (Exception e) {
                 activeRequests.decrementAndGet();
                 log.error("Unexpected error during AI processing", e);
-                sendMessage("Виникла неочікувана помилка при обробці запиту.", update.getMessage());
+                sendMessage(translationService.getMessage("ai.assistant.generic_error", chat), update.getMessage());
             }
         }
     }
 
-    private boolean isTimetableRelated(String text) {
+    private boolean isTimetableRelated(String text, LumiosChat chat) {
         if (text == null) return false;
         String lower = text.toLowerCase();
-        return lower.contains("розклад") || lower.contains("пари") || lower.contains("пара") ||
-               lower.contains("timetable") || lower.contains("schedule") ||
-               lower.contains("класи") || lower.contains("клас") ||
-               lower.contains("лекція") || lower.contains("практика") || lower.contains("лабораторна");
+        String triggersStr = translationService.getMessage("ai.timetable.triggers", chat);
+        String[] keywords = triggersStr.split(",");
+        for (String keyword : keywords) {
+            if (lower.contains(keyword.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void saveUserMessage(Message message, String inputText) {

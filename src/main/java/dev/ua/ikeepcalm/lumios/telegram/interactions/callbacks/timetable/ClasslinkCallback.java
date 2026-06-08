@@ -23,19 +23,19 @@ public class ClasslinkCallback extends ServicesShortcut implements Interaction {
         try {
             ClassEntry classEntry = timetableService.findClassById(classId);
             if (classEntry.getUrl() != null) {
-                telegramClient.sendAnswerCallbackQuery("Посилання вже додано до класу", callbackQuery.getId());
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("class.link.already_added", chat), callbackQuery.getId());
                 return;
             }
 
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(chat.getChatId());
             editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMessage.setText("@" + callbackQuery.getFrom().getUserName() + ", надішліть посилання на конференцію у наступному повідомленні: ");
+            editMessage.setText(translationService.getMessage("class.link.prompt", chat, callbackQuery.getFrom().getUserName()));
             editMessage(editMessage);
 
             UpdateConsumer.waitingLinks.put(callbackQuery.getFrom().getId(), classId);
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Клас не знайдено. Схоже на серверну помилку, зверніться до підтримки!", callbackQuery.getId());
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("class.link.error.not_found", chat), callbackQuery.getId());
         }
     }
 }

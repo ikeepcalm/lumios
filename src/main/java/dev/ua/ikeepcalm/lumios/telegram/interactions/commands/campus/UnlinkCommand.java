@@ -33,7 +33,7 @@ public class UnlinkCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
 
         if (!message.getChat().getType().equals("private")) {
-            sendMessage("🔒 Команда /unlink доступна лише в приватному чаті з ботом.", message);
+            sendMessage(translationService.getMessage("command.unlink.private-only", chat), message);
             return;
         }
 
@@ -43,7 +43,7 @@ public class UnlinkCommand extends ServicesShortcut implements Interaction {
         try {
             binding = campusBindingService.findByTelegramUserId(userId);
         } catch (NoSuchEntityException e) {
-            sendMessage("ℹ️ Твій акаунт не прив'язано до eCampus. Використай /link для прив'язки.", message);
+            sendMessage(translationService.getMessage("command.unlink.not-bound", chat), message);
             return;
         }
 
@@ -54,7 +54,7 @@ public class UnlinkCommand extends ServicesShortcut implements Interaction {
         }
 
         campusBindingService.deleteByTelegramUserId(userId);
-        sendMessage("✅ Акаунт успішно відв'язано від eCampus. Сповіщення про оцінки більше не надходитимуть.", message);
+        sendMessage(translationService.getMessage("command.unlink.success", chat), message);
     }
 
 }

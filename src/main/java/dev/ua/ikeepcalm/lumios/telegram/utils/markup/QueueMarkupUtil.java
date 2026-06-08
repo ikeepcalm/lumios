@@ -3,6 +3,7 @@ package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.MixedQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleQueue;
 import dev.ua.ikeepcalm.lumios.database.entities.queue.SimpleUser;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -71,7 +72,7 @@ public class QueueMarkupUtil {
         return new InlineKeyboardMarkup(keyboard);
     }
 
-    public static TextMessage createNotification(long chatId, SimpleQueue simpleQueue) {
+    public static TextMessage createNotification(long chatId, SimpleQueue simpleQueue, LumiosChat chat, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
         SimpleUser simpleUser = simpleQueue.getContents().getFirst();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(chatId);
@@ -87,7 +88,7 @@ public class QueueMarkupUtil {
                 username = "@" + username;
             }
 
-            textMessage.setText(simpleUser.getName() + " (" + username + "), твоя черга відповідати у " + simpleQueue.getAlias() + "!");
+            textMessage.setText(translationService.getMessage("queue.notification.turn", chat, simpleUser.getName(), username, simpleQueue.getAlias()));
         }
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();

@@ -16,15 +16,10 @@ public class MeCommand extends ServicesShortcut implements Interaction {
     @Override
     public void fireInteraction(Update message, LumiosUser user, LumiosChat chat) {
         if (user.getReverence() < 0) {
-            sendMessage("```Власна-статистика" +
-                        " ◈ Рейтинг: " + user.getReverence() + "\n\n"
-                        + "Допоки ви знаходитесь у від'ємному секторі поваги, для вас недоступний певний функціонал!```\n", ParseMode.MARKDOWN
+            sendMessage(translationService.getMessage("me.negative_reverence", chat, user.getReverence()), ParseMode.MARKDOWN
                     , message.getMessage());
         } else {
-            sendMessage("```Власна-статистика" +
-                        " ◈ Рейтинг: " + user.getReverence() + "\n" +
-                        " ◈ Кредити: " + user.getCredits() + "\n" +
-                        " ◈ Оновлення: " + user.getSustainable() + "```\n", ParseMode.MARKDOWN, message.getMessage());
+            sendMessage(translationService.getMessage("me.statistics", chat, user.getReverence(), user.getCredits(), user.getSustainable()), ParseMode.MARKDOWN, message.getMessage());
         }
     }
 }

@@ -58,6 +58,13 @@ public class LumiosChat {
     @Column
     private String botNickname;
 
+    @Column(name = "language", columnDefinition = "varchar(5) default 'uk'")
+    private String language = "uk";
+
+    public String getLanguage() {
+        return language == null ? "uk" : language;
+    }
+
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<LumiosUser> users;
 

@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils;
 
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -10,12 +11,13 @@ import java.util.List;
 
 public class PagedUtil {
 
-    public static String buildStatsMessage(List<LumiosUser> users, int page) {
+    public static String buildStatsMessage(List<LumiosUser> users, int page, TranslationService translationService, LumiosChat chat) {
         List<LumiosUser> sortedUsers = users.stream()
                 .sorted((user1, user2) -> Integer.compare(user2.getReverence(), user1.getReverence()))
                 .toList();
 
-        StringBuilder builder = new StringBuilder("```Статистика⠀(" + page + "/" + (sortedUsers.size() / 10 + 1) + ")\n\n");
+        int maxPage = Math.max(1, (sortedUsers.size() + 9) / 10);
+        StringBuilder builder = new StringBuilder(translationService.getMessage("stats.title", chat, page, maxPage));
 
         int count = 0;
         for (int i = (page - 1) * 10; i < sortedUsers.size(); i++) {

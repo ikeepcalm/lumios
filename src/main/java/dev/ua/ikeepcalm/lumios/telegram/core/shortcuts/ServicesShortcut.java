@@ -33,11 +33,12 @@ public abstract class ServicesShortcut {
     public TimetableService timetableService;
     public QueueService queueService;
     public RecordService recordService;
+    public dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService;
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServicesShortcut.class);
 
     @Autowired
-    public void init(RecordService recordService, TelegramClient telegramClient, ChatService chatService, UserService userService, TaskService taskService, TimetableService timetableService, QueueService queueService) {
+    public void init(RecordService recordService, TelegramClient telegramClient, ChatService chatService, UserService userService, TaskService taskService, TimetableService timetableService, QueueService queueService, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
         this.telegramClient = telegramClient;
         this.recordService = recordService;
         this.chatService = chatService;
@@ -45,6 +46,7 @@ public abstract class ServicesShortcut {
         this.taskService = taskService;
         this.timetableService = timetableService;
         this.queueService = queueService;
+        this.translationService = translationService;
     }
 
     public Message sendMessage(String text, String parseMode, Message message, boolean scheduleDeletion) {

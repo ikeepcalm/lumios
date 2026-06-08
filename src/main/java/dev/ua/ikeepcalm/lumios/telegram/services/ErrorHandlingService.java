@@ -24,7 +24,7 @@ public class ErrorHandlingService {
             e.getChatId(), e.getMessageType(), e.getMessage(), e);
             
         return MessageFormatter.formatErrorMessage(
-            "Помилка обробки повідомлення типу " + e.getMessageType()
+            "Error processing message of type " + e.getMessageType()
         );
     }
     
@@ -33,7 +33,7 @@ public class ErrorHandlingService {
             e.getService(), e.getOperation(), e.getMessage(), e);
             
         return MessageFormatter.formatErrorMessage(
-            "Сервіс " + e.getService() + " тимчасово недоступний. Спробуйте пізніше."
+            "Service " + e.getService() + " is temporarily unavailable. Please try again later."
         );
     }
     
@@ -41,7 +41,7 @@ public class ErrorHandlingService {
         log.error("Unexpected error in {}: {}", context, e.getMessage(), e);
         
         return MessageFormatter.formatErrorMessage(
-            "Виникла несподівана помилка. Спробуйте ще раз."
+            "An unexpected error occurred. Please try again."
         );
     }
     

@@ -22,7 +22,7 @@ public class ClasslinkRemoveCallback extends ServicesShortcut implements Interac
         try {
             ClassEntry classEntry = timetableService.findClassById(classId);
             if (classEntry.getUrl() == null) {
-                telegramClient.sendAnswerCallbackQuery("У цієї пари немає посилання", callbackQuery.getId());
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("class.link.none", chat), callbackQuery.getId());
                 return;
             }
 
@@ -33,12 +33,12 @@ public class ClasslinkRemoveCallback extends ServicesShortcut implements Interac
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(chat.getChatId());
             editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMessage.setText("✅ Посилання успішно видалено з пари: " + classEntry.getName());
+            editMessage.setText(translationService.getMessage("class.link.remove.success", chat, classEntry.getName()));
             editMessage(editMessage);
 
-            telegramClient.sendAnswerCallbackQuery("Посилання видалено!", callbackQuery.getId());
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("class.link.remove.toast", chat), callbackQuery.getId());
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Клас не знайдено. Схоже на серверну помилку, зверніться до підтримки!", callbackQuery.getId());
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("class.link.error.not_found", chat), callbackQuery.getId());
         }
     }
 }

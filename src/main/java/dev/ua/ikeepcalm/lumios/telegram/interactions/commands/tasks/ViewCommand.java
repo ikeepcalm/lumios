@@ -34,36 +34,22 @@ public class ViewCommand extends ServicesShortcut implements Interaction {
         try {
             task = taskService.findTaskById(chat.getChatId(), taskId);
         } catch (Exception e) {
-            sendMessage("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", update.getMessage());
+            sendMessage(translationService.getMessage("command.view.not-found", chat), update.getMessage());
             return;
         }
 
         if (task.getState() == TaskState.NOT_COMPLETED || task.getDueDate() == null) {
-            sendMessage("Це завдання ще не налаштоване!", update.getMessage());
+            sendMessage(translationService.getMessage("command.view.not-configured", chat), update.getMessage());
             return;
         }
 
-        String message = """
-                *%s*
-                
-                ◈ Опис:
-                %s
-                
-                ◈ Дедлайн:
-                %s %s
-                
-                ◈ Для кого:
-                %s
-                
-                Створив: [ця людинка](tg://user?id=%d)
-                
-                """.formatted(
+        String message = translationService.getMessage("command.view.detail-template", chat,
                 task.getTaskName(),
                 task.getDescription(),
                 task.getDueDate().toString(),
                 task.getDueTime().toString(),
-                task.getScope() == null ? "Для всіх в цьому чаті" : task.getScope().getName(),
-                task.getAuthor()
+                task.getScope() == null ? translationService.getMessage("command.view.for-everyone", chat) : translationService.getMessage("task.scope." + task.getScope().name().toLowerCase(), chat),
+                String.valueOf(task.getAuthor())
         );
 
         Message sent = null;
@@ -86,7 +72,7 @@ public class ViewCommand extends ServicesShortcut implements Interaction {
             editMessage.setChatId(update.getMessage().getChatId());
             editMessage.setMessageId(sent.getMessageId());
             InlineKeyboardRow row = new InlineKeyboardRow();
-            InlineKeyboardButton buttons = new InlineKeyboardButton("Перейти до завдання");
+            InlineKeyboardButton buttons = new InlineKeyboardButton(translationService.getMessage("command.view.go-to-task", chat));
             buttons.setUrl(task.getUrl());
             row.add(buttons);
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup(Collections.singletonList(row));

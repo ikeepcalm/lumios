@@ -1,9 +1,11 @@
 package dev.ua.ikeepcalm.lumios.telegram.ai;
 
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.ChatService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TimetableService;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
@@ -40,6 +42,7 @@ public class Gemini {
     private final GeminiConversationService conversationService;
     private final RecordService recordService;
     private final TimetableService timetableService;
+    private final TranslationService translationService;
 
     private static final int MAX_CACHE_ENTRIES = 10;
     private static final int MAX_IMAGE_SIZE = 1024 * 1024; // 1MB limit
@@ -47,17 +50,18 @@ public class Gemini {
 
     // Models to try in order (fallback on 429 rate limit errors)
     private static final String[] GEMINI_MODELS = {
-        "gemini-3.1-flash-lite-preview",
+        "gemini-3.1-flash-lite",
         "gemini-2.5-flash-lite",
         "gemini-2.5-flash",
         "gemini-3-flash",
         "gemma-3-27b-it"
     };
 
-    public Gemini(GeminiConversationService conversationService, RecordService recordService, TimetableService timetableService) {
+    public Gemini(GeminiConversationService conversationService, RecordService recordService, TimetableService timetableService, ChatService chatService, TranslationService translationService) {
         this.conversationService = conversationService;
         this.recordService = recordService;
         this.timetableService = timetableService;
+        this.translationService = translationService;
     }
 
     public CompletableFuture<String> getChatResponse(String inputText, Long chatId) {
@@ -80,10 +84,10 @@ public class Gemini {
         return getChatResponse(inputText, chatId, null, replyToMessageId, user, chat);
     }
 
-    public CompletableFuture<String> getChatSummary(long chatId, int amountOfMessages) {
+    public CompletableFuture<String> getChatSummary(LumiosChat chat, int amountOfMessages) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return executeSummary(chatId, amountOfMessages);
+                return executeSummary(chat, amountOfMessages);
             } catch (Exception e) {
                 log.error("Failed to generate chat summary with Gemini", e);
                 throw new RuntimeException("Failed to generate chat summary", e);
@@ -109,7 +113,7 @@ public class Gemini {
         }
 
         final String finalImageKey = imageKey;
-        final boolean needsTimetableContext = containsTimetableKeywords(inputText);
+        final boolean needsTimetableContext = containsTimetableKeywords(inputText, chat);
 
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -119,7 +123,7 @@ public class Gemini {
                 for (String model : GEMINI_MODELS) {
                     for (String key : apiKey) {
                         try {
-                            JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, model, needsTimetableContext);
+                            JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, needsTimetableContext);
 
                             URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -160,7 +164,7 @@ public class Gemini {
                             }
 
                             log.info("Successfully got response from model {} with key {}", model, key.substring(0, Math.min(8, key.length())));
-                            return extractTextFromResponse(response.toString());
+                            return extractTextFromResponse(response.toString(), chat);
 
                         } catch (Exception e) {
                             log.error("Error with model {} and key {}: {}", model, key.substring(0, Math.min(8, key.length())), e.getMessage());
@@ -184,7 +188,7 @@ public class Gemini {
 
 
     @NotNull
-    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat, String modelName, boolean includeTimetableContext) {
+    private JSONObject getJsonObject(String inputText, Long chatId, String imageKey, Long replyToMessageId, LumiosUser user, LumiosChat chat, boolean includeTimetableContext) {
         JSONArray conversationContext;
         if (replyToMessageId != null) {
             conversationContext = conversationService.getReplyChainContext(chatId, replyToMessageId);
@@ -234,7 +238,7 @@ public class Gemini {
         JSONObject systemPart = new JSONObject();
 
         // Build enhanced system prompt with context including current model
-        String systemPrompt = buildEnhancedSystemPrompt(user, chat, modelName, includeTimetableContext);
+        String systemPrompt = buildEnhancedSystemPrompt(user, chat, includeTimetableContext);
         systemPart.put("text", systemPrompt);
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
@@ -256,7 +260,7 @@ public class Gemini {
         return jsonPayload;
     }
 
-    private String extractTextFromResponse(String jsonResponse) {
+    private String extractTextFromResponse(String jsonResponse, LumiosChat chat) {
         try {
             JSONObject jsonObject = new JSONObject(jsonResponse);
             JSONArray candidates = jsonObject.getJSONArray("candidates");
@@ -280,11 +284,12 @@ public class Gemini {
             return parts.getJSONObject(0).getString("text");
         } catch (Exception e) {
             log.error("Failed to extract text from response", e);
-            return "Виникла помилка при обробці відповіді від Gemini.";
+            return translationService.getMessage("ai.gemini.error", chat);
         }
     }
 
-    private String executeSummary(long chatId, int amountOfMessages) throws Exception {
+    private String executeSummary(LumiosChat chat, int amountOfMessages) throws Exception {
+        long chatId = chat.getChatId();
         List<MessageRecord> userMessages = recordService.findLastMessagesByChatId(chatId, amountOfMessages);
         userMessages.sort(Comparator.comparing(MessageRecord::getDate));
 
@@ -302,7 +307,9 @@ public class Gemini {
             messagesToSummarize.append(fullName).append(": ").append(message.getText()).append("\n");
         }
 
-        String prompt = """
+        boolean isEn = (chat != null && "en".equals(chat.getLanguage()));
+        String promptInstruction = isEn ?
+                """
                 As a professional summarizer, create a concise and comprehensive summary of the provided conversation in group chat, while adhering to these guidelines:
                     1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
                     2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
@@ -310,10 +317,20 @@ public class Gemini {
                     4. Format the summary in paragraph form for easy understanding.
                     5. Summary should be divided into paragraphs, each covering a different aspect of the conversation including names or tags of the participants.
                 By following this optimized prompt, you will generate an effective summary that encapsulates the essence of the given text in a clear, concise, and reader-friendly manner.
-                
-                """ + ":\n" + messagesToSummarize;
+                """ :
+                """
+                Як професійний сумаризатор, створіть стислий та вичерпний підсумок наданої розмови у груповому чаті, дотримуючись наступних вказівок:
+                    1. Створіть підсумок, який є деталізованим, ретельним, глибоким та комплексним, водночас зберігаючи ясність та лаконічність.
+                    2. Включайте головні ідеї та важливу інформацію, відкидаючи зайві слова та зосереджуючись на критичних аспектах.
+                    3. Покладайтеся виключно на наданий текст розмови, без залучення зовнішньої інформації.
+                    4. Сформатуйте підсумок у вигляді абзаців для легкого сприйняття.
+                    5. Підсумок має бути розділений на абзаци, кожен з яких охоплює окремий аспект розмови, включаючи імена або теги учасників.
+                Дотримуючись цього оптимізованого запиту, ви створите ефективний підсумок, який чітко, лаконічно та зручно для читача передає суть наданого тексту.
+                """;
 
-        JSONObject jsonPayload = createSummaryPayload(prompt);
+        String prompt = promptInstruction + ":\n" + messagesToSummarize;
+
+        JSONObject jsonPayload = createSummaryPayload(prompt, chat);
         Exception lastException = null;
 
         // Try each model in order
@@ -358,7 +375,7 @@ public class Gemini {
                     }
 
                     log.info("Successfully generated summary with model {}", model);
-                    return extractTextFromResponse(response.toString());
+                    return extractTextFromResponse(response.toString(), chat);
 
                 } catch (Exception e) {
                     log.error("Failed to get summary with model {} and key: {}", model, key.substring(0, Math.min(8, key.length())) + "...", e);
@@ -371,7 +388,7 @@ public class Gemini {
         throw new RuntimeException("All models and API keys failed for summary generation", lastException);
     }
 
-    private JSONObject createSummaryPayload(String prompt) {
+    private JSONObject createSummaryPayload(String prompt, LumiosChat chat) {
         JSONObject jsonPayload = new JSONObject();
         JSONArray contentsArray = new JSONArray();
 
@@ -391,7 +408,11 @@ public class Gemini {
         systemInstruction.put("role", "user");
         JSONArray systemParts = new JSONArray();
         JSONObject systemPart = new JSONObject();
-        systemPart.put("text", "You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).");
+        boolean isEn = (chat != null && "en".equals(chat.getLanguage()));
+        String langInstruction = isEn ?
+                "Your preferred language is English. If using custom text formatting, use Markdown syntax. If meeting any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\)." :
+                "You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).";
+        systemPart.put("text", langInstruction);
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
         jsonPayload.put("systemInstruction", systemInstruction);
@@ -409,24 +430,20 @@ public class Gemini {
     /**
      * Builds an enhanced system prompt with context about the user and chat
      */
-    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat, String modelName, boolean includeTimetableContext) {
+    private String buildEnhancedSystemPrompt(LumiosUser user, LumiosChat chat, boolean includeTimetableContext) {
         StringBuilder prompt = new StringBuilder();
+        boolean isEn = (chat != null && "en".equals(chat.getLanguage()));
 
         // Current Date/Time and Week
         LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/Kiev"));
         LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
         DayOfWeek currentDayOfWeek = currentDate.getDayOfWeek();
         String currentDateTime = currentDate + " " + currentTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-        String dayName = currentDayOfWeek.getDisplayName(TextStyle.FULL, new Locale("uk", "UA"));
+        String dayName = currentDayOfWeek.getDisplayName(TextStyle.FULL, isEn ? Locale.ENGLISH : new Locale("uk", "UA"));
 
         prompt.append("=== CURRENT DATE & TIME ===\n");
         prompt.append(currentDateTime).append(" (").append(dayName).append(")\n");
         prompt.append("Academic week: ").append(WeekValidator.determineWeekDay()).append("\n\n");
-
-        // Current AI Model
-        prompt.append("=== YOUR CURRENT MODEL ===\n");
-        prompt.append("You are currently running on: ").append(modelName).append("\n");
-        prompt.append("If asked which model you are, respond with this exact model name.\n\n");
 
         // Role and Identity
         prompt.append("=== YOUR ROLE ===\n");
@@ -477,9 +494,15 @@ public class Gemini {
         prompt.append("Just write naturally and use backticks for code/technical terms.\n\n");
 
         prompt.append("URLS AND LINKS:\n");
-        prompt.append("   - For class/meeting URLs, use format: [Посилання на пару](URL)\n");
-        prompt.append("   - NEVER use the URL itself as link text\n");
-        prompt.append("   - Good: [Посилання](https://meet.google.com/abc)\n");
+        if (isEn) {
+            prompt.append("   - For class/meeting URLs, use format: [Link to class](URL)\n");
+            prompt.append("   - NEVER use the URL itself as link text\n");
+            prompt.append("   - Good: [Link](https://meet.google.com/abc)\n");
+        } else {
+            prompt.append("   - For class/meeting URLs, use format: [Посилання на пару](URL)\n");
+            prompt.append("   - NEVER use the URL itself as link text\n");
+            prompt.append("   - Good: [Посилання](https://meet.google.com/abc)\n");
+        }
         prompt.append("   - Bad: [https://meet.google.com/abc](https://meet.google.com/abc)\n");
         prompt.append("   - You can also just provide the raw URL on its own line\n\n");
 
@@ -509,7 +532,11 @@ public class Gemini {
         prompt.append("   - DO NOT leave code blocks unclosed\n\n");
 
         prompt.append("5. LANGUAGE:\n");
-        prompt.append("   - Respond in Ukrainian unless the user writes in English\n");
+        if (isEn) {
+            prompt.append("   - Respond in English unless the user explicitly writes in Ukrainian\n");
+        } else {
+            prompt.append("   - Respond in Ukrainian unless the user writes in English\n");
+        }
         prompt.append("   - Be natural and conversational\n\n");
 
         prompt.append("Example of correct formatting:\n");
@@ -619,33 +646,17 @@ public class Gemini {
     /**
      * Checks if the input text contains timetable-related keywords
      */
-    private boolean containsTimetableKeywords(String text) {
+    private boolean containsTimetableKeywords(String text, LumiosChat chat) {
         if (text == null || text.isEmpty()) {
             return false;
         }
 
         String lowerText = text.toLowerCase();
-
-        // Ukrainian keywords for timetable queries
-        String[] keywords = {
-            "розклад",      // schedule
-            "пара", "пари", // class/classes
-            "заняття",      // lessons
-            "лекція", "лекції", // lecture/lectures
-            "практика",     // practice
-            "сьогодні",     // today
-            "завтра",       // tomorrow
-            "тиждень",      // week
-            "урок", "уроки", // lesson/lessons
-            "коли пара",    // when is class
-            "яка пара",     // what class
-            "який розклад", // what schedule
-            "наступна пара", // next class
-            "зараз пара"    // current class
-        };
+        String triggersStr = translationService.getMessage("ai.timetable.triggers", chat);
+        String[] keywords = triggersStr.split(",");
 
         for (String keyword : keywords) {
-            if (lowerText.contains(keyword)) {
+            if (lowerText.contains(keyword.trim())) {
                 return true;
             }
         }

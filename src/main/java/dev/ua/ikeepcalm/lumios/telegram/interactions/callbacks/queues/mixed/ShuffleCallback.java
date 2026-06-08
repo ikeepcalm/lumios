@@ -51,15 +51,15 @@ public class ShuffleCallback extends ServicesShortcut implements Interaction {
                         queueService.deleteMixedQueue(mixedQueue);
                         simpleQueue.setMessageId(telegramClient.sendEditMessage(QueueUpdateUtil.updateMessage(message.getMessage().getChatId(), simpleQueue)).getMessageId());
                         queueService.save(simpleQueue);
-                        this.telegramClient.sendAnswerCallbackQuery("Успішно перемішано цю чергу!", callbackQueryId);
+                        this.telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.mixed.shuffle.success", chat), callbackQueryId);
                     } else {
-                        this.telegramClient.sendAnswerCallbackQuery("Ця черга вже перемішана!", callbackQueryId);
+                        this.telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.mixed.shuffle.already", chat), callbackQueryId);
                     }
                     break;
                 }
             }
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.not_found", chat), callbackQueryId);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }

@@ -27,15 +27,15 @@ public class NotifyCallback extends ServicesShortcut implements Interaction {
         SimpleQueue simpleQueue;
         try {
             if (lastNotifyTime != null && lastNotifyTime.plusMinutes(1).isAfter(LocalTime.now())) {
-                telegramClient.sendAnswerCallbackQuery("Ви можете надсилати сповіщення лише раз на хвилину!", callbackQueryId);
+                telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.notify.cooldown", chat), callbackQueryId);
                 return;
             }
             simpleQueue = queueService.findSimpleById(UUID.fromString(receivedCallback));
-            telegramClient.sendTextMessage(QueueMarkupUtil.createNotification(message.getMessage().getChatId(), simpleQueue));
-            telegramClient.sendAnswerCallbackQuery("Сповіщення успішно надіслане!", callbackQueryId);
+            telegramClient.sendTextMessage(QueueMarkupUtil.createNotification(message.getMessage().getChatId(), simpleQueue, chat, translationService));
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.notify.success", chat), callbackQueryId);
             lastNotifyTime = LocalTime.now();
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.not_found", chat), callbackQueryId);
         }
     }
 }

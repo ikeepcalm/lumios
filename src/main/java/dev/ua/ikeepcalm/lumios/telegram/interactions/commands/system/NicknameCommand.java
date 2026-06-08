@@ -23,9 +23,9 @@ public class NicknameCommand extends ServicesShortcut implements Interaction {
         
         if (args.length == 1) {
             if (chat.getBotNickname() == null || chat.getBotNickname().trim().isEmpty()) {
-                sendMessage("Зараз бот не має псевдоніма. Використовуйте `/nickname [псевдонім]` щоб встановити псевдонім для зручного звертання.", message);
+                sendMessage(translationService.getMessage("nickname.no_nickname", chat), message);
             } else {
-                sendMessage("Поточний псевдонім бота: **" + chat.getBotNickname() + "**\n\nВи можете звертатися до мене або як " + getBotUsername() + " або як " + chat.getBotNickname(), ParseMode.MARKDOWN, message);
+                sendMessage(translationService.getMessage("nickname.current_nickname", chat, chat.getBotNickname(), getBotUsername()), ParseMode.MARKDOWN, message);
             }
             return;
         }
@@ -33,19 +33,19 @@ public class NicknameCommand extends ServicesShortcut implements Interaction {
         String nickname = args[1].trim();
         
         if (nickname.length() < 2 || nickname.length() > 20) {
-            sendMessage("Псевдонім повинен бути від 2 до 20 символів довжиною.", message);
+            sendMessage(translationService.getMessage("nickname.invalid_length", chat), message);
             return;
         }
         
         if (nickname.matches(".*[@#/].*")) {
-            sendMessage("Псевдонім не може містити символи @, # або /", message);
+            sendMessage(translationService.getMessage("nickname.invalid_characters", chat), message);
             return;
         }
         
         chat.setBotNickname(nickname);
         chatService.save(chat);
         
-        sendMessage("Псевдонім успішно встановлено! Тепер ви можете звертатися до мене як: **" + nickname + "**\n\nПриклад: \"" + nickname + ", що таке Java?\"", message);
+        sendMessage(translationService.getMessage("nickname.success", chat, nickname), message);
         log.info("Nickname set to '{}' for chat {}", nickname, chat.getChatId());
     }
     

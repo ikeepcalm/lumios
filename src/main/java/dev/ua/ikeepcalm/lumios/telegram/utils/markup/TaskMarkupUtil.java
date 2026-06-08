@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
@@ -40,63 +41,54 @@ public class TaskMarkupUtil {
         return new InlineKeyboardMarkup(keyboard);
     }
 
-    public static EditMessage buildTaskEditMessage(DueTask dueTask) {
-        return buildTaskEditMessage(dueTask, 0);
+    public static EditMessage buildTaskEditMessage(DueTask dueTask, LumiosChat chat, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
+        return buildTaskEditMessage(dueTask, 0, chat, translationService);
     }
 
-    public static TextMessage buildTaskTextMessage(DueTask dueTask) {
-        return buildTaskTextMessage(dueTask, 0);
+    public static TextMessage buildTaskTextMessage(DueTask dueTask, LumiosChat chat, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
+        return buildTaskTextMessage(dueTask, 0, chat, translationService);
     }
 
-    public static TextMessage buildTaskTextMessage(DueTask dueTask, long id) {
+    public static TextMessage buildTaskTextMessage(DueTask dueTask, long id, LumiosChat chat, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
         TextMessage textMessage = new TextMessage();
-        textMessage.setText(getFormattedMessage(dueTask));
+        textMessage.setText(getFormattedMessage(dueTask, chat, translationService));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         textMessage.setReplyKeyboard(TaskMarkupUtil.getEditingMarkup(String.valueOf(id != 0 ? id : dueTask.getId())));
         return textMessage;
     }
 
-    public static EditMessage buildTaskEditMessage(DueTask dueTask, long id) {
+    public static EditMessage buildTaskEditMessage(DueTask dueTask, long id, LumiosChat chat, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
         EditMessage editMessage = new EditMessage();
-        editMessage.setText(getFormattedMessage(dueTask));
+        editMessage.setText(getFormattedMessage(dueTask, chat, translationService));
         editMessage.setParseMode(ParseMode.MARKDOWN);
         editMessage.setReplyKeyboard(TaskMarkupUtil.getEditingMarkup(String.valueOf(id != 0 ? id : dueTask.getId())));
         return editMessage;
     }
 
-    private static String getFormattedMessage(DueTask dueTask) {
-        return """
-                *Редагування завдання*
-                
-                ```String НАЗВА ЗАВДАННЯ```
-                > %s
-                
-                ```Date ДЕДЛАЙН ЗАВДАННЯ```
-                > %s %S
-                
-                ```Scope ДІАПАЗОН ЗАВДАННЯ```
-                > %s
-                
-                ```Attachment ДОДАТКИ ЗАВДАННЯ```
-                > %s
-                
-                ```Description ОПИС ЗАВДАННЯ```
-                > %s
-                
-                ```URL ГІПЕР-ПОСИЛАННЯ```
-                > %s
-                
-                ```Author АВТОР ЗАВДАННЯ```
-                > [ця людинка](tg://user?id=%d)
-                
-                """.formatted(
-                dueTask.getTaskName() != null ? dueTask.getTaskName() : "Не встановлено",
-                dueTask.getDueDate() != null ? dueTask.getDueDate() : "Не встановлено",
-                dueTask.getDueTime() != null ? dueTask.getDueTime() : "Не встановлено",
-                dueTask.getScope() != null ? dueTask.getScope() : "Не встановлено",
-                dueTask.getAttachment() != null ? dueTask.getAttachment() : "Не встановлено",
-                dueTask.getDescription() != null ? dueTask.getDescription() : "Не встановлено",
-                dueTask.getUrl() != null ? dueTask.getUrl() : "Не встановлено",
+    private static String getFormattedMessage(DueTask dueTask, LumiosChat chat, dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService translationService) {
+        String notSet = translationService.getMessage("task.not_set", chat);
+        return ("*" + translationService.getMessage("task.edit.title", chat) + "*\n\n" +
+                "```String " + translationService.getMessage("task.field.name", chat) + "```\n" +
+                "> %s\n\n" +
+                "```Date " + translationService.getMessage("task.field.deadline", chat) + "```\n" +
+                "> %s %S\n\n" +
+                "```Scope " + translationService.getMessage("task.field.scope", chat) + "```\n" +
+                "> %s\n\n" +
+                "```Attachment " + translationService.getMessage("task.field.attachments", chat) + "```\n" +
+                "> %s\n\n" +
+                "```Description " + translationService.getMessage("task.field.description", chat) + "```\n" +
+                "> %s\n\n" +
+                "```URL " + translationService.getMessage("task.field.url", chat) + "```\n" +
+                "> %s\n\n" +
+                "```Author " + translationService.getMessage("task.field.author", chat) + "```\n" +
+                "> [" + translationService.getMessage("task.author.mention", chat) + "](tg://user?id=%d)\n\n").formatted(
+                dueTask.getTaskName() != null ? dueTask.getTaskName() : notSet,
+                dueTask.getDueDate() != null ? dueTask.getDueDate() : notSet,
+                dueTask.getDueTime() != null ? dueTask.getDueTime() : notSet,
+                dueTask.getScope() != null ? translationService.getMessage("task.scope." + dueTask.getScope().name().toLowerCase(), chat) : notSet,
+                dueTask.getAttachment() != null ? dueTask.getAttachment() : notSet,
+                dueTask.getDescription() != null ? dueTask.getDescription() : notSet,
+                dueTask.getUrl() != null ? dueTask.getUrl() : notSet,
                 dueTask.getAuthor()
         );
     }

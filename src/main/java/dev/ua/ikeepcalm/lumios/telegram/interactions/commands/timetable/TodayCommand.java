@@ -45,12 +45,12 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
             }
 
             if (todayClasses.isEmpty()) {
-                sendMessage("📅 *РОЗКЛАД НА СЬОГОДНІ* 📅\n\n🎆 *Немає пар на сьогодні!* 🎆", ParseMode.MARKDOWN, message);
+                sendMessage(translationService.getMessage("command.today.no-classes", chat), ParseMode.MARKDOWN, message);
                 return;
             }
 
             if (chat.isPlainTimetableEnabled()) {
-                sendMessage(TimetablePagedUtil.buildPlainDayMessage(todayClasses, "РОЗКЛАД НА СЬОГОДНІ"), ParseMode.MARKDOWN, message);
+                sendMessage(TimetablePagedUtil.buildPlainDayMessage(todayClasses, translationService.getMessage("command.today.title", chat)), ParseMode.MARKDOWN, message);
                 return;
             }
 
@@ -61,7 +61,7 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
             int startPage = TimetablePagedUtil.calculateCurrentPage(groupedByTime);
 
             // Build paged message and keyboard
-            String messageText = TimetablePagedUtil.buildPagedTimetableMessage(groupedByTime, startPage, "РОЗКЛАД НА СЬОГОДНІ");
+            String messageText = TimetablePagedUtil.buildPagedTimetableMessage(groupedByTime, startPage, translationService.getMessage("command.today.title", chat), translationService, chat);
 
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(message.getChatId());
@@ -77,7 +77,7 @@ public class TodayCommand extends ServicesShortcut implements Interaction {
 
             sendMessage(textMessage, message);
         } catch (NoSuchEntityException e) {
-            sendMessage("❌ Не знайдено розклад на сьогодні! Ви точно все налаштували?", message);
+            sendMessage(translationService.getMessage("command.today.not-found", chat), message);
         }
     }
 

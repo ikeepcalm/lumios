@@ -25,15 +25,21 @@ public class LinkUpdate extends ServicesShortcut implements Interaction {
                 return;
             }
 
+            dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat chat = null;
+            try {
+                chat = chatService.findByChatId(update.getMessage().getChatId());
+            } catch (NoSuchEntityException ignored) {
+            }
+
             if (isValidUrl(update.getMessage().getText())) {
                 entry.setUrl(update.getMessage().getText());
                 UpdateConsumer.waitingLinks.remove(userId);
                 timetableService.save(entry);
 
-                sendMessage("✅ Посилання успішно додано!", update.getMessage());
+                sendMessage(translationService.getMessage("class.link.add.success", chat), update.getMessage());
             } else {
                 UpdateConsumer.waitingLinks.remove(userId);
-                sendMessage("❌ Невірний формат посилання. Ви були видалені зі списку очікування. Спробуйте ще раз, натиснувши на пару.", update.getMessage());
+                sendMessage(translationService.getMessage("class.link.add.invalid", chat), update.getMessage());
             }
         }
     }

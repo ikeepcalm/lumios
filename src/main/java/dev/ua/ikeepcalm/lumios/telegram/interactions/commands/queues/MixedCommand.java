@@ -28,13 +28,13 @@ public class MixedCommand extends ServicesShortcut implements Interaction {
                     .replace("/mixed ", "")
                     .toUpperCase();
             if (alias.isBlank() || alias.length() > 20) {
-                sendMessage("Назва черги повинна бути від 1 до 20 символів!", message);
+                sendMessage(translationService.getMessage("queue.warning.name_length", chat), message);
                 return;
             } else {
                 mixedQueue = new MixedQueue(alias);
             }
         } else {
-            sendMessage("Введіть назву черги після команди! Черги без назви були поміченими застарілими починаючи із версії 2.0.0!", message);
+            sendMessage(translationService.getMessage("queue.info.name_required", chat), message);
             return;
         }
         MixedUser mixedUser = new MixedUser();

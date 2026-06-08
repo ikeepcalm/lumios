@@ -1,5 +1,6 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils;
 
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TimetableParser;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -20,14 +21,14 @@ public class TimetablePagedUtil {
      *
      * @param groupedByTime Map of time slots to class entries (e.g., "08:30 - 10:00" -> [ClassEntry, ...])
      * @param page          Current page number (1-indexed)
-     * @param title         Message title (e.g., "РОЗКЛАД НА СЬОГОДНІ")
+     * @param title         Message title (e.g., "TIMETABLE FOR TODAY")
      * @return Formatted message string
      */
-    public static String buildPagedTimetableMessage(Map<String, List<ClassEntry>> groupedByTime, int page, String title) {
+    public static String buildPagedTimetableMessage(Map<String, List<ClassEntry>> groupedByTime, int page, String title, TranslationService translationService, LumiosChat chat) {
         List<String> timeSlots = new ArrayList<>(groupedByTime.keySet());
 
         if (timeSlots.isEmpty()) {
-            return "📅 *" + title + "* 📅\n\n🎆 *Немає пар!* 🎆";
+            return "📅 *" + title + "* 📅\n\n🎆 *" + translationService.getMessage("timetable.no_classes", chat) + "* 🎆";
         }
 
         int maxPage = timeSlots.size();
@@ -40,8 +41,8 @@ public class TimetablePagedUtil {
 
         StringBuilder builder = new StringBuilder();
         builder.append("📅 *").append(title).append("* 📅\n\n");
-        builder.append(TimetableParser.EMOJI_LEGEND);
-        builder.append("⏰ *Слот ").append(page).append("/").append(maxPage).append(": ").append(currentTimeSlot).append("*\n\n");
+        builder.append(translationService.getMessage("timetable.emoji_legend", chat));
+        builder.append("⏰ *").append(translationService.getMessage("timetable.slot_info", chat, page, maxPage, currentTimeSlot)).append("*\n\n");
 
         // Add class count indicator
         int lectureCount = 0, practiceCount = 0, labCount = 0;
@@ -55,13 +56,13 @@ public class TimetablePagedUtil {
 
         if (lectureCount > 0 || practiceCount > 0 || labCount > 0) {
             builder.append("📊 ");
-            if (lectureCount > 0) builder.append(lectureCount).append(" лекц. ");
-            if (practiceCount > 0) builder.append(practiceCount).append(" практ. ");
-            if (labCount > 0) builder.append(labCount).append(" лаб.");
+            if (lectureCount > 0) builder.append(lectureCount).append(" ").append(translationService.getMessage("timetable.class_type.lect", chat)).append(" ");
+            if (practiceCount > 0) builder.append(practiceCount).append(" ").append(translationService.getMessage("timetable.class_type.pract", chat)).append(" ");
+            if (labCount > 0) builder.append(labCount).append(" ").append(translationService.getMessage("timetable.class_type.lab", chat));
             builder.append("\n\n");
         }
 
-        builder.append("_Натисніть на пару щоб перейти до посилання:_");
+        builder.append("_").append(translationService.getMessage("timetable.click_hint", chat)).append("_");
 
         return builder.toString();
     }
@@ -211,15 +212,15 @@ public class TimetablePagedUtil {
         return null;
     }
 
-    public static String getDayNameUkrainian(DayOfWeek day) {
+    public static String getDayName(DayOfWeek day, TranslationService translationService, LumiosChat chat) {
         return switch (day) {
-            case MONDAY -> "Понеділок";
-            case TUESDAY -> "Вівторок";
-            case WEDNESDAY -> "Середа";
-            case THURSDAY -> "Четвер";
-            case FRIDAY -> "П'ятниця";
-            case SATURDAY -> "Субота";
-            case SUNDAY -> "Неділя";
+            case MONDAY -> translationService.getMessage("day.monday", chat);
+            case TUESDAY -> translationService.getMessage("day.tuesday", chat);
+            case WEDNESDAY -> translationService.getMessage("day.wednesday", chat);
+            case THURSDAY -> translationService.getMessage("day.thursday", chat);
+            case FRIDAY -> translationService.getMessage("day.friday", chat);
+            case SATURDAY -> translationService.getMessage("day.saturday", chat);
+            case SUNDAY -> translationService.getMessage("day.sunday", chat);
         };
     }
 
@@ -234,10 +235,10 @@ public class TimetablePagedUtil {
         return builder.toString();
     }
 
-    public static String buildWeekDayMessage(DayOfWeek dayOfWeek, List<ClassEntry> classes, int dayIndex, int totalDays) {
+    public static String buildWeekDayMessage(DayOfWeek dayOfWeek, List<ClassEntry> classes, int dayIndex, int totalDays, TranslationService translationService, LumiosChat chat) {
         StringBuilder builder = new StringBuilder();
-        builder.append("📅 *РОЗКЛАД НА ТИЖДЕНЬ* 📅\n\n");
-        builder.append("*").append(getDayNameUkrainian(dayOfWeek)).append("* (").append(dayIndex).append("/").append(totalDays).append(")\n\n");
+        builder.append("📅 *").append(translationService.getMessage("timetable.title.week", chat)).append("* 📅\n\n");
+        builder.append("*").append(getDayName(dayOfWeek, translationService, chat)).append("* (").append(dayIndex).append("/").append(totalDays).append(")\n\n");
         for (ClassEntry entry : classes) {
             builder.append(TimetableParser.parseClassEmoji(entry.getClassType()))
                     .append(" *").append(entry.getStartTime()).append(" - ").append(entry.getEndTime()).append("* ")

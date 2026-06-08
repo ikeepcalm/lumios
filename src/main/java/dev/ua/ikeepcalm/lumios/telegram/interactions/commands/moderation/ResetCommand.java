@@ -34,19 +34,19 @@ public class ResetCommand extends ServicesShortcut implements Interaction {
         try {
             date = LocalDate.parse(parts[1]);
         } catch (DateTimeParseException e) {
-            sendMessage("Неправильний формат дати. Спробуй ще раз. Наприклад: /reset 2021-12-31", message);
+            sendMessage(translationService.getMessage("command.reset.invalid_date", chat), message);
             return;
         } catch (ArrayIndexOutOfBoundsException e) {
-            sendMessage("Ти забув вказати дату. Спробуй ще раз. Наприклад: /reset 2021-12-31", message);
+            sendMessage(translationService.getMessage("command.reset.no_date", chat), message);
             return;
         }
         if (message.getFrom().getUserName().equals("ikeepcalm")) {
-            sendMessage("Відновлення даних за датою " + date, message);
+            sendMessage(translationService.getMessage("command.reset.restoring", chat, date), message);
             ChatShot chatShot;
             try {
                 chatShot = shotService.findByChatIdAndDate(chat.getChatId(), date);
             } catch (NoSuchEntityException e) {
-                sendMessage("Дані за цю дату відсутні.", message);
+                sendMessage(translationService.getMessage("command.reset.no_data", chat), message);
                 return;
             }
             for (UserShot u : chatShot.getUserShots()) {
@@ -58,7 +58,7 @@ public class ResetCommand extends ServicesShortcut implements Interaction {
                 }
             }
         } else {
-            sendMessage("Ти не маєш прав на відновлення даних!", message);
+            sendMessage(translationService.getMessage("command.reset.no_permission", chat), message);
         }
     }
 }

@@ -5,6 +5,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.PagedUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -25,7 +26,7 @@ public class StatsCommand extends ServicesShortcut implements Interaction {
         List<LumiosUser> users = userService.findAll(chat);
         TextMessage message = new TextMessage();
         message.setChatId(update.getMessage().getChatId());
-        message.setText(buildStatsMessage(users));
+        message.setText(PagedUtil.buildStatsMessage(users, 1, translationService, chat));
         message.setParseMode(ParseMode.MARKDOWN);
 
         if (users.size() > 10) {
@@ -33,27 +34,6 @@ public class StatsCommand extends ServicesShortcut implements Interaction {
         }
 
         sendMessage(message, update.getMessage());
-    }
-
-    private String buildStatsMessage(List<LumiosUser> users) {
-        List<LumiosUser> sortedUsers = users.stream()
-                .sorted((user1, user2) -> Integer.compare(user2.getReverence(), user1.getReverence()))
-                .toList();
-
-        StringBuilder builder = new StringBuilder("```Статистика⠀(1/" + (sortedUsers.size() / 10 + 1) + ")\n\n");
-
-        int count = 0;
-        for (LumiosUser user : sortedUsers) {
-            if (count == 10) {
-                break;
-            }
-            builder.append(" ﹥ ").append(user.getUsername()).append(": ").append(user.getReverence()).append("\n");
-            count++;
-        }
-
-        builder.append("```");
-
-        return builder.toString();
     }
 
     private InlineKeyboardMarkup buildStatsKeyboard() {

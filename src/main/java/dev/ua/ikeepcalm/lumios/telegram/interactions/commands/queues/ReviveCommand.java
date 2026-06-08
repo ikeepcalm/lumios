@@ -33,7 +33,7 @@ public class ReviveCommand extends ServicesShortcut implements Interaction {
 
                     for (SimpleQueue simpleQueue : simpleQueues) {
                         TextMessage textMessage = new TextMessage();
-                        textMessage.setText("Черга знайдена. Відновлюю " + simpleQueue.getAlias() + "!");
+                        textMessage.setText(translationService.getMessage("revive.queue_restoring_simple", chat, simpleQueue.getAlias()));
                         textMessage.setChatId(update.getMessage().getChatId());
                         textMessage.setMessageId(simpleQueue.getMessageId());
                         Message sent = telegramClient.sendTextMessage(textMessage);
@@ -45,7 +45,7 @@ public class ReviveCommand extends ServicesShortcut implements Interaction {
                         for (SimpleUser iteSimpleUser : simpleQueue.getContents()) {
                             stringBuilder.append("ID: ")
                                     .append(id).append(" - ")
-                                    .append(iteSimpleUser.getName())
+                                     .append(iteSimpleUser.getName())
                                     .append(" (@").append(iteSimpleUser.getUsername()).append(")\n");
                             ++id;
                         }
@@ -60,7 +60,7 @@ public class ReviveCommand extends ServicesShortcut implements Interaction {
 
                     for (MixedQueue mixedQueue : mixedQueues) {
                         TextMessage textMessage = new TextMessage();
-                        textMessage.setText("Черга знайдена. Намагаюся відновити " + mixedQueue.getAlias() + "!");
+                        textMessage.setText(translationService.getMessage("revive.queue_restoring_mixed", chat, mixedQueue.getAlias()));
                         textMessage.setChatId(update.getMessage().getChatId());
                         textMessage.setMessageId(mixedQueue.getMessageId());
                         Message sent = telegramClient.sendTextMessage(textMessage);

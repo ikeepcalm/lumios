@@ -47,7 +47,7 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
             );
 
             if ("week".equals(commandType)) {
-                handleWeekNavigation(callbackQuery, timetableEntry, newPage);
+                handleWeekNavigation(callbackQuery, timetableEntry, newPage, chat);
                 return;
             }
 
@@ -63,8 +63,8 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
                 return;
             }
 
-            String title = getTitleForCommandType(commandType);
-            String messageText = TimetablePagedUtil.buildPagedTimetableMessage(groupedByTime, newPage, title);
+            String title = getTitleForCommandType(commandType, chat);
+            String messageText = TimetablePagedUtil.buildPagedTimetableMessage(groupedByTime, newPage, title, translationService, chat);
             List<ClassEntry> pageClasses = groupedByTime.get(timeSlots.get(newPage - 1));
 
             EditMessage editMessage = new EditMessage();
@@ -81,7 +81,7 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
         }
     }
 
-    private void handleWeekNavigation(CallbackQuery callbackQuery, TimetableEntry timetableEntry, int newPage) {
+    private void handleWeekNavigation(CallbackQuery callbackQuery, TimetableEntry timetableEntry, int newPage, LumiosChat chat) {
         List<DayEntry> daysWithClasses = timetableEntry.getDays().stream()
                 .filter(day -> !day.getClassEntries().isEmpty())
                 .sorted(Comparator.comparingInt(day -> day.getDayName().getValue()))
@@ -93,7 +93,7 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
 
         DayEntry dayEntry = daysWithClasses.get(newPage - 1);
         String messageText = TimetablePagedUtil.buildWeekDayMessage(
-                dayEntry.getDayName(), dayEntry.getClassEntries(), newPage, daysWithClasses.size());
+                dayEntry.getDayName(), dayEntry.getClassEntries(), newPage, daysWithClasses.size(), translationService, chat);
 
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(callbackQuery.getMessage().getChatId());
@@ -128,12 +128,12 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
         return new ArrayList<>();
     }
 
-    private String getTitleForCommandType(String commandType) {
+    private String getTitleForCommandType(String commandType, LumiosChat chat) {
         return switch (commandType) {
-            case "today" -> "РОЗКЛАД НА СЬОГОДНІ";
-            case "tomorrow" -> "РОЗКЛАД НА ЗАВТРА";
-            case "week" -> "РОЗКЛАД НА ТИЖДЕНЬ";
-            default -> "РОЗКЛАД";
+            case "today" -> translationService.getMessage("timetable.title.today", chat);
+            case "tomorrow" -> translationService.getMessage("timetable.title.tomorrow", chat);
+            case "week" -> translationService.getMessage("timetable.title.week", chat);
+            default -> translationService.getMessage("timetable.title.default", chat);
         };
     }
 }

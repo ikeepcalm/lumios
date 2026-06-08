@@ -72,13 +72,13 @@ public class NextCommand extends ServicesShortcut implements Interaction {
             
             if (!nextClasses.isEmpty()) {
                 if (nextClasses.size() == 1) {
-                    sendMessage(ClassMarkupUtil.createNextNotification(nextClasses.getFirst(), message.getChatId()), message);
+                    sendMessage(ClassMarkupUtil.createNextNotification(nextClasses.getFirst(), chat, translationService), message);
                 } else {
-                    sendMessage(ClassMarkupUtil.createMultipleNextNotification(nextClasses, message.getChatId()), message);
+                    sendMessage(ClassMarkupUtil.createMultipleNextNotification(nextClasses, chat, translationService), message);
                 }
             }
         } catch (NoSuchEntityException e) {
-            sendMessage("Не знайдено розкладу на даний момент! Ви точно все налаштували?", message);
+            sendMessage(translationService.getMessage("class.now.error", chat), message);
         }
     }
 }

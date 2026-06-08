@@ -25,12 +25,12 @@ public class DeleteCallback extends ServicesShortcut implements Interaction {
         try {
             task = taskService.findTaskById(chat.getChatId(), taskId);
         } catch (NoSuchEntityException e) {
-            sendMessage("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", (Message) callbackQuery.getMessage());
+            sendMessage(translationService.getMessage("task.error.not_found", chat), (Message) callbackQuery.getMessage());
             return;
         }
 
         if (task.getState() != TaskState.NOT_COMPLETED && task.getDueDate() != null && task.getAuthor() != user.getUserId()) {
-            telegramClient.sendAnswerCallbackQuery("Ви не можете видалити це завдання, оскільки ви не його автор!", callbackQuery.getId());
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.delete.not_author", chat), callbackQuery.getId());
             return;
         }
 
@@ -39,7 +39,7 @@ public class DeleteCallback extends ServicesShortcut implements Interaction {
         EditMessage editMessage = new EditMessage();
         editMessage.setChatId(callbackQuery.getMessage().getChatId());
         editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-        editMessage.setText("Завдання успішно видалене!");
+        editMessage.setText(translationService.getMessage("task.delete.success", chat));
         editMessage(editMessage);
     }
 }

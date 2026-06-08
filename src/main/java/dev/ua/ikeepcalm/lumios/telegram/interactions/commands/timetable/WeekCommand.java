@@ -36,13 +36,13 @@ public class WeekCommand extends ServicesShortcut implements Interaction {
                     .toList();
 
             if (daysWithClasses.isEmpty()) {
-                sendMessage("📅 *РОЗКЛАД НА ТИЖДЕНЬ* 📅\n\n🎆 *Немає пар на цей тиждень!* 🎆", ParseMode.MARKDOWN, message);
+                sendMessage(translationService.getMessage("command.week.no-classes", chat), ParseMode.MARKDOWN, message);
                 return;
             }
 
             DayEntry firstDay = daysWithClasses.get(0);
             String messageText = TimetablePagedUtil.buildWeekDayMessage(
-                    firstDay.getDayName(), firstDay.getClassEntries(), 1, daysWithClasses.size());
+                    firstDay.getDayName(), firstDay.getClassEntries(), 1, daysWithClasses.size(), translationService, chat);
 
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(message.getChatId());
@@ -52,7 +52,7 @@ public class WeekCommand extends ServicesShortcut implements Interaction {
 
             sendMessage(textMessage, message);
         } catch (NoSuchEntityException e) {
-            sendMessage("❌ Не знайдено розклад на цей тиждень! Ви точно все налаштували?", message);
+            sendMessage(translationService.getMessage("command.week.not-found", chat), message);
         }
     }
 

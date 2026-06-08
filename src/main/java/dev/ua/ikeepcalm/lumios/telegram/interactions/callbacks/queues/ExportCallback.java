@@ -28,9 +28,9 @@ public class ExportCallback extends ServicesShortcut implements Interaction {
         try {
             simpleQueue = queueService.findSimpleById(UUID.fromString(receivedCallback));
 
-            telegramClient.sendAnswerCallbackQuery("Черга була експортована у окреме повідомлення!", callbackQueryId);
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.export.success", chat), callbackQueryId);
 
-            Message holdMessage = sendMessage("Експортую чергу, почекайте...", (Message) message.getMessage());
+            Message holdMessage = sendMessage(translationService.getMessage("queue.export.loading", chat), (Message) message.getMessage());
 
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(holdMessage.getChatId());
@@ -41,14 +41,14 @@ public class ExportCallback extends ServicesShortcut implements Interaction {
             telegramClient.sendEditMessage(editMessage);
 
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чергу з таким ID!", callbackQueryId);
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("queue.error.not_found", chat), callbackQueryId);
         }
 
     }
 
     public String createExport(LumiosChat chat, SimpleQueue simpleQueue) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Черга на захист *").append(simpleQueue.getAlias()).append("*\n\n");
+        stringBuilder.append(translationService.getMessage("queue.export.title", chat, simpleQueue.getAlias()));
 
         int i = 1;
         for (SimpleUser simpleUser : simpleQueue.getContents()) {
@@ -62,7 +62,7 @@ public class ExportCallback extends ServicesShortcut implements Interaction {
             if (user != null) {
                 String fullName = user.getFullName();
                 if (fullName == null) {
-                    fullName = "[" + simpleUser.getUsername() + "]" + "(" + "tg://user?id=" + simpleUser.getAccountId() + ") - /identity [ПІБ]";
+                    fullName = "[" + simpleUser.getUsername() + "]" + "(" + "tg://user?id=" + simpleUser.getAccountId() + ") - " + translationService.getMessage("queue.export.identity_hint", chat);
                 }
 
                 stringBuilder.append(i++).append(") - ").append(fullName).append("\n");

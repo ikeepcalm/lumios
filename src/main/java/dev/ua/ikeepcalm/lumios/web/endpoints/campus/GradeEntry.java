@@ -22,7 +22,7 @@ public class GradeEntry {
     /** Presence mark; empty when a numeric grade was recorded instead. */
     private String presence;
 
-    /** Description of what the grade was awarded for (e.g. "Практичне заняття"). */
+    /** Description of what the grade was awarded for (e.g. "Practical class"). */
     private String description;
 
     private String employeeFullName;

@@ -28,16 +28,10 @@ public class HelpCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
         if (message.getChat().getType().equals("private")) {
             String[] parts = message.getText().split(" ");
-            if (parts.length > 1 && parts[1].equals("help") || parts[0].equals("/help")) {
-                sendHelpMessage(message);
+            if ((parts.length > 1 && parts[1].equals("help")) || parts[0].equals("/help")) {
+                sendHelpMessage(message, chat);
             } else {
-                String helloText = """
-                        *Привіт, шкіряний мішок!*
-                                                
-                        Я пристосований для роботи в групових чатах, але ти можеш використовувати мене і в приватних повідомленнях.
-                                                
-                        В такому випадку враховуй, що я не зможу виконувати деякі функції, які доступні в групових чатах. Ще побачимось!
-                        """;
+                String helloText = translationService.getMessage("help.private.hello", chat);
                 TextMessage textMessage = new TextMessage();
                 textMessage.setText(helloText);
                 textMessage.setParseMode(MessageFormatter.getDefaultParseMode());
@@ -45,19 +39,7 @@ public class HelpCommand extends ServicesShortcut implements Interaction {
                 sendMessage(textMessage, message);
             }
         } else {
-            String helpText = """
-                    *Привіт, шкіряний мішок!*
-                                        
-                    Я можу допомогти тобі з кількома речами:
-                    - Керування чергами
-                    - Керування розкладом
-                    - Керування завданнями
-                    - Керування повагою
-                    - Певні веселощі
-                                        
-                    Щоб дізнатися більше, використай цю ж команду у ПП зі мною
-                    Якщо тобі подобається інший підхід, зазирни у довідку на сайті
-                    """;
+            String helpText = translationService.getMessage("help.group.hello", chat);
             TextMessage textMessage = new TextMessage();
             textMessage.setText(helpText);
             textMessage.setParseMode(ParseMode.MARKDOWN);
@@ -65,8 +47,8 @@ public class HelpCommand extends ServicesShortcut implements Interaction {
             List<InlineKeyboardRow> keyboard = new ArrayList<>();
             InlineKeyboardRow firstRow = new InlineKeyboardRow();
             InlineKeyboardRow secondRow = new InlineKeyboardRow();
-            InlineKeyboardButton website = new InlineKeyboardButton("\uD83C\uDF10 Онлайн довідка");
-            InlineKeyboardButton pms = new InlineKeyboardButton("\uD83D\uDCBB Коротка довідка");
+            InlineKeyboardButton website = new InlineKeyboardButton(translationService.getMessage("help.online_help", chat));
+            InlineKeyboardButton pms = new InlineKeyboardButton(translationService.getMessage("help.short_help", chat));
             website.setUrl("https://www.lumios.dev/tutorial");
             pms.setUrl("https://t.me/lumios_bot?start=help");
             firstRow.add(website);
@@ -78,47 +60,8 @@ public class HelpCommand extends ServicesShortcut implements Interaction {
         }
     }
 
-    private void sendHelpMessage(Message message) {
-        String helpText = """
-                                  *ВСЕ СТОСОВНО ЧЕРГ*
-                                  /queue <Назва> - Створити чергу із заданою назвою
-                                  /mixed <Назва> - Створити мішану чергу із заданою назвою
-                                                  
-                                  Подальша взаємодія із чергами реалізується натисканням відповідних кнопок під повідомленням від боту:
-                                  - Join \uD83D\uDD30 - Доєднатися у кінець черги
-                                  - I'm done ✅ - Вийти з черги, і сповістити наступного
-                                  - Leave \ud83d\udd04 - Вийти не з голови черги, без сповіщення
-                                  - Delete ❌ - Видалити чергу, лише для адміністраторів
-                                  - Notify ⚠ - Сповістити голову черги про його позицію
-                                  - Shuffle \uD83D\uDD00 - Перемішати чергу у випадковому порядку
-                                  """ +
-                          """
-                                  \n*ВСЕ СТОСОВНО ПОВАГИ*
-                                  /stats - Переглянути загальну статистику поваги в цьому чаті
-                                  /me - Переглянути власну статистику поваги в цьому чаті
-                                                          
-                                  Повага змінюється завдяки реакціям на повідомлення інших користувачів, кожна реакція має своє додатнє або від'ємне значення поваги. Підтримуються майже всі звичайні реакції в телеграмі і будь-які кастомні.
-                                  """ +
-                          """
-                                  \n*ВСЕ СТОСОВНО РОЗКЛАДУ*
-                                  /editor - Згенерувати посилання на веб-редактор
-                                  /today - Подивитися розклад на сьогодні
-                                  /tomorrow - Подивитися розклад на завтра
-                                  /week - Подивитися розклад на тиждень
-                                  /now - Посилання на поточну пару
-                                  /next - Посилання на наступну пару
-                                  """
-                          +
-                          """
-                                  \n*ВСЕ СТОСОВНО ЗАВДАНЬ*
-                                  /task \\[dd.mm.year] \\[HH:mm] \\[Назва] <Посилання> - Створити
-                                  /edit \\[ID] \\[dd.mm.year] \\[HH:mm] \\[Назва] <Посилання> - Редагувати
-                                  /due- Список усіх завдань
-                                  """ +
-                          """
-                                  \n*СТОСОВНО АРГУМЕНТІВ*
-                                  <Аргумент> і \\[Аргумент] відрізняються. В чому різниця? \\[Аргумент] є обов'язковим, <Аргумент>  - ні
-                                  """;
+    private void sendHelpMessage(Message message, LumiosChat chat) {
+        String helpText = translationService.getMessage("help.full_guide", chat);
         sendMessage(helpText, ParseMode.MARKDOWN, message);
     }
 }

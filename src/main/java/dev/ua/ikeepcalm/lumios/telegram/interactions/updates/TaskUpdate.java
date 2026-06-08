@@ -30,6 +30,12 @@ public class TaskUpdate extends ServicesShortcut implements Interaction {
                 return;
             }
 
+            dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat chat = null;
+            try {
+                chat = chatService.findByChatId(update.getMessage().getChatId());
+            } catch (NoSuchEntityException ignored) {
+            }
+
             switch (task.getState()) {
                 case WAITING_FOR_NAME -> {
                     task.setTaskName(update.getMessage().getText());
@@ -55,7 +61,7 @@ public class TaskUpdate extends ServicesShortcut implements Interaction {
                         task.setState(TaskState.NOT_COMPLETED);
                         UpdateConsumer.waitingTasks.remove(userId);
                     } else {
-                        sendMessage("Невірний формат посилання. Спробуйте ще раз", update.getMessage());
+                        sendMessage(translationService.getMessage("task.add.invalid_link", chat), update.getMessage());
                     }
                 }
                 case WAITING_FOR_ATTACHMENT -> {
@@ -64,7 +70,7 @@ public class TaskUpdate extends ServicesShortcut implements Interaction {
                     } else if (update.getMessage().hasDocument()){
                         task.setAttachment(update.getMessage().getDocument().getFileId());
                     } else {
-                        sendMessage("Невірний формат файлу. Спробуйте ще раз", update.getMessage());
+                        sendMessage(translationService.getMessage("task.add.invalid_file", chat), update.getMessage());
                         return;
                     }
                     task.setState(TaskState.NOT_COMPLETED);

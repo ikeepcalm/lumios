@@ -14,6 +14,7 @@ import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
 import dev.ua.ikeepcalm.lumios.telegram.utils.QueueUpdateUtil;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.utils.markup.QueueMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.QueueParser;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.RemoveMessage;
@@ -39,12 +40,14 @@ public class QueuesController {
     private final UserService userService;
     private final QueueService queueService;
     private final TelegramClient telegramClient;
+    private final TranslationService translationService;
 
-    public QueuesController(ChatService chatService, UserService userService, QueueService queueService, TelegramClient telegramClient) {
+    public QueuesController(ChatService chatService, UserService userService, QueueService queueService, TelegramClient telegramClient, TranslationService translationService) {
         this.chatService = chatService;
         this.userService = userService;
         this.queueService = queueService;
         this.telegramClient = telegramClient;
+        this.translationService = translationService;
     }
 
     @GetMapping
@@ -196,7 +199,7 @@ public class QueuesController {
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(lumiosChat.getChatId());
             textMessage.setMessageId(queue.getMessageId());
-            textMessage.setText("Ця черга (" + queue.getAlias() + ") щойно була оновлена @" + lumiosUser.getUsername() + "!");
+            textMessage.setText(translationService.getMessage("queue.update.notification", lumiosChat, queue.getAlias(), lumiosUser.getUsername()));
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated queue!");
         } catch (JsonProcessingException e) {
@@ -221,7 +224,7 @@ public class QueuesController {
             telegramClient.sendRemoveMessage(new RemoveMessage(simpleQueue.getMessageId(), chatId));
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(chatId);
-            textMessage.setText("Черга (" + simpleQueue.getAlias() + ") щойно була видалена @" + lumiosUser.getUsername() + "!");
+            textMessage.setText(translationService.getMessage("queue.delete.notification", lumiosChat, simpleQueue.getAlias(), lumiosUser.getUsername()));
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException | TelegramApiException e) {
@@ -246,7 +249,7 @@ public class QueuesController {
             telegramClient.sendRemoveMessage(new RemoveMessage(mixedQueue.getMessageId(), chatId));
             TextMessage textMessage = new TextMessage();
             textMessage.setChatId(chatId);
-            textMessage.setText("Черга (" + mixedQueue.getAlias() + ") щойно була видалена @" + lumiosUser.getUsername() + "!");
+            textMessage.setText(translationService.getMessage("queue.delete.notification", lumiosChat, mixedQueue.getAlias(), lumiosUser.getUsername()));
             telegramClient.sendTextMessage(textMessage);
             return ResponseEntity.status(HttpStatus.OK).body("Successfully deleted queue!");
         } catch (NoSuchEntityException | TelegramApiException e) {

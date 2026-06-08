@@ -29,14 +29,14 @@ public class RestoreCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
 
         if (message.getReplyToMessage() == null) {
-            sendMessage(MessageFormatter.formatWarningMessage("Відповідайте на повідомлення черги, яку потрібно відновити!"), message);
+            sendMessage(MessageFormatter.formatWarningMessage(translationService.getMessage("queue.restore.reply_required", chat)), message);
             return;
         }
 
         Message repliedMessage = message.getReplyToMessage();
 
         if (!(repliedMessage.getReplyMarkup() instanceof InlineKeyboardMarkup markup)) {
-            sendMessage(MessageFormatter.formatWarningMessage("Це повідомлення не є чергою!"), message);
+            sendMessage(MessageFormatter.formatWarningMessage(translationService.getMessage("queue.restore.not_queue", chat)), message);
             return;
         }
 
@@ -44,18 +44,18 @@ public class RestoreCommand extends ServicesShortcut implements Interaction {
         try {
             String callbackData = markup.getKeyboard().getFirst().getFirst().getCallbackData();
             if (!callbackData.endsWith("-simple-join")) {
-                sendMessage(MessageFormatter.formatWarningMessage("Це повідомлення не є звичайною чергою!"), message);
+                sendMessage(MessageFormatter.formatWarningMessage(translationService.getMessage("queue.restore.not_simple", chat)), message);
                 return;
             }
             queueId = UUID.fromString(callbackData.replace("-simple-join", ""));
         } catch (Exception e) {
-            sendMessage(MessageFormatter.formatErrorMessage("Не вдалося розпізнати ID черги!"), message);
+            sendMessage(MessageFormatter.formatErrorMessage(translationService.getMessage("queue.restore.id_error", chat)), message);
             return;
         }
 
         try {
             queueService.findSimpleById(queueId);
-            sendMessage(MessageFormatter.formatInfoMessage("Ця черга вже існує у базі даних і не потребує відновлення!"), message);
+            sendMessage(MessageFormatter.formatInfoMessage(translationService.getMessage("queue.restore.exists", chat)), message);
             return;
         } catch (NoSuchEntityException ignored) {
             // Queue doesn't exist — proceed with restore
@@ -63,13 +63,13 @@ public class RestoreCommand extends ServicesShortcut implements Interaction {
 
         String text = repliedMessage.getText();
         if (text == null || !text.startsWith(">>> ")) {
-            sendMessage(MessageFormatter.formatWarningMessage("Не вдалося розпізнати формат черги!"), message);
+            sendMessage(MessageFormatter.formatWarningMessage(translationService.getMessage("queue.restore.format_error", chat)), message);
             return;
         }
 
         int aliasEnd = text.indexOf(" <<<");
         if (aliasEnd < 4) {
-            sendMessage(MessageFormatter.formatWarningMessage("Не вдалося розпізнати назву черги!"), message);
+            sendMessage(MessageFormatter.formatWarningMessage(translationService.getMessage("queue.restore.name_error", chat)), message);
             return;
         }
         String alias = text.substring(4, aliasEnd);
@@ -90,6 +90,6 @@ public class RestoreCommand extends ServicesShortcut implements Interaction {
         }
 
         queueService.save(simpleQueue);
-        sendMessage(MessageFormatter.formatSuccessMessage("Чергу \"" + alias + "\" успішно відновлено!"), message);
+        sendMessage(MessageFormatter.formatSuccessMessage(translationService.getMessage("queue.restore.success", chat, alias)), message);
     }
 }

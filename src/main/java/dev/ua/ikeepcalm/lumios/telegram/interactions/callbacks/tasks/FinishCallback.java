@@ -25,19 +25,19 @@ public class FinishCallback extends ServicesShortcut implements Interaction {
         try {
             task = taskService.findTaskById(chat.getChatId(), taskId);
         } catch (NoSuchEntityException e) {
-            sendMessage("Завдання не знайдено. Схоже на серверну помилку, зверніться до підтримки!", (Message) callbackQuery.getMessage());
+            sendMessage(translationService.getMessage("task.error.not_found", chat), (Message) callbackQuery.getMessage());
             return;
         }
 
         if (task.getTaskName() == null || task.getDueDate() == null || task.getAuthor() == 0) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Завдання має обов'язково мати Назву та Дедлайн!", callbackQuery.getId());
+            telegramClient.sendAnswerCallbackQuery(translationService.getMessage("task.finish.error", chat), callbackQuery.getId());
         } else {
             task.setState(TaskState.STAND_BY);
             taskService.save(task);
             EditMessage editMessage = new EditMessage();
             editMessage.setChatId(callbackQuery.getMessage().getChatId());
             editMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMessage.setText("Завдання успішно збережене!");
+            editMessage.setText(translationService.getMessage("task.save.success", chat));
             editMessage(editMessage);
         }
     }

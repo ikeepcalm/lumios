@@ -48,7 +48,7 @@ public class DueCommand extends ServicesShortcut implements Interaction {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
 
-            DateTimeFormatter dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.of("uk"));
+            DateTimeFormatter dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.forLanguageTag(chat.getLanguage()));
             StringBuilder messageBuilder = new StringBuilder();
 
             for (LocalDate dueDate : sortedTasks.keySet()) {
@@ -56,22 +56,22 @@ public class DueCommand extends ServicesShortcut implements Interaction {
                 LocalDate tomorrow = today.plusDays(1);
 
                 if (dueDate.isEqual(today)) {
-                    messageBuilder.append("\n*СЬОГОДНІ*\n");
+                    messageBuilder.append("\n").append(translationService.getMessage("command.due.today", chat)).append("\n");
                 } else if (dueDate.isEqual(tomorrow)) {
-                    messageBuilder.append("\n*ЗАВТРА*\n");
+                    messageBuilder.append("\n").append(translationService.getMessage("command.due.tomorrow", chat)).append("\n");
                 } else {
                     messageBuilder.append("\n*").append(dayOfWeekFormatter.format(dueDate.getDayOfWeek()).toUpperCase()).append("*\n");
                 }
 
                 for (DueTask task : tasksForDate) {
                     messageBuilder.append("> ").append(task.getDueTime()).append(" - ").append("[").append(task.getTaskName()).append("](").append(task.getUrl()).append(") - ");
-                    messageBuilder.append("детальніше? ➜ ").append("/view\\_").append(task.getId()).append("\n\n");
+                    messageBuilder.append(translationService.getMessage("command.due.more", chat)).append("/view\\_").append(task.getId()).append("\n\n");
                 }
             }
 
             sendMessage(messageBuilder.toString(), ParseMode.MARKDOWN, update.getMessage());
         } else {
-            sendMessage("Нічого немає, можна відпочивати!", update.getMessage());
+            sendMessage(translationService.getMessage("command.due.nothing", chat), update.getMessage());
         }
     }
 }

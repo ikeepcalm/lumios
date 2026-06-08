@@ -29,12 +29,12 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
     public void fireInteraction(CallbackQuery message, LumiosUser user, LumiosChat chat) {
         String[] split = message.getData().split("#");
         if (split.length < 3) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Невірний формат!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Invalid format!", message.getId());
             return;
         }
 
         if (!message.getFrom().getUserName().equals("ikeepcalm")) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Ти жінка!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Not authorized!", message.getId());
             return;
         }
 
@@ -53,7 +53,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
             case "comm" -> commLimitDebug(message, split[2]);
             case "toggleai" -> toggleAiDebug(message, split[2]);
             case "limit" -> adjustLimitDebug(message, split[2], split[3], split[4]);
-            default -> telegramClient.sendAnswerCallbackQuery("Помилка! Невірний формат!", message.getId());
+            default -> telegramClient.sendAnswerCallbackQuery("Error! Invalid format!", message.getId());
         }
     }
 
@@ -62,7 +62,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         try {
             chat = chatService.findByChatId(Long.parseLong(chatId));
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Chat with this ID not found!", message.getId());
             return;
         }
 
@@ -85,7 +85,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
 
         editMessage(textMessage);
 
-        telegramClient.sendAnswerCallbackQuery("Статистика відправлена!", message.getId());
+        telegramClient.sendAnswerCallbackQuery("Statistics sent!", message.getId());
     }
 
     private void notifyDebug(CallbackQuery message, String chatId) {
@@ -93,7 +93,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         textMessage.setChatId(Long.parseLong(chatId));
         textMessage.setText("\uD83D\uDC40");
         sendMessage(textMessage, (Message) message.getMessage());
-        telegramClient.sendAnswerCallbackQuery("Сповіщення відправлено!", message.getId());
+        telegramClient.sendAnswerCallbackQuery("Notification sent!", message.getId());
     }
 
     private void backDebug(CallbackQuery message) {
@@ -123,7 +123,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         try {
             lumiosChat = chatService.findByChatId(Long.parseLong(chatId));
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Chat with this ID not found!", message.getId());
             return;
         }
 
@@ -174,7 +174,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         try {
             lumiosChat = chatService.findByChatId(Long.parseLong(chatId));
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Chat with this ID not found!", message.getId());
             return;
         }
 
@@ -200,7 +200,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
             lumiosChat = chatService.findByChatId(Long.parseLong(chatId));
             lumiosUser = userService.findById(Long.parseLong(userId), lumiosChat);
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Користувача не знайдено!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! User not found!", message.getId());
             return;
         }
 
@@ -243,7 +243,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
             
             userManagementDebug(message, chatId, userId);
         } catch (Exception e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка при оновленні reverence!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error updating reverence!", message.getId());
         }
     }
 
@@ -261,7 +261,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
             
             userManagementDebug(message, chatId, userId);
         } catch (Exception e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка при скиданні reverence!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error resetting reverence!", message.getId());
         }
     }
 
@@ -270,7 +270,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         try {
             lumiosChat = chatService.findByChatId(Long.parseLong(chatId));
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Chat with this ID not found!", message.getId());
             return;
         }
 
@@ -301,7 +301,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         try {
             lumiosChat = chatService.findByChatId(Long.parseLong(chatId));
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Chat with this ID not found!", message.getId());
             return;
         }
 
@@ -318,7 +318,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         try {
             lumiosChat = chatService.findByChatId(Long.parseLong(chatId));
         } catch (NoSuchEntityException e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка! Не знайдено чат з таким ID!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error! Chat with this ID not found!", message.getId());
             return;
         }
 
@@ -343,7 +343,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
             
             settingsDebug(message, chatId);
         } catch (Exception e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка при зміні AI статусу!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error toggling AI status!", message.getId());
         }
     }
 
@@ -372,7 +372,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
                 commLimitDebug(message, chatId);
             }
         } catch (Exception e) {
-            telegramClient.sendAnswerCallbackQuery("Помилка при зміні ліміту!", message.getId());
+            telegramClient.sendAnswerCallbackQuery("Error changing limit!", message.getId());
         }
     }
 }

@@ -21,13 +21,9 @@ public class SettingsCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
-        textMessage.setText("""
-                ** Налаштування **
-                                
-                В цьому меню ви зможете налаштувати роботу бота в цьому чаті. Натискайте на відповідні кнопки, щоб змінити налаштування!
-                """);
+        textMessage.setText(translationService.getMessage("settings.title", chat));
         textMessage.setParseMode(ParseMode.MARKDOWN);
-        textMessage.setReplyKeyboard(SettingsMarkupUtil.getSettingsKeyboard(chat));
+        textMessage.setReplyKeyboard(SettingsMarkupUtil.getSettingsKeyboard(chat, translationService));
         sendMessage(textMessage, message);
     }
 }

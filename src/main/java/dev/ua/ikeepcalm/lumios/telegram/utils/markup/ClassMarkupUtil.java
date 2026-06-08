@@ -1,7 +1,9 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.ClassType;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -14,23 +16,19 @@ import java.util.stream.Collectors;
 
 public class ClassMarkupUtil {
 
-    public static TextMessage createNowNotification(ClassEntry classEntry, Long chatId) {
+    public static TextMessage createNowNotification(ClassEntry classEntry, LumiosChat chat, TranslationService translationService) {
         TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chatId);
-        textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                            + "Шановне панство, незабаром почнеться / вже проходить пара: \n"
-                            + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
-                            + "Посилання на конференцію ⬇️"
-        );
+        textMessage.setChatId(chat.getChatId());
+        textMessage.setText(translationService.getMessage("class.now.notification", chat, determineEmoji(classEntry.getClassType()), classEntry.getName()));
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
+        InlineKeyboardButton notify = new InlineKeyboardButton(translationService.getMessage("class.button.link", chat));
         if (classEntry.getUrl() == null) {
-            notify.setText("Fice Advisor");
+            notify.setText(translationService.getMessage("class.button.fice", chat));
             notify.setUrl("https://ficeadvisor.com/schedule?week=1");
             InlineKeyboardRow secondRow = new InlineKeyboardRow();
-            InlineKeyboardButton secondButton = new InlineKeyboardButton("Додати посилання \uD83D\uDD17");
+            InlineKeyboardButton secondButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link", chat));
             secondButton.setCallbackData("classlink-add-" + classEntry.getId());
             secondRow.add(secondButton);
             keyboard.add(secondRow);
@@ -38,7 +36,7 @@ public class ClassMarkupUtil {
             notify.setUrl(classEntry.getUrl());
             // Add remove link button when URL exists
             InlineKeyboardRow removeRow = new InlineKeyboardRow();
-            InlineKeyboardButton removeButton = new InlineKeyboardButton("Видалити посилання ❌");
+            InlineKeyboardButton removeButton = new InlineKeyboardButton(translationService.getMessage("class.button.remove_link", chat));
             removeButton.setCallbackData("classlink-remove-" + classEntry.getId());
             removeRow.add(removeButton);
             keyboard.add(removeRow);
@@ -51,24 +49,19 @@ public class ClassMarkupUtil {
         return textMessage;
     }
 
-    public static TextMessage createNextNotification(ClassEntry classEntry, Long chatId) {
+    public static TextMessage createNextNotification(ClassEntry classEntry, LumiosChat chat, TranslationService translationService) {
         TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chatId);
-        textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                            + "Наступна пара починається о " + classEntry.getStartTime() + " і має назву:" + "\n"
-                            + determineEmoji(classEntry.getClassType()) + " " + classEntry.getName() + "\n\n"
-                            + "Посилання на конференцію ⬇️"
-        );
-
+        textMessage.setChatId(chat.getChatId());
+        textMessage.setText(translationService.getMessage("class.next.notification", chat, classEntry.getStartTime(), determineEmoji(classEntry.getClassType()), classEntry.getName()));
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Туда нам нада");
+        InlineKeyboardButton notify = new InlineKeyboardButton(translationService.getMessage("class.button.link", chat));
         if (classEntry.getUrl() == null) {
-            notify.setText("Fice Advisor");
+            notify.setText(translationService.getMessage("class.button.fice", chat));
             notify.setUrl("https://ficeadvisor.com/schedule?week=1");
             InlineKeyboardRow secondRow = new InlineKeyboardRow();
-            InlineKeyboardButton secondButton = new InlineKeyboardButton("Додати посилання \uD83D\uDD17");
+            InlineKeyboardButton secondButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link", chat));
             secondButton.setCallbackData("classlink-add-" + classEntry.getId());
             secondRow.add(secondButton);
             keyboard.add(secondRow);
@@ -76,7 +69,7 @@ public class ClassMarkupUtil {
             notify.setUrl(classEntry.getUrl());
             // Add remove link button when URL exists
             InlineKeyboardRow removeRow = new InlineKeyboardRow();
-            InlineKeyboardButton removeButton = new InlineKeyboardButton("Видалити посилання ❌");
+            InlineKeyboardButton removeButton = new InlineKeyboardButton(translationService.getMessage("class.button.remove_link", chat));
             removeButton.setCallbackData("classlink-remove-" + classEntry.getId());
             removeRow.add(removeButton);
             keyboard.add(removeRow);
@@ -88,19 +81,15 @@ public class ClassMarkupUtil {
         return textMessage;
     }
 
-    public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, Long chatId) {
+    public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService) {
         TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chatId);
+        textMessage.setChatId(chat.getChatId());
 
         String classesText = classEntries.stream()
                 .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
                 .collect(Collectors.joining("\n"));
 
-        textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                            + "Шановне панство, незабаром почнуться / вже проходять пари: \n"
-                            + classesText + "\n\n"
-                            + "Посилання на конференції ⬇️"
-        );
+        textMessage.setText(translationService.getMessage("class.multiple.now.notification", chat, classesText));
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
@@ -109,10 +98,10 @@ public class ClassMarkupUtil {
             InlineKeyboardButton button;
 
             if (classEntry.getUrl() == null) {
-                button = new InlineKeyboardButton("Fice Advisor - " + classEntry.getName());
+                button = new InlineKeyboardButton(translationService.getMessage("class.button.fice", chat) + " - " + classEntry.getName());
                 button.setUrl("https://ficeadvisor.com/schedule?week=1");
             } else {
-                button = new InlineKeyboardButton("\uD83C\uDF10 " + classEntry.getName());
+                button = new InlineKeyboardButton("🌐 " + classEntry.getName());
                 button.setUrl(classEntry.getUrl());
             }
             row.add(button);
@@ -121,7 +110,7 @@ public class ClassMarkupUtil {
             // Only show "add link" button for multiple classes, not "remove" (to avoid clutter)
             if (classEntry.getUrl() == null) {
                 InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
-                InlineKeyboardButton addLinkButton = new InlineKeyboardButton("Додати посилання для " + classEntry.getName() + " \uD83D\uDD17");
+                InlineKeyboardButton addLinkButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link_for", chat, classEntry.getName()));
                 addLinkButton.setCallbackData("classlink-add-" + classEntry.getId());
                 addLinkRow.add(addLinkButton);
                 keyboard.add(addLinkRow);
@@ -133,19 +122,15 @@ public class ClassMarkupUtil {
         return textMessage;
     }
 
-    public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, Long chatId) {
+    public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService) {
         TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chatId);
+        textMessage.setChatId(chat.getChatId());
 
         String classesText = classEntries.stream()
                 .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
                 .collect(Collectors.joining("\n"));
 
-        textMessage.setText("\uD83D\uDD14 > *НАГАДУВАННЯ* < \uD83D\uDD14\n\n"
-                            + "Наступні пари починаються о " + classEntries.get(0).getStartTime() + " і мають назви:" + "\n"
-                            + classesText + "\n\n"
-                            + "Посилання на конференції ⬇️"
-        );
+        textMessage.setText(translationService.getMessage("class.multiple.next.notification", chat, classEntries.get(0).getStartTime(), classesText));
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
@@ -154,10 +139,10 @@ public class ClassMarkupUtil {
             InlineKeyboardButton button;
 
             if (classEntry.getUrl() == null) {
-                button = new InlineKeyboardButton("Fice Advisor - " + classEntry.getName());
+                button = new InlineKeyboardButton(translationService.getMessage("class.button.fice", chat) + " - " + classEntry.getName());
                 button.setUrl("https://ficeadvisor.com/schedule?week=1");
             } else {
-                button = new InlineKeyboardButton("\uD83C\uDF10 " + classEntry.getName());
+                button = new InlineKeyboardButton("🌐 " + classEntry.getName());
                 button.setUrl(classEntry.getUrl());
             }
             row.add(button);
@@ -166,7 +151,7 @@ public class ClassMarkupUtil {
             // Only show "add link" button for multiple classes, not "remove" (to avoid clutter)
             if (classEntry.getUrl() == null) {
                 InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
-                InlineKeyboardButton addLinkButton = new InlineKeyboardButton("Додати посилання для " + classEntry.getName() + " \uD83D\uDD17");
+                InlineKeyboardButton addLinkButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link_for", chat, classEntry.getName()));
                 addLinkButton.setCallbackData("classlink-add-" + classEntry.getId());
                 addLinkRow.add(addLinkButton);
                 keyboard.add(addLinkRow);
@@ -180,9 +165,9 @@ public class ClassMarkupUtil {
 
     private static String determineEmoji(ClassType classType) {
         return switch (classType.name()) {
-            case "LECTURE" -> "\uD83D\uDD35";
-            case "PRACTICE" -> "\uD83D\uDFE0";
-            case "LAB" -> "\uD83D\uDFE2";
+            case "LECTURE" -> "🔵";
+            case "PRACTICE" -> "🟠";
+            case "LAB" -> "🟢";
             default -> "?";
         };
     }

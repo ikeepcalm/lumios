@@ -82,8 +82,13 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
 
         String text = message.getText().trim();
         String[] parts = text.split("\\s+", 2);
+        LumiosChat chat = null;
+        try {
+            chat = chatService.findByChatId(message.getChatId());
+        } catch (Exception ignored) {}
+
         if (parts.length < 2) {
-            sendDirectMessage(message.getChatId(), "❌ Невірний формат. Очікується: `логін пароль`\n\nСпробуй знову через /link.", ParseMode.MARKDOWN);
+            sendDirectMessage(message.getChatId(), translationService.getMessage("campus.link.invalid_format", chat), ParseMode.MARKDOWN);
             return;
         }
 
@@ -92,7 +97,7 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
 
         if (webhookUrl == null || webhookUrl.isBlank()) {
             log.error("campus.webhook.url is not configured — cannot subscribe userId={}", userId);
-            sendDirectMessage(message.getChatId(), "⚙️ Сервіс тимчасово недоступний. Спробуй пізніше.", null);
+            sendDirectMessage(message.getChatId(), translationService.getMessage("campus.link.error.service_unavailable", chat), null);
             return;
         }
 
@@ -106,7 +111,7 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
         } catch (CampusAuthException e) {
             log.warn("Campus subscription failed for userId={}: {}", userId, e.getMessage());
             sendDirectMessage(message.getChatId(),
-                    "❌ Не вдалося підключитися до eCampus.\n\nПеревір логін та пароль і спробуй знову через /link.", null);
+                    translationService.getMessage("campus.link.error.auth_failed", chat), null);
             return;
         } finally {
             username = null;
@@ -120,12 +125,7 @@ public class CampusLinkUpdate extends ServicesShortcut implements Interaction {
         binding.setSubscribedAt(LocalDateTime.now());
         campusBindingService.save(binding);
 
-        sendDirectMessage(message.getChatId(), """
-                ✅ *Акаунт успішно прив'язано до eCampus!*
-
-                Відтепер ти отримуватимеш сповіщення про нові оцінки прямо сюди.
-                Щоб відв'язати акаунт — використай /unlink.
-                """, ParseMode.MARKDOWN);
+        sendDirectMessage(message.getChatId(), translationService.getMessage("campus.link.success", chat), ParseMode.MARKDOWN);
     }
 
     private void sendDirectMessage(long chatId, String text, String parseMode) {

@@ -25,12 +25,12 @@ public class EditorCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
-        textMessage.setText("Посилання на онлайн-редактор розкладу ⬇️");
+        textMessage.setText(translationService.getMessage("command.editor.text", chat));
         textMessage.setMessageId(message.getMessageId());
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton notify = new InlineKeyboardButton("\uD83C\uDF10 Онлайн портал");
+        InlineKeyboardButton notify = new InlineKeyboardButton(translationService.getMessage("command.editor.button", chat));
         notify.setUrl("https://lumios.dev");
         firstRow.add(notify);
         keyboard.add(firstRow);

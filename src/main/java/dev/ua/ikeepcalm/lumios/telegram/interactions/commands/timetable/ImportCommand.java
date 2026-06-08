@@ -22,25 +22,25 @@ public class ImportCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
         String[] parts = message.getText().split("\\s+", 2);
         if (parts.length < 2) {
-            sendMessage("Напиши назву групи, яку хочеш імпортувати. Наприклад: /import ІП-32", message);
+            sendMessage(translationService.getMessage("command.import.usage", chat), message);
             return;
         }
         String name = parts[1];
 
         if (name.isEmpty() || name.isBlank()) {
-            sendMessage("Назва не може бути пустою. Спробуй ще раз. Наприклад: /import ІП-32", message);
+            sendMessage(translationService.getMessage("command.import.empty", chat), message);
             return;
         }
 
         Map<String, String> groups = ImportUtil.getGroupsByFilter(name);
         if (groups.isEmpty()) {
-            sendMessage("Не знайдено жодної групи за таким фільтром. Спробуй ще раз.", message);
+            sendMessage(translationService.getMessage("command.import.not-found", chat), message);
             return;
         }
 
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
-        textMessage.setText("Обери групу, яку хочеш імпортувати:\n\nЯкщо ти не знайшов свою групу, спробуй ввести інший фільтр.");
+        textMessage.setText(translationService.getMessage("command.import.choose", chat));
         textMessage.setReplyKeyboard(ImportUtil.createGroupsKeyboard(groups));
 
         sendMessage(textMessage, message);

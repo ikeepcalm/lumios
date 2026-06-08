@@ -10,6 +10,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoBindSpecifiedException;
 import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotInlineQuery;
 import dev.ua.ikeepcalm.lumios.telegram.interactions.inlines.InlineQuery;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -40,28 +41,33 @@ public class TruthOrDareQuery implements InlineQuery {
     private final BindService bindService;
     private final ChatService chatService;
     private final UserService userService;
+    private final TranslationService translationService;
 
-    public TruthOrDareQuery(BindService bindService, ChatService chatService, UserService userService) {
+    public TruthOrDareQuery(BindService bindService, ChatService chatService, UserService userService, TranslationService translationService) {
         this.bindService = bindService;
         this.chatService = chatService;
         this.userService = userService;
+        this.translationService = translationService;
     }
 
 
     public InlineQueryResult processUpdate(Update update) {
+        String lang = update.getInlineQuery().getFrom().getLanguageCode();
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         String result;
         BindResult bindResult;
         try {
             bindResult = retrieveBind(update.getInlineQuery().getFrom().getId());
-            result = "@" + update.getInlineQuery().getFrom().getUserName() + "- вам випало: \n\n" + getTruthOrDare() +
-                     "\n\n" + "Наступний гравець: @" + getRandomElement(bindResult.chat.getUsers()).getUsername() + "!";
+            result = translationService.getMessage("inline.truth_or_dare.result", lang, update.getInlineQuery().getFrom().getUserName()) 
+                     + getTruthOrDare(lang) 
+                     + translationService.getMessage("inline.truth_or_dare.next_player", lang, getRandomElement(bindResult.chat.getUsers()).getUsername());
         } catch (NoBindSpecifiedException e) {
-            result = "@" + update.getInlineQuery().getFrom().getUserName() + "- вам випало: \n\n" + getTruthOrDare();
+            result = translationService.getMessage("inline.truth_or_dare.result", lang, update.getInlineQuery().getFrom().getUserName()) 
+                     + getTruthOrDare(lang);
         }
 
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton more = new InlineKeyboardButton("\uD83C\uDF10 Ще!");
+        InlineKeyboardButton more = new InlineKeyboardButton(translationService.getMessage("inline.truth_or_dare.more", lang));
         more.setSwitchInlineQueryCurrentChat("Правда або дія");
         firstRow.add(more);
         keyboard.add(firstRow);
@@ -69,8 +75,8 @@ public class TruthOrDareQuery implements InlineQuery {
         return InlineQueryResultArticle.builder()
                 .id("truth_or_dare")
                 .thumbnailUrl("https://naurok.com.ua/uploads/files/888339/377247/432424_html/images/377247%201.png")
-                .title("Правда або дія")
-                .description("Ви отримаєте або запитання, на яке маєте відповісти; або завдання, яке вам потрібно виконати. Хай щастить!")
+                .title(translationService.getMessage("inline.truth_or_dare.title", lang))
+                .description(translationService.getMessage("inline.truth_or_dare.desc", lang))
                 .inputMessageContent(InputTextMessageContent.builder()
                         .messageText(result)
                         .build())
@@ -78,24 +84,27 @@ public class TruthOrDareQuery implements InlineQuery {
                 .build();
     }
 
-    private String getTruthOrDare() {
-        String filePath = "truthOrDare.json";
-        String jsonContent = "";
-        try {
-            jsonContent = new String(Files.readAllBytes(Paths.get(filePath)));
+    private String getTruthOrDare(String lang) {
+        String fileName = "en".equals(lang) ? "truthOrDare_en.json" : "truthOrDare.json";
+        try (var is = getClass().getClassLoader().getResourceAsStream("truth-or-dare/" + fileName)) {
+            if (is == null) {
+                return translationService.getMessage("inline.truth_or_dare.empty_db", lang);
+            }
+            String jsonContent = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            JSONObject jsonObject = new JSONObject(jsonContent);
+            JSONArray questions = jsonObject.getJSONArray("questions");
+            JSONArray dares = jsonObject.getJSONArray("dares");
+            Random random = new Random();
+            if (random.nextBoolean()) {
+                int randomIndex = random.nextInt(questions.length());
+                return translationService.getMessage("inline.truth_or_dare.truth_prefix", lang) + questions.getString(randomIndex);
+            } else {
+                int randomIndex = random.nextInt(dares.length());
+                return translationService.getMessage("inline.truth_or_dare.dare_prefix", lang) + dares.getString(randomIndex);
+            }
         } catch (IOException e) {
-            return "Порожня база данних для гри \"Правда або дія\". Хочете допомогти? Звертайтесь до адміністратора.";
-        }
-        JSONObject jsonObject = new JSONObject(jsonContent);
-        JSONArray questions = jsonObject.getJSONArray("questions");
-        JSONArray dares = jsonObject.getJSONArray("dares");
-        Random random = new Random();
-        if (random.nextBoolean()) {
-            int randomIndex = random.nextInt(questions.length());
-            return "\uD83C\uDF40 - Правда: " + questions.getString(randomIndex);
-        } else {
-            int randomIndex = random.nextInt(dares.length());
-            return "\uD83D\uDC40 - Дія: " + dares.getString(randomIndex);
+            log.error("Failed to load truth or dare file: {}", fileName, e);
+            return translationService.getMessage("inline.truth_or_dare.empty_db", lang);
         }
     }
 

@@ -30,7 +30,7 @@ public class RepinCommand extends ServicesShortcut implements Interaction {
 
                     for (SimpleQueue simpleQueue : simpleQueues) {
                         TextMessage textMessage = new TextMessage();
-                        textMessage.setText("Черга знайдена. Намагаюся прикріпити " + simpleQueue.getAlias() + "!");
+                        textMessage.setText(translationService.getMessage("repin.queue_found", chat, simpleQueue.getAlias()));
                         textMessage.setChatId(update.getMessage().getChatId());
                         textMessage.setMessageId(simpleQueue.getMessageId());
                         Message sent = telegramClient.sendTextMessage(textMessage);
@@ -39,7 +39,7 @@ public class RepinCommand extends ServicesShortcut implements Interaction {
 
                     for (MixedQueue mixedQueue : mixedQueues) {
                         TextMessage textMessage = new TextMessage();
-                        textMessage.setText("Черга знайдена. Намагаюся прикріпити " + mixedQueue.getAlias() + "!");
+                        textMessage.setText(translationService.getMessage("repin.queue_found", chat, mixedQueue.getAlias()));
                         textMessage.setChatId(update.getMessage().getChatId());
                         textMessage.setMessageId(mixedQueue.getMessageId());
                         Message sent = telegramClient.sendTextMessage(textMessage);
