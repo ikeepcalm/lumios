@@ -349,7 +349,7 @@ public class TelegramClient extends OkHttpTelegramClient {
     private Message sendChunkedMessage(TextMessage textMessage) {
         LumiosChat chat = null;
         try {
-            chat = chatService.findById(textMessage.getChatId());
+            chat = chatService.findByChatId(textMessage.getChatId());
         } catch (NoSuchEntityException ignored) {
         }
         List<String> chunks = MessageFormatter.chunkMessage(textMessage.getText(), textMessage.getParseMode(), translationService, chat);
@@ -527,7 +527,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         
         LumiosChat chat = null;
         try {
-            chat = chatService.findById(textMessage.getChatId());
+            chat = chatService.findByChatId(textMessage.getChatId());
         } catch (NoSuchEntityException ignored) {
         }
 

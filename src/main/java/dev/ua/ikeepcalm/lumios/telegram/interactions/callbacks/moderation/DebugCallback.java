@@ -70,7 +70,7 @@ public class DebugCallback extends ServicesShortcut implements Interaction {
         EditMessage textMessage = new EditMessage();
         textMessage.setChatId(message.getMessage().getChatId());
         textMessage.setMessageId(message.getMessage().getMessageId());
-        textMessage.setText(PagedUtil.buildStatsMessage(users, 1));
+        textMessage.setText(PagedUtil.buildStatsMessage(users, 1, translationService, chat));
         textMessage.setParseMode(ParseMode.MARKDOWN);
 
         if (users.size() > 10) {

@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.CampusBindingService;
 import dev.ua.ikeepcalm.lumios.database.entities.campus.CampusBinding;
+import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.telegram.campus.CampusApiClient;
 import dev.ua.ikeepcalm.lumios.telegram.campus.CampusAuthException;
 import dev.ua.ikeepcalm.lumios.telegram.campus.CampusSubscriptionResult;

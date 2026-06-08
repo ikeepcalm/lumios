@@ -24,7 +24,7 @@ public class NewCallback extends ServicesShortcut implements Interaction {
         task.setChat(chat);
         long id = taskService.save(task);
 
-        EditMessage editMessage = TaskMarkupUtil.buildTaskEditMessage(task, id);
+        EditMessage editMessage = TaskMarkupUtil.buildTaskEditMessage(task, id, chat, translationService);
         editMessage.setChatId(message.getMessage().getChatId());
         editMessage.setMessageId(message.getMessage().getMessageId());
         editMessage(editMessage);

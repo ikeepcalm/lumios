@@ -79,7 +79,7 @@ public class TaskUpdate extends ServicesShortcut implements Interaction {
                 }
             }
             taskService.save(task);
-            TextMessage editMessage = TaskMarkupUtil.buildTaskTextMessage(task, task.getId());
+            TextMessage editMessage = TaskMarkupUtil.buildTaskTextMessage(task, task.getId(), chat, translationService);
             editMessage.setChatId(update.getMessage().getChatId());
             sendMessage(editMessage, update.getMessage());
         }
