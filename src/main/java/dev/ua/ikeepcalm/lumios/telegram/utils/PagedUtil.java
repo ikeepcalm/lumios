@@ -18,7 +18,7 @@ public class PagedUtil {
 
         int maxPage = Math.max(1, (sortedUsers.size() + 9) / 10);
         StringBuilder builder = new StringBuilder(translationService.getMessage("stats.title", chat, page, maxPage));
-        builder.append("\n");
+        builder.append("\n\n");
 
         int count = 0;
         for (int i = (page - 1) * 10; i < sortedUsers.size(); i++) {
@@ -27,7 +27,7 @@ public class PagedUtil {
             }
             LumiosUser user = sortedUsers.get(i);
             int rank = (page - 1) * 10 + count + 1;
-            String username = user.getUsername() != null ? "`@" + user.getUsername() + "`" : "User#" + user.getUserId();
+            String username = user.getUsername() != null ? user.getUsername() : "User#" + user.getUserId();
             builder.append(rank).append(". ").append(username).append(" — ").append(user.getReverence()).append(" ⭐\n");
             count++;
         }
