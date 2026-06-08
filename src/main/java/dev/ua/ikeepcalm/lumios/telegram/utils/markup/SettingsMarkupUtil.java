@@ -99,17 +99,20 @@ public class SettingsMarkupUtil {
 
         // Language Row
         InlineKeyboardRow languageRow = new InlineKeyboardRow();
-        InlineKeyboardButton languageButton;
-        if ("en".equals(lumiosChat.getLanguage())) {
-            // Currently English -> show button to switch to Ukrainian
-            languageButton = new InlineKeyboardButton(translationService.getMessage("settings.language.switch_to_uk", lumiosChat));
-            languageButton.setCallbackData("settings-lang-uk");
-        } else {
-            // Currently Ukrainian -> show button to switch to English
-            languageButton = new InlineKeyboardButton(translationService.getMessage("settings.language.switch_to_en", lumiosChat));
-            languageButton.setCallbackData("settings-lang-en");
-        }
-        languageRow.add(languageButton);
+        String currentLang = lumiosChat.getLanguage();
+
+        InlineKeyboardButton ukButton = new InlineKeyboardButton("uk".equals(currentLang) ? "🇺🇦 UA ✅" : "🇺🇦 UA");
+        ukButton.setCallbackData("settings-lang-uk");
+
+        InlineKeyboardButton enButton = new InlineKeyboardButton("en".equals(currentLang) ? "🇬🇧 EN ✅" : "🇬🇧 EN");
+        enButton.setCallbackData("settings-lang-en");
+
+        InlineKeyboardButton zhButton = new InlineKeyboardButton("zh".equals(currentLang) ? "🇨🇳 ZH ✅" : "🇨🇳 ZH");
+        zhButton.setCallbackData("settings-lang-zh");
+
+        languageRow.add(ukButton);
+        languageRow.add(enButton);
+        languageRow.add(zhButton);
         keyboard.add(languageRow);
 
         return new InlineKeyboardMarkup(keyboard);
