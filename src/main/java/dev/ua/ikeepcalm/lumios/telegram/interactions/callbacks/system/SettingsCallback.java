@@ -61,9 +61,9 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
         }
 
         if (data.equals("settings-ai-gemini")) {
-            chat.setAiModel(AiModel.OPENAI);
-        } else if (data.equals("settings-ai-openai")) {
             chat.setAiModel(AiModel.GEMINI);
+        } else if (data.equals("settings-ai-openai")) {
+            chat.setAiModel(AiModel.OPENAI);
         }
 
         if (data.equals("settings-lang-en")) {
