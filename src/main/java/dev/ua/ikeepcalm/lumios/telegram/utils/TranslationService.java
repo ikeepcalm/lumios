@@ -36,6 +36,7 @@ public class TranslationService {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasenames("messages");
         messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setDefaultLocale(Locale.forLanguageTag("uk"));
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }

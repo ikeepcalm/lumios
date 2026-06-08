@@ -100,10 +100,13 @@ public class SettingsMarkupUtil {
         // Language Row
         InlineKeyboardRow languageRow = new InlineKeyboardRow();
         InlineKeyboardButton languageButton;
-        languageButton = new InlineKeyboardButton(translationService.getMessage("settings.language.label", lumiosChat));
         if ("en".equals(lumiosChat.getLanguage())) {
+            // Currently English -> show button to switch to Ukrainian
+            languageButton = new InlineKeyboardButton(translationService.getMessage("settings.language.switch_to_uk", lumiosChat));
             languageButton.setCallbackData("settings-lang-uk");
         } else {
+            // Currently Ukrainian -> show button to switch to English
+            languageButton = new InlineKeyboardButton(translationService.getMessage("settings.language.switch_to_en", lumiosChat));
             languageButton.setCallbackData("settings-lang-en");
         }
         languageRow.add(languageButton);
