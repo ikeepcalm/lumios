@@ -10,6 +10,7 @@ import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.utils.markup.ClassMarkupUtil;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -33,8 +34,8 @@ public class NowCommand extends ServicesShortcut implements Interaction {
             TimetableEntry timetableEntry = timetableService
                     .findByChatIdAndWeekType(message.getChatId(),
                             WeekValidator.determineWeekDay());
-            DayOfWeek dayOfWeek = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
-            LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
+            DayOfWeek dayOfWeek = TimetableClock.today().getDayOfWeek();
+            LocalTime currentTime = TimetableClock.now();
             List<ClassEntry> currentClasses = new ArrayList<>();
             
             for (DayEntry dayEntry : timetableEntry.getDays()) {

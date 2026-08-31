@@ -32,6 +32,7 @@ dependencies {
     implementation 'org.json:json:20250107'
     implementation 'io.github.sashirestela:simple-openai:3.8.2'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.liquibase:liquibase-core'
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'

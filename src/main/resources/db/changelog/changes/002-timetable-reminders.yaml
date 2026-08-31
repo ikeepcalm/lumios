@@ -1,0 +1,29 @@
+databaseChangeLog:
+  # How many minutes before a class the chat gets an advance reminder. 0 disables it, leaving only
+  # the "class is starting now" message. Guarded by a precondition because a deployment running
+  # ddl-auto=update before this migration landed may already have the column.
+  - changeSet:
+      id: 002-chats-reminder-lead-minutes
+      author: lumios
+      comment: Per-chat advance reminder lead time for class notifications
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: Column chats.reminderLeadMinutes already present; nothing to do.
+        - not:
+            - columnExists:
+                tableName: chats
+                columnName: reminderLeadMinutes
+      changes:
+        - addColumn:
+            tableName: chats
+            columns:
+              - column:
+                  name: reminderLeadMinutes
+                  type: int
+                  defaultValueNumeric: 10
+                  constraints:
+                    nullable: true
+      rollback:
+        - dropColumn:
+            tableName: chats
+            columnName: reminderLeadMinutes

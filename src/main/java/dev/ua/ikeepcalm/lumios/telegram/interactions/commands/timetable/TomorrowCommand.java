@@ -9,6 +9,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCommand;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetablePagedUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TimetableParser;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
@@ -34,7 +35,7 @@ public class TomorrowCommand extends ServicesShortcut implements Interaction {
         try {
             TimetableEntry timetableEntry = timetableService.findByChatIdAndWeekType(message.getChatId(),
                     WeekValidator.determineWeekDay());
-            DayOfWeek dayOfWeek = LocalDate.now().plusDays(1).getDayOfWeek();
+            DayOfWeek dayOfWeek = TimetableClock.today().plusDays(1).getDayOfWeek();
 
             List<ClassEntry> tomorrowClasses = new ArrayList<>();
             for (DayEntry dayEntry : timetableEntry.getDays()) {

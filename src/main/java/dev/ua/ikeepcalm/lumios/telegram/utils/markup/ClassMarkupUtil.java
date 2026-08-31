@@ -3,6 +3,7 @@ package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.ClassType;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TimetablePagedUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -10,154 +11,118 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ClassMarkupUtil {
 
+    private static final String FALLBACK_SCHEDULE_URL = "https://ficeadvisor.com/schedule?week=1";
+
     public static TextMessage createNowNotification(ClassEntry classEntry, LumiosChat chat, TranslationService translationService) {
-        TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chat.getChatId());
-        textMessage.setText(translationService.getMessage("class.now.notification", chat, determineEmoji(classEntry.getClassType()), classEntry.getName()));
-
-        List<InlineKeyboardRow> keyboard = new ArrayList<>();
-        InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton notify = new InlineKeyboardButton(translationService.getMessage("class.button.link", chat));
-        if (classEntry.getUrl() == null) {
-            notify.setText(translationService.getMessage("class.button.fice", chat));
-            notify.setUrl("https://ficeadvisor.com/schedule?week=1");
-            InlineKeyboardRow secondRow = new InlineKeyboardRow();
-            InlineKeyboardButton secondButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link", chat));
-            secondButton.setCallbackData("classlink-add-" + classEntry.getId());
-            secondRow.add(secondButton);
-            keyboard.add(secondRow);
-        } else {
-            notify.setUrl(classEntry.getUrl());
-            // Add remove link button when URL exists
-            InlineKeyboardRow removeRow = new InlineKeyboardRow();
-            InlineKeyboardButton removeButton = new InlineKeyboardButton(translationService.getMessage("class.button.remove_link", chat));
-            removeButton.setCallbackData("classlink-remove-" + classEntry.getId());
-            removeRow.add(removeButton);
-            keyboard.add(removeRow);
-        }
-        firstRow.add(notify);
-        keyboard.add(firstRow);
-
-        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
-        textMessage.setParseMode(ParseMode.MARKDOWN);
-        return textMessage;
+        return single(classEntry, chat, translationService,
+                translationService.getMessage("class.now.notification", chat,
+                        determineEmoji(classEntry.getClassType()), classEntry.getName()));
     }
 
     public static TextMessage createNextNotification(ClassEntry classEntry, LumiosChat chat, TranslationService translationService) {
-        TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chat.getChatId());
-        textMessage.setText(translationService.getMessage("class.next.notification", chat, classEntry.getStartTime(), determineEmoji(classEntry.getClassType()), classEntry.getName()));
-
-        List<InlineKeyboardRow> keyboard = new ArrayList<>();
-        InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton notify = new InlineKeyboardButton(translationService.getMessage("class.button.link", chat));
-        if (classEntry.getUrl() == null) {
-            notify.setText(translationService.getMessage("class.button.fice", chat));
-            notify.setUrl("https://ficeadvisor.com/schedule?week=1");
-            InlineKeyboardRow secondRow = new InlineKeyboardRow();
-            InlineKeyboardButton secondButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link", chat));
-            secondButton.setCallbackData("classlink-add-" + classEntry.getId());
-            secondRow.add(secondButton);
-            keyboard.add(secondRow);
-        } else {
-            notify.setUrl(classEntry.getUrl());
-            // Add remove link button when URL exists
-            InlineKeyboardRow removeRow = new InlineKeyboardRow();
-            InlineKeyboardButton removeButton = new InlineKeyboardButton(translationService.getMessage("class.button.remove_link", chat));
-            removeButton.setCallbackData("classlink-remove-" + classEntry.getId());
-            removeRow.add(removeButton);
-            keyboard.add(removeRow);
-        }
-        firstRow.add(notify);
-        keyboard.add(firstRow);
-        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
-        textMessage.setParseMode(ParseMode.MARKDOWN);
-        return textMessage;
+        return single(classEntry, chat, translationService,
+                translationService.getMessage("class.next.notification", chat,
+                        classEntry.getStartTime(), determineEmoji(classEntry.getClassType()), classEntry.getName()));
     }
 
     public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService) {
-        TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chat.getChatId());
-
-        String classesText = classEntries.stream()
-                .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
-                .collect(Collectors.joining("\n"));
-
-        textMessage.setText(translationService.getMessage("class.multiple.now.notification", chat, classesText));
-
-        List<InlineKeyboardRow> keyboard = new ArrayList<>();
-
-        for (ClassEntry classEntry : classEntries) {
-            InlineKeyboardRow row = new InlineKeyboardRow();
-            InlineKeyboardButton button;
-
-            if (classEntry.getUrl() == null) {
-                button = new InlineKeyboardButton(translationService.getMessage("class.button.fice", chat) + " - " + classEntry.getName());
-                button.setUrl("https://ficeadvisor.com/schedule?week=1");
-            } else {
-                button = new InlineKeyboardButton("🌐 " + classEntry.getName());
-                button.setUrl(classEntry.getUrl());
-            }
-            row.add(button);
-            keyboard.add(row);
-
-            // Only show "add link" button for multiple classes, not "remove" (to avoid clutter)
-            if (classEntry.getUrl() == null) {
-                InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
-                InlineKeyboardButton addLinkButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link_for", chat, classEntry.getName()));
-                addLinkButton.setCallbackData("classlink-add-" + classEntry.getId());
-                addLinkRow.add(addLinkButton);
-                keyboard.add(addLinkRow);
-            }
-        }
-
-        textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
-        textMessage.setParseMode(ParseMode.MARKDOWN);
-        return textMessage;
+        return multiple(classEntries, chat, translationService,
+                translationService.getMessage("class.multiple.now.notification", chat, listClasses(classEntries)));
     }
 
     public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService) {
-        TextMessage textMessage = new TextMessage();
-        textMessage.setChatId(chat.getChatId());
+        return multiple(classEntries, chat, translationService,
+                translationService.getMessage("class.multiple.next.notification", chat,
+                        classEntries.getFirst().getStartTime(), listClasses(classEntries)));
+    }
 
-        String classesText = classEntries.stream()
+    /**
+     * Used by /next once today is over: the next classes fall on a later day, so the day has to be
+     * named - a bare start time would read as if they were still today.
+     */
+    public static TextMessage createLaterDayNotification(List<ClassEntry> classEntries, DayOfWeek day,
+                                                        LumiosChat chat, TranslationService translationService) {
+        return multiple(classEntries, chat, translationService,
+                translationService.getMessage("class.next.later", chat,
+                        TimetablePagedUtil.getDayName(day, translationService, chat),
+                        classEntries.getFirst().getStartTime(),
+                        listClasses(classEntries)));
+    }
+
+    private static String listClasses(List<ClassEntry> classEntries) {
+        return classEntries.stream()
                 .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
                 .collect(Collectors.joining("\n"));
+    }
 
-        textMessage.setText(translationService.getMessage("class.multiple.next.notification", chat, classEntries.get(0).getStartTime(), classesText));
+    /**
+     * One class: a single join button, plus a row to attach or clear its conference link.
+     */
+    private static TextMessage single(ClassEntry classEntry, LumiosChat chat, TranslationService translationService, String text) {
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        InlineKeyboardButton join = new InlineKeyboardButton(translationService.getMessage("class.button.link", chat));
 
+        if (classEntry.getUrl() == null) {
+            join.setText(translationService.getMessage("class.button.fice", chat));
+            join.setUrl(FALLBACK_SCHEDULE_URL);
+            keyboard.add(new InlineKeyboardRow(callbackButton(
+                    translationService.getMessage("class.button.add_link", chat), "classlink-add-" + classEntry.getId())));
+        } else {
+            join.setUrl(classEntry.getUrl());
+            keyboard.add(new InlineKeyboardRow(callbackButton(
+                    translationService.getMessage("class.button.remove_link", chat), "classlink-remove-" + classEntry.getId())));
+        }
+
+        keyboard.add(new InlineKeyboardRow(join));
+        return message(chat, text, keyboard);
+    }
+
+    /**
+     * Several classes in one slot - typically parallel electives. Each gets its own join button, and
+     * only "add link" is offered, since a remove button per class would double the keyboard.
+     */
+    private static TextMessage multiple(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService, String text) {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
         for (ClassEntry classEntry : classEntries) {
-            InlineKeyboardRow row = new InlineKeyboardRow();
-            InlineKeyboardButton button;
-
+            InlineKeyboardButton join;
             if (classEntry.getUrl() == null) {
-                button = new InlineKeyboardButton(translationService.getMessage("class.button.fice", chat) + " - " + classEntry.getName());
-                button.setUrl("https://ficeadvisor.com/schedule?week=1");
+                join = new InlineKeyboardButton(
+                        translationService.getMessage("class.button.fice", chat) + " - " + classEntry.getName());
+                join.setUrl(FALLBACK_SCHEDULE_URL);
             } else {
-                button = new InlineKeyboardButton("🌐 " + classEntry.getName());
-                button.setUrl(classEntry.getUrl());
+                join = new InlineKeyboardButton("🌐 " + classEntry.getName());
+                join.setUrl(classEntry.getUrl());
             }
-            row.add(button);
-            keyboard.add(row);
+            keyboard.add(new InlineKeyboardRow(join));
 
-            // Only show "add link" button for multiple classes, not "remove" (to avoid clutter)
             if (classEntry.getUrl() == null) {
-                InlineKeyboardRow addLinkRow = new InlineKeyboardRow();
-                InlineKeyboardButton addLinkButton = new InlineKeyboardButton(translationService.getMessage("class.button.add_link_for", chat, classEntry.getName()));
-                addLinkButton.setCallbackData("classlink-add-" + classEntry.getId());
-                addLinkRow.add(addLinkButton);
-                keyboard.add(addLinkRow);
+                keyboard.add(new InlineKeyboardRow(callbackButton(
+                        translationService.getMessage("class.button.add_link_for", chat, classEntry.getName()),
+                        "classlink-add-" + classEntry.getId())));
             }
         }
 
+        return message(chat, text, keyboard);
+    }
+
+    private static InlineKeyboardButton callbackButton(String label, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton(label);
+        button.setCallbackData(callbackData);
+        return button;
+    }
+
+    private static TextMessage message(LumiosChat chat, String text, List<InlineKeyboardRow> keyboard) {
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(chat.getChatId());
+        textMessage.setText(text);
         textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
         textMessage.setParseMode(ParseMode.MARKDOWN);
         return textMessage;

@@ -83,6 +83,16 @@ public class SettingsMarkupUtil {
             }
             plainRow.add(plainTimetable);
             keyboard.add(plainRow);
+
+            // Cycles through the offered lead times; 0 means only the "class is starting" message.
+            InlineKeyboardRow leadRow = new InlineKeyboardRow();
+            int lead = currentLeadMinutes(lumiosChat);
+            InlineKeyboardButton leadButton = new InlineKeyboardButton(lead == 0
+                    ? translationService.getMessage("settings.reminder.off", lumiosChat)
+                    : translationService.getMessage("settings.reminder.lead", lumiosChat, String.valueOf(lead)));
+            leadButton.setCallbackData("settings-reminder-lead-" + nextLeadMinutes(lead));
+            leadRow.add(leadButton);
+            keyboard.add(leadRow);
         }
 
         keyboard.add(secondRow);
@@ -113,6 +123,28 @@ public class SettingsMarkupUtil {
         keyboard.add(languageRow);
 
         return new InlineKeyboardMarkup(keyboard);
+    }
+
+    /**
+     * Lead times offered by the settings button, in minutes. 0 disables the advance reminder.
+     */
+    public static final int[] REMINDER_LEAD_OPTIONS = {0, 5, 10, 15, 30};
+
+    public static int currentLeadMinutes(LumiosChat chat) {
+        Integer lead = chat.getReminderLeadMinutes();
+        return lead == null ? 0 : lead;
+    }
+
+    /**
+     * The value the button moves to when tapped, wrapping around the offered options.
+     */
+    public static int nextLeadMinutes(int current) {
+        for (int i = 0; i < REMINDER_LEAD_OPTIONS.length; i++) {
+            if (REMINDER_LEAD_OPTIONS[i] == current) {
+                return REMINDER_LEAD_OPTIONS[(i + 1) % REMINDER_LEAD_OPTIONS.length];
+            }
+        }
+        return REMINDER_LEAD_OPTIONS[0];
     }
 
 }

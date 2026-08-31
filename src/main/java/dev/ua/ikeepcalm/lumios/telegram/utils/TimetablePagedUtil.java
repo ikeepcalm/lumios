@@ -179,7 +179,7 @@ public class TimetablePagedUtil {
             return 1;
         }
 
-        LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
+        LocalTime currentTime = TimetableClock.now();
         List<String> timeSlots = new ArrayList<>(groupedByTime.keySet());
 
         // Find the current or next time slot

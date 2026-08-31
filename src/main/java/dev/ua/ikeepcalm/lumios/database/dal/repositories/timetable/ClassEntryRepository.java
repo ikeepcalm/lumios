@@ -15,8 +15,15 @@ import java.util.Optional;
 @Repository
 public interface ClassEntryRepository extends CrudRepository<ClassEntry, Long> {
 
-    @Query("SELECT c FROM classEntries c WHERE c.startTime BETWEEN :now AND :nextMinute AND c.dayEntry.dayName = :today")
-    List<ClassEntry> findUpcomingClasses(@Param("now") LocalTime now, @Param("nextMinute") LocalTime nextMinute, @Param("today") DayOfWeek today);
+    /**
+     * Classes starting in [from, until) on the given weekday.
+     * <p>
+     * The bound is half-open on purpose. The previous query used BETWEEN, which is inclusive on both
+     * ends, so a class starting on an exact minute matched in two consecutive scheduler runs and only
+     * an in-memory cache stopped the duplicate message.
+     */
+    @Query("SELECT c FROM classEntries c WHERE c.startTime >= :from AND c.startTime < :until AND c.dayEntry.dayName = :today")
+    List<ClassEntry> findClassesStartingBetween(@Param("from") LocalTime from, @Param("until") LocalTime until, @Param("today") DayOfWeek today);
 
     @NotNull
     Optional<ClassEntry> findById(long id);
