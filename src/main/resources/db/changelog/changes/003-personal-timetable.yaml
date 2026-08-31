@@ -1,4 +1,8 @@
 databaseChangeLog:
+  # Identifiers here are the snake_case ones Spring Boot's CamelCaseToUnderscoresNamingStrategy
+  # produces - `class_entries`, `chat_id`, and so on. An earlier revision of this file used the
+  # camelCase entity and field names verbatim, which match no table in a running deployment.
+
   # Teacher and room come down from campus on every class but were previously discarded. They are
   # what distinguishes two entries of the same subject in one slot (a subgroup split), and they make
   # a personal reminder actually useful ("who and where").
@@ -6,29 +10,30 @@ databaseChangeLog:
       id: 003-class-entries-teacher-location
       author: lumios
       comment: Keep the lecturer and location supplied by the campus feed
+      validCheckSum: ANY
       preConditions:
         - onFail: MARK_RAN
-        - onFailMessage: classEntries.teacherName already present; nothing to do.
+        - onFailMessage: class_entries.teacher_name already present; nothing to do.
         - not:
             - columnExists:
-                tableName: classEntries
-                columnName: teacherName
+                tableName: class_entries
+                columnName: teacher_name
       changes:
         - addColumn:
-            tableName: classEntries
+            tableName: class_entries
             columns:
               - column:
-                  name: teacherName
+                  name: teacher_name
                   type: varchar(255)
               - column:
                   name: location
                   type: varchar(255)
       rollback:
         - dropColumn:
-            tableName: classEntries
-            columnName: teacherName
+            tableName: class_entries
+            columnName: teacher_name
         - dropColumn:
-            tableName: classEntries
+            tableName: class_entries
             columnName: location
 
   # One row per member who has been through the elective picker. Its presence is what marks a member
@@ -37,6 +42,7 @@ databaseChangeLog:
       id: 003-timetable-members
       author: lumios
       comment: Per-member personal reminder settings
+      validCheckSum: ANY
       preConditions:
         - onFail: MARK_RAN
         - onFailMessage: timetable_members already present; nothing to do.
@@ -44,50 +50,26 @@ databaseChangeLog:
             - tableExists:
                 tableName: timetable_members
       changes:
-        - createTable:
-            tableName: timetable_members
-            columns:
-              - column:
-                  name: id
-                  type: bigint
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: chatId
-                  type: bigint
-                  constraints:
-                    nullable: false
-              - column:
-                  name: telegramUserId
-                  type: bigint
-                  constraints:
-                    nullable: false
-              - column:
-                  name: dmRemindersEnabled
-                  type: boolean
-                  defaultValueBoolean: true
-                  constraints:
-                    nullable: false
-              - column:
-                  name: leadMinutes
-                  type: int
-              # Set when Telegram refuses a private message because the member never started the bot.
-              # Stops the scheduler retrying them every single class.
-              - column:
-                  name: dmUnavailable
-                  type: boolean
-                  defaultValueBoolean: false
-                  constraints:
-                    nullable: false
-              - column:
-                  name: reviewedAt
-                  type: datetime(6)
-        - addUniqueConstraint:
-            tableName: timetable_members
-            columnNames: chatId, telegramUserId
-            constraintName: uk_timetable_members_chat_user
+        # Raw SQL so the column types match what Hibernate would have generated exactly - notably
+        # `bit` for booleans, since nothing validates the schema at startup any more.
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create table timetable_members (
+                  id bigint not null auto_increment,
+                  chat_id bigint not null,
+                  dm_reminders_enabled bit not null,
+                  dm_unavailable bit not null,
+                  lead_minutes integer,
+                  reviewed_at datetime(6),
+                  telegram_user_id bigint not null,
+                  primary key (id)
+              ) engine=InnoDB
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              alter table timetable_members
+                  add constraint uk_timetable_members_chat_user unique (chat_id, telegram_user_id)
       rollback:
         - dropTable:
             tableName: timetable_members
@@ -98,6 +80,7 @@ databaseChangeLog:
       id: 003-elective-choices
       author: lumios
       comment: Electives each member attends
+      validCheckSum: ANY
       preConditions:
         - onFail: MARK_RAN
         - onFailMessage: elective_choices already present; nothing to do.
@@ -105,43 +88,27 @@ databaseChangeLog:
             - tableExists:
                 tableName: elective_choices
       changes:
-        - createTable:
-            tableName: elective_choices
-            columns:
-              - column:
-                  name: id
-                  type: bigint
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: chatId
-                  type: bigint
-                  constraints:
-                    nullable: false
-              - column:
-                  name: telegramUserId
-                  type: bigint
-                  constraints:
-                    nullable: false
-              - column:
-                  name: subjectKey
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-        - addUniqueConstraint:
-            tableName: elective_choices
-            columnNames: chatId, telegramUserId, subjectKey
-            constraintName: uk_elective_choices_chat_user_subject
-        - createIndex:
-            tableName: elective_choices
-            indexName: idx_elective_choices_chat_user
-            columns:
-              - column:
-                  name: chatId
-              - column:
-                  name: telegramUserId
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create table elective_choices (
+                  id bigint not null auto_increment,
+                  chat_id bigint not null,
+                  subject_key varchar(255) not null,
+                  telegram_user_id bigint not null,
+                  primary key (id)
+              ) engine=InnoDB
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              alter table elective_choices
+                  add constraint uk_elective_choices_chat_user_subject
+                  unique (chat_id, telegram_user_id, subject_key)
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create index idx_elective_choices_chat_user
+                  on elective_choices (chat_id, telegram_user_id)
       rollback:
         - dropTable:
             tableName: elective_choices

@@ -1,24 +1,29 @@
 databaseChangeLog:
   # How many minutes before a class the chat gets an advance reminder. 0 disables it, leaving only
-  # the "class is starting now" message. Guarded by a precondition because a deployment running
-  # ddl-auto=update before this migration landed may already have the column.
+  # the "class is starting now" message.
+  #
+  # validCheckSum is ANY because this changeset first shipped naming the column `reminderLeadMinutes`.
+  # Spring Boot maps the field to `reminder_lead_minutes`, so that column was useless. Deployments
+  # that already ran the broken version keep it recorded here and are repaired by changeset 004;
+  # a fresh database gets the correct column from the baseline or from this changeset.
   - changeSet:
       id: 002-chats-reminder-lead-minutes
       author: lumios
       comment: Per-chat advance reminder lead time for class notifications
+      validCheckSum: ANY
       preConditions:
         - onFail: MARK_RAN
-        - onFailMessage: Column chats.reminderLeadMinutes already present; nothing to do.
+        - onFailMessage: Column chats.reminder_lead_minutes already present; nothing to do.
         - not:
             - columnExists:
                 tableName: chats
-                columnName: reminderLeadMinutes
+                columnName: reminder_lead_minutes
       changes:
         - addColumn:
             tableName: chats
             columns:
               - column:
-                  name: reminderLeadMinutes
+                  name: reminder_lead_minutes
                   type: int
                   defaultValueNumeric: 10
                   constraints:
@@ -26,4 +31,4 @@ databaseChangeLog:
       rollback:
         - dropColumn:
             tableName: chats
-            columnName: reminderLeadMinutes
+            columnName: reminder_lead_minutes

@@ -53,6 +53,13 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 The schema is owned by **Liquibase** (`src/main/resources/db/changelog`), not by Hibernate.
 `spring.jpa.hibernate.ddl-auto=none` - never turn it back to `update`.
 
+**Identifiers in changelogs must be snake_case.** Spring Boot 3.3 applies
+`CamelCaseToUnderscoresNamingStrategy`, so `@Entity(name = "classEntries")` is really the table
+`class_entries` and `reminderLeadMinutes` is really `reminder_lead_minutes`. Writing the entity or
+field name verbatim produces a migration that fails on the real database (or, worse, quietly adds a
+column nothing reads). When regenerating DDL from the entity model, configure
+`CamelCaseToUnderscoresNamingStrategy` + `SpringImplicitNamingStrategy`, or the output is wrong.
+
 - Master changelog: `db/changelog/db.changelog-master.yaml`, one included file per change.
 - `001-baseline` recreates the pre-Liquibase schema on an empty database, and is marked as ran
   (not executed) where `chats` already exists, so existing deployments are untouched.

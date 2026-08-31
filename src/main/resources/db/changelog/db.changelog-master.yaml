@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/changes/002-timetable-reminders.yaml
   - include:
       file: db/changelog/changes/003-personal-timetable.yaml
+  - include:
+      file: db/changelog/changes/004-repair-reminder-column.yaml

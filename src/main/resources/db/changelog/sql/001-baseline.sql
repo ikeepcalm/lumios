@@ -1,241 +1,275 @@
--- Baseline schema for Lumios, generated from the JPA entity model (Hibernate 6.5, MariaDB dialect).
+-- Baseline schema for Lumios, generated from the JPA entity model with the naming strategies
+-- Spring Boot actually applies (CamelCaseToUnderscoresNamingStrategy + SpringImplicitNamingStrategy),
+-- so the identifiers here are the snake_case ones the running application uses.
+--
 -- Applied only to an empty database. An existing deployment already has this schema, so the
 -- changeset is marked as ran there instead (see the tableExists precondition in the changelog).
 
 
 create table binds (
     id bigint not null auto_increment,
-    chatId bigint,
-    userId bigint,
+    chat_id bigint,
+    user_id bigint,
     primary key (id)
 ) engine=InnoDB;
 
 create table campus_bindings (
     id bigint not null auto_increment,
-    accessToken varchar(2048) not null,
-    externalId varchar(255),
-    subscribedAt datetime(6) not null,
-    telegramUserId bigint not null,
+    access_token varchar(2048) not null,
+    external_id varchar(255),
+    subscribed_at datetime(6) not null,
+    telegram_user_id bigint not null,
     primary key (id)
 ) engine=InnoDB;
 
 create table chats (
     id bigint not null auto_increment,
-    aiModel tinyint check (aiModel between 0 and 1),
-    botNickname varchar(255),
-    chatId bigint,
-    communicationLimit integer default 10,
+    ai_model tinyint check (ai_model between 0 and 1),
+    bot_nickname varchar(255),
+    chat_id bigint,
+    communication_limit integer default 10,
     description varchar(255),
-    isAiEnabled boolean default false,
-    isDiceEnabled boolean default false,
-    isPlainTimetableEnabled boolean default false,
-    isTimetableEnabled boolean default true,
+    is_ai_enabled boolean default false,
+    is_dice_enabled boolean default false,
+    is_plain_timetable_enabled boolean default false,
+    is_timetable_enabled boolean default true,
     language varchar(5) default 'uk',
-    lastWheelDate datetime(6),
+    last_wheel_date datetime(6),
     name varchar(255),
-    summaryLimit integer default 2,
+    reminder_lead_minutes integer,
+    summary_limit integer default 2,
     primary key (id)
 ) engine=InnoDB;
 
-create table chatShots (
+create table chat_shots (
     id bigint not null auto_increment,
     date date,
     chat_id bigint,
     primary key (id)
 ) engine=InnoDB;
 
-create table chatShots_userShots (
-    ChatShot_id bigint not null,
-    userShots_id bigint not null
+create table chat_shots_user_shots (
+    chat_shot_id bigint not null,
+    user_shots_id bigint not null
 ) engine=InnoDB;
 
-create table classEntries (
+create table class_entries (
     id bigint not null auto_increment,
-    classType enum ('LAB','LECTURE','PRACTICE','UNKNOWN'),
-    endTime time(6),
+    class_type enum ('LAB','LECTURE','PRACTICE','UNKNOWN'),
+    end_time time(6),
+    location varchar(255),
     name varchar(255),
-    startTime time(6),
+    start_time time(6),
+    teacher_name varchar(255),
     url varchar(255),
-    dayEntry_id bigint,
+    day_entry_id bigint,
     primary key (id)
 ) engine=InnoDB;
 
-create table dayEntries (
+create table day_entries (
     id bigint not null auto_increment,
-    dayName tinyint check (dayName between 0 and 6),
-    timetableEntry_id bigint,
+    day_name tinyint check (day_name between 0 and 6),
+    timetable_entry_id bigint,
     days_id bigint,
     primary key (id)
 ) engine=InnoDB;
 
-create table dayEntries_classEntries (
-    dayEntries_id bigint not null,
-    classEntries_id bigint not null
+create table day_entries_class_entries (
+    day_entries_id bigint not null,
+    class_entries_id bigint not null
 ) engine=InnoDB;
 
-create table dueTasks (
+create table due_tasks (
     id bigint not null auto_increment,
     attachment varchar(255),
     author bigint,
     description varchar(255),
-    dueDate date,
-    dueTime time(6),
+    due_date date,
+    due_time time(6),
     scope tinyint check (scope between 0 and 2),
     state tinyint check (state between 0 and 7),
-    taskName varchar(255),
+    task_name varchar(255),
     url varchar(2048),
     chat_id bigint,
     primary key (id)
 ) engine=InnoDB;
 
-create table messageRecords (
+create table elective_choices (
     id bigint not null auto_increment,
-    chatId bigint,
+    chat_id bigint not null,
+    subject_key varchar(255) not null,
+    telegram_user_id bigint not null,
+    primary key (id)
+) engine=InnoDB;
+
+create table message_records (
+    id bigint not null auto_increment,
+    chat_id bigint,
     date datetime(6),
-    messageId bigint,
-    replyToMessageId bigint,
+    message_id bigint,
+    reply_to_message_id bigint,
     text LONGTEXT,
     user integer,
     primary key (id)
 ) engine=InnoDB;
 
-create table mixedQueues (
+create table mixed_queues (
     id binary(16) not null,
     alias varchar(255),
-    chatId bigint,
-    messageId integer,
+    chat_id bigint,
+    message_id integer,
     shuffled bit,
     primary key (id)
 ) engine=InnoDB;
 
-create table mixedUsers (
+create table mixed_users (
     id bigint not null auto_increment,
-    accountId bigint,
+    account_id bigint,
     name varchar(255),
     username varchar(255),
-    mixedQueue binary(16),
+    mixed_queue binary(16),
     primary key (id)
 ) engine=InnoDB;
 
-create table simpleQueues (
+create table simple_queues (
     id binary(16) not null,
     alias varchar(255),
-    chatId bigint,
-    messageId integer,
+    chat_id bigint,
+    message_id integer,
     primary key (id)
 ) engine=InnoDB;
 
-create table simpleUsers (
+create table simple_users (
     id bigint not null auto_increment,
-    accountId bigint,
+    account_id bigint,
     name varchar(255),
     username varchar(255),
-    simpleQueue binary(16),
+    simple_queue binary(16),
     primary key (id)
 ) engine=InnoDB;
 
-create table timetableEntries (
+create table timetable_members (
     id bigint not null auto_increment,
-    weekType enum ('UNKNOWN','WEEK_A','WEEK_B'),
+    chat_id bigint not null,
+    dm_reminders_enabled bit not null,
+    dm_unavailable bit not null,
+    lead_minutes integer,
+    reviewed_at datetime(6),
+    telegram_user_id bigint not null,
+    primary key (id)
+) engine=InnoDB;
+
+create table timetable_entries (
+    id bigint not null auto_increment,
+    week_type enum ('UNKNOWN','WEEK_A','WEEK_B'),
     chat_id bigint,
     primary key (id)
 ) engine=InnoDB;
 
 create table users (
-    userEntityId integer not null auto_increment,
+    user_entity_id integer not null auto_increment,
     balance integer default 0,
     credits integer default 100,
-    fullName varchar(255),
+    full_name varchar(255),
     reverence integer default 0,
     sustainable integer default 100,
-    userId bigint,
+    user_id bigint,
     username varchar(255),
     chat_id bigint,
-    primary key (userEntityId)
+    primary key (user_entity_id)
 ) engine=InnoDB;
 
-create table userShots (
+create table user_shots (
     id bigint not null auto_increment,
     reverence integer,
-    userId bigint,
+    user_id bigint,
     username varchar(255),
     primary key (id)
 ) engine=InnoDB;
 
 alter table campus_bindings 
-   add constraint UK8l3q1fqocgc3ruydle3n9yg36 unique (externalId);
+   add constraint UK34omgfx3a8iqa59vc5r9eedeq unique (external_id);
 
 alter table campus_bindings 
-   add constraint UK8hhckw1ahf44tbq3vv8el3xni unique (telegramUserId);
+   add constraint UKmwqealh8t0b39sph0sw1tlem4 unique (telegram_user_id);
 
-alter table chatShots_userShots 
-   add constraint UK8e118y6c0lxks3q7v8fdbam0p unique (userShots_id);
+alter table chat_shots_user_shots 
+   add constraint UKc418u1xb08trnnoluwhg92f2b unique (user_shots_id);
 
-alter table dayEntries_classEntries 
-   add constraint UKsbn7u1kl49re2q5cv0dfe0eku unique (classEntries_id);
+alter table day_entries_class_entries 
+   add constraint UKck0n56it0xnvsei94jyw53nxs unique (class_entries_id);
 
-alter table chatShots 
-   add constraint FK118ko5iswy4rwr0xyjggjhpr3 
+create index idx_elective_choices_chat_user 
+   on elective_choices (chat_id, telegram_user_id);
+
+alter table elective_choices 
+   add constraint uk_elective_choices_chat_user_subject unique (chat_id, telegram_user_id, subject_key);
+
+alter table timetable_members 
+   add constraint uk_timetable_members_chat_user unique (chat_id, telegram_user_id);
+
+alter table chat_shots 
+   add constraint FKd2qelk2iq26yi9k76jhgtjxv9 
    foreign key (chat_id) 
    references chats (id);
 
-alter table chatShots_userShots 
-   add constraint FK7y0lfnv8745f39ahquyr9h5fg 
-   foreign key (userShots_id) 
-   references userShots (id);
+alter table chat_shots_user_shots 
+   add constraint FKine2w2n2vkq5kegmlq3vyb5eg 
+   foreign key (user_shots_id) 
+   references user_shots (id);
 
-alter table chatShots_userShots 
-   add constraint FKafy54fqmqyussnab8ld97lx3x 
-   foreign key (ChatShot_id) 
-   references chatShots (id);
+alter table chat_shots_user_shots 
+   add constraint FK2arci1n6c66gyj9xk7alv4ol8 
+   foreign key (chat_shot_id) 
+   references chat_shots (id);
 
-alter table classEntries 
-   add constraint FKqoerr063pk2ovwf9xnob6n1vd 
-   foreign key (dayEntry_id) 
-   references dayEntries (id);
+alter table class_entries 
+   add constraint FK5rkmilud0l7vn50h4rfn1nel6 
+   foreign key (day_entry_id) 
+   references day_entries (id);
 
-alter table dayEntries 
-   add constraint FK4jkf4f6r3gnj99879n0pb2vn3 
-   foreign key (timetableEntry_id) 
-   references timetableEntries (id);
+alter table day_entries 
+   add constraint FKb8fa8al2yxlwivee12k0vqgq7 
+   foreign key (timetable_entry_id) 
+   references timetable_entries (id);
 
-alter table dayEntries 
-   add constraint FKqf7mkbsrcg5meyg8o3jm2p1mk 
+alter table day_entries 
+   add constraint FKhssb9naspl9xwp9xrc91b2sor 
    foreign key (days_id) 
-   references timetableEntries (id);
+   references timetable_entries (id);
 
-alter table dayEntries_classEntries 
-   add constraint FKrxcndd838gj8evjx9wro8j4yp 
-   foreign key (classEntries_id) 
-   references classEntries (id);
+alter table day_entries_class_entries 
+   add constraint FK6pv50oc2i9v7wbslux2bypi4o 
+   foreign key (class_entries_id) 
+   references class_entries (id);
 
-alter table dayEntries_classEntries 
-   add constraint FK5500dpa9cma1cm8i5eyk1jiux 
-   foreign key (dayEntries_id) 
-   references dayEntries (id);
+alter table day_entries_class_entries 
+   add constraint FKt801rhegcsajmeo3tqjh6us9m 
+   foreign key (day_entries_id) 
+   references day_entries (id);
 
-alter table dueTasks 
-   add constraint FKqeutrhqnc135uwpydvhl86dgt 
+alter table due_tasks 
+   add constraint FK3iy8odrvwq3jkcrgu35g0q2tf 
    foreign key (chat_id) 
    references chats (id);
 
-alter table messageRecords 
-   add constraint FKrixr49c2fou620qidg2pvp1lm 
+alter table message_records 
+   add constraint FKqmr17moo8m0j49deucyua4k9w 
    foreign key (user) 
-   references users (userEntityId);
+   references users (user_entity_id);
 
-alter table mixedUsers 
-   add constraint FK8b26txsyl8iknn9lpdt2dvx6j 
-   foreign key (mixedQueue) 
-   references mixedQueues (id);
+alter table mixed_users 
+   add constraint FKnc970b58y3oktmb5tn7w4gc34 
+   foreign key (mixed_queue) 
+   references mixed_queues (id);
 
-alter table simpleUsers 
-   add constraint FKaaawufvopi5j0cg771vceb8lo 
-   foreign key (simpleQueue) 
-   references simpleQueues (id);
+alter table simple_users 
+   add constraint FKt10mlkukdu05mg6htqbmycnua 
+   foreign key (simple_queue) 
+   references simple_queues (id);
 
-alter table timetableEntries 
-   add constraint FK5rhhj7dxo05k2yn5aoc7up9xb 
+alter table timetable_entries 
+   add constraint FKed6ka20y1sr7ubp17e8ydkcc0 
    foreign key (chat_id) 
    references chats (id);
 
