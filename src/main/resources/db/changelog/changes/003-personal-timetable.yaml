@@ -1,0 +1,147 @@
+databaseChangeLog:
+  # Teacher and room come down from campus on every class but were previously discarded. They are
+  # what distinguishes two entries of the same subject in one slot (a subgroup split), and they make
+  # a personal reminder actually useful ("who and where").
+  - changeSet:
+      id: 003-class-entries-teacher-location
+      author: lumios
+      comment: Keep the lecturer and location supplied by the campus feed
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: classEntries.teacherName already present; nothing to do.
+        - not:
+            - columnExists:
+                tableName: classEntries
+                columnName: teacherName
+      changes:
+        - addColumn:
+            tableName: classEntries
+            columns:
+              - column:
+                  name: teacherName
+                  type: varchar(255)
+              - column:
+                  name: location
+                  type: varchar(255)
+      rollback:
+        - dropColumn:
+            tableName: classEntries
+            columnName: teacherName
+        - dropColumn:
+            tableName: classEntries
+            columnName: location
+
+  # One row per member who has been through the elective picker. Its presence is what marks a member
+  # as opted in to personal reminders.
+  - changeSet:
+      id: 003-timetable-members
+      author: lumios
+      comment: Per-member personal reminder settings
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: timetable_members already present; nothing to do.
+        - not:
+            - tableExists:
+                tableName: timetable_members
+      changes:
+        - createTable:
+            tableName: timetable_members
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: chatId
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: telegramUserId
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dmRemindersEnabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: leadMinutes
+                  type: int
+              # Set when Telegram refuses a private message because the member never started the bot.
+              # Stops the scheduler retrying them every single class.
+              - column:
+                  name: dmUnavailable
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reviewedAt
+                  type: datetime(6)
+        - addUniqueConstraint:
+            tableName: timetable_members
+            columnNames: chatId, telegramUserId
+            constraintName: uk_timetable_members_chat_user
+      rollback:
+        - dropTable:
+            tableName: timetable_members
+
+  # A member's chosen electives, keyed on the subject rather than on a class row, because /import
+  # deletes and recreates every class row.
+  - changeSet:
+      id: 003-elective-choices
+      author: lumios
+      comment: Electives each member attends
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: elective_choices already present; nothing to do.
+        - not:
+            - tableExists:
+                tableName: elective_choices
+      changes:
+        - createTable:
+            tableName: elective_choices
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: chatId
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: telegramUserId
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subjectKey
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: elective_choices
+            columnNames: chatId, telegramUserId, subjectKey
+            constraintName: uk_elective_choices_chat_user_subject
+        - createIndex:
+            tableName: elective_choices
+            indexName: idx_elective_choices_chat_user
+            columns:
+              - column:
+                  name: chatId
+              - column:
+                  name: telegramUserId
+      rollback:
+        - dropTable:
+            tableName: elective_choices

@@ -36,6 +36,11 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 - **Task Tracker**: Track deadlines and tasks with `/task` and `/due`.
 - **Reverence System**: A social "respect" system where users gain/lose points based on message reactions.
 - **AI Assistant**: Conversational capabilities powered by Gemini and OpenAI.
+- **Personal timetables**: A group timetable imported from campus is a superset - it contains every
+  elective (факультатив) on offer. `ElectiveDetector` finds elective pools structurally (any time
+  slot holding more than one distinct subject), members pick theirs with `/mine`, and personal
+  reminders are sent privately containing only their classes. Choices key on the subject name, not
+  the class row, because `/import` deletes and recreates every `ClassEntry`.
 
 ## Building and Running
 
@@ -43,6 +48,19 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 - **Build:** `./gradlew build`
 - **Run:** `./gradlew bootRun`
 - **Tests:** `./gradlew test` (Note: Ensure database and environment variables are configured).
+
+### Database migrations
+The schema is owned by **Liquibase** (`src/main/resources/db/changelog`), not by Hibernate.
+`spring.jpa.hibernate.ddl-auto=none` - never turn it back to `update`.
+
+- Master changelog: `db/changelog/db.changelog-master.yaml`, one included file per change.
+- `001-baseline` recreates the pre-Liquibase schema on an empty database, and is marked as ran
+  (not executed) where `chats` already exists, so existing deployments are untouched.
+- Every changeset carries a `preConditions ... onFail: MARK_RAN` guard so it is safe to re-run
+  against a database that already has the change.
+- `ddl-auto=validate` is **not** usable yet: Hibernate maps `mixedQueues.id` as `uuid` when
+  validating but emits `binary(16)` when creating it, so validation fails against a schema it
+  generated itself. Fix that mapping before enabling validation.
 
 ### Configuration
 The application requires several environment variables defined in `.env` (see `.env.example`):
@@ -59,4 +77,10 @@ The application requires several environment variables defined in `.env` (see `.
 - **Handlers:** New bot features should be implemented as `@Component` classes in the `interactions` package, implementing the `Interaction` interface and inheriting from `ServicesShortcut`.
 - **Annotations:** Use the appropriate `@BotCommand`, `@BotCallback`, or `@BotReaction` annotation to route updates.
 - **Formatting:** Use `MessageFormatter` and `MarkdownV2Sanitizer` to ensure Telegram messages are correctly escaped and formatted.
+- **Time:** All timetable logic must go through `TimetableClock` (Europe/Kyiv), and any `@Scheduled`
+  that reasons about class times must pass `zone = TimetableClock.ZONE_ID`. The container has no `TZ`
+  set, so a bare cron or `LocalDate.now()` silently runs in UTC.
+- **Translations:** Add every key to both `messages.properties` and `messages_en.properties`. A
+  message that takes `{0}` arguments is run through `MessageFormat`, so a literal apostrophe in it
+  must be doubled (`''`) or it disappears.
 - **Persistence:** Use the provided `Service` interfaces (e.g., `UserService`, `ChatService`) instead of accessing repositories directly in handlers.

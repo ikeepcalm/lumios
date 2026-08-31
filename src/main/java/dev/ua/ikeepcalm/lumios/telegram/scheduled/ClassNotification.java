@@ -3,7 +3,10 @@ package dev.ua.ikeepcalm.lumios.telegram.scheduled;
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.ClassEntryRepository;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
+import dev.ua.ikeepcalm.lumios.database.dal.interfaces.PersonalTimetableService;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.personal.TimetableMember;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.WeekType;
+import dev.ua.ikeepcalm.lumios.telegram.utils.PersonalTimetableSupport;
 import dev.ua.ikeepcalm.lumios.telegram.TelegramClient;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
@@ -51,6 +54,8 @@ public class ClassNotification {
     private final TelegramClient telegramClient;
     private final ClassEntryRepository classEntryRepository;
     private final TranslationService translationService;
+    private final PersonalTimetableSupport personalTimetableSupport;
+    private final PersonalTimetableService personalTimetableService;
 
     /**
      * Guards against announcing the same slot twice in one day. Class start times are whole minutes
@@ -59,10 +64,14 @@ public class ClassNotification {
      */
     private final Map<String, LocalDate> notificationCache = new ConcurrentHashMap<>();
 
-    public ClassNotification(TelegramClient telegramClient, ClassEntryRepository classEntryRepository, TranslationService translationService) {
+    public ClassNotification(TelegramClient telegramClient, ClassEntryRepository classEntryRepository,
+                             TranslationService translationService, PersonalTimetableSupport personalTimetableSupport,
+                             PersonalTimetableService personalTimetableService) {
         this.telegramClient = telegramClient;
         this.classEntryRepository = classEntryRepository;
         this.translationService = translationService;
+        this.personalTimetableSupport = personalTimetableSupport;
+        this.personalTimetableService = personalTimetableService;
     }
 
     /**
@@ -86,6 +95,7 @@ public class ClassNotification {
             int announced = 0;
             for (Map.Entry<SlotKey, List<ClassEntry>> slot : groupIntoSlots(upcoming, weekType).entrySet()) {
                 announced += announce(slot.getKey(), slot.getValue(), minute, date) ? 1 : 0;
+                remindMembers(slot.getKey(), slot.getValue(), minute, date);
             }
 
             if (announced > 0) {
@@ -128,7 +138,8 @@ public class ClassNotification {
      */
     private void deduplicate(List<ClassEntry> entries) {
         Set<String> seen = new LinkedHashSet<>();
-        entries.removeIf(entry -> !seen.add(entry.getName() + "|" + entry.getClassType() + "|" + entry.getUrl()));
+        entries.removeIf(entry -> !seen.add(
+                entry.getName() + "|" + entry.getClassType() + "|" + entry.getTeacherName()));
     }
 
     /**
@@ -171,12 +182,71 @@ public class ClassNotification {
         }
     }
 
+    /**
+     * Sends each opted-in member their own reminder, containing only the classes they attend. Members
+     * who never started the bot cannot be messaged; Telegram rejects that outright, so they are
+     * flagged rather than retried for every class.
+     */
+    private void remindMembers(SlotKey slot, List<ClassEntry> entries, LocalTime minute, LocalDate date) {
+        LumiosChat chat = entries.getFirst().getDayEntry().getTimetableEntry().getChat();
+        List<TimetableMember> members;
+        try {
+            members = personalTimetableService.remindableMembers(chat.getChatId());
+        } catch (Exception e) {
+            log.error("Could not load the members of chat {}", chat.getChatId(), e);
+            return;
+        }
+        if (members.isEmpty()) {
+            return;
+        }
+
+        long minutesAway = ChronoUnit.MINUTES.between(minute, slot.startTime());
+        for (TimetableMember member : members) {
+            long lead = member.getLeadMinutes() == null ? leadMinutes(chat) : clampLead(member.getLeadMinutes());
+            if (minutesAway != 0 && minutesAway != lead) {
+                continue;
+            }
+
+            String cacheKey = "dm_" + member.getTelegramUserId() + "_" + slot.chatId() + "_"
+                              + slot.startTime() + "_" + (minutesAway == 0);
+            if (date.equals(notificationCache.get(cacheKey))) {
+                continue;
+            }
+
+            List<ClassEntry> mine;
+            try {
+                mine = personalTimetableSupport.personalClasses(chat.getChatId(), member.getTelegramUserId(), entries);
+            } catch (Exception e) {
+                log.error("Could not personalise the slot for member {}", member.getTelegramUserId(), e);
+                continue;
+            }
+            if (mine.isEmpty()) {
+                // Every class in this slot is an elective they do not take; nothing to say.
+                notificationCache.put(cacheKey, date);
+                continue;
+            }
+
+            notificationCache.put(cacheKey, date);
+            TextMessage message = ClassMarkupUtil.createPersonalReminder(
+                    mine, chat, member.getTelegramUserId(), minutesAway, translationService);
+            if (telegramClient.sendTextMessage(message) == null) {
+                log.info("Member {} is unreachable in private; muting their personal reminders",
+                        member.getTelegramUserId());
+                personalTimetableService.markDmUnavailable(chat.getChatId(), member.getTelegramUserId());
+            }
+        }
+    }
+
+    private int clampLead(int minutes) {
+        return Math.clamp(minutes, 0, MAX_LEAD_MINUTES);
+    }
+
     private int leadMinutes(LumiosChat chat) {
         Integer configured = chat.getReminderLeadMinutes();
         if (configured == null) {
             return 0;
         }
-        return Math.min(Math.max(configured, 0), MAX_LEAD_MINUTES);
+        return clampLead(configured);
     }
 
     @Scheduled(cron = "0 0 */6 * * *", zone = TimetableClock.ZONE_ID)

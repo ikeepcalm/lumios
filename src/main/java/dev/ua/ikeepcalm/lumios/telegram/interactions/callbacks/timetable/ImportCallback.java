@@ -15,7 +15,9 @@ import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.exceptions.CampusApiException;
+import dev.ua.ikeepcalm.lumios.telegram.utils.ElectiveDetector;
 import dev.ua.ikeepcalm.lumios.telegram.utils.ImportPicker;
+import dev.ua.ikeepcalm.lumios.telegram.utils.PersonalTimetableSupport;
 import dev.ua.ikeepcalm.lumios.telegram.utils.ImportUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.ImportUtil.CampusGroup;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
@@ -40,6 +42,12 @@ import java.util.Optional;
 public class ImportCallback extends ServicesShortcut implements Interaction {
 
     private static final Logger log = LoggerFactory.getLogger(ImportCallback.class);
+
+    private final PersonalTimetableSupport support;
+
+    public ImportCallback(PersonalTimetableSupport support) {
+        this.support = support;
+    }
 
     /**
      * A class slot on the campus schedule is always an hour and a half long; the API only gives the start.
@@ -187,6 +195,15 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
             timetableService.deleteAll(existing);
         }
         timetableService.saveAll(imported);
+
+        // The curriculum may have changed shape, so cached electives are stale and choices whose
+        // subject no longer exists would silently filter classes that are now mandatory.
+        support.invalidateElectives(chat.getChatId());
+        int pruned = personalTimetableService.pruneChoices(
+                chat.getChatId(), ElectiveDetector.electiveSubjects(imported));
+        if (pruned > 0) {
+            log.info("Pruned {} elective choice(s) in chat {} after re-import", pruned, chat.getChatId());
+        }
         return preservedUrls;
     }
 
@@ -326,6 +343,8 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
                     ClassEntry classEntry = new ClassEntry();
                     classEntry.setName(classWrapper.getName());
                     classEntry.setClassType(mapClassType(classWrapper.getTag()));
+                    classEntry.setTeacherName(classWrapper.teacherName());
+                    classEntry.setLocation(classWrapper.getLocation());
                     classEntry.setStartTime(startTime);
                     classEntry.setEndTime(startTime.plusMinutes(CLASS_DURATION_MINUTES));
                     classEntry.setDayEntry(dayEntry);

@@ -81,6 +81,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                         new BotCommand("stats", translationService.getMessage("command.desc.stats", lang)),
                         new BotCommand("gamble", translationService.getMessage("command.desc.gamble", lang)),
                         new BotCommand("wheel", translationService.getMessage("command.desc.wheel", lang)),
+                        new BotCommand("mine", translationService.getMessage("command.desc.mine", lang)),
                         new BotCommand("link", translationService.getMessage("command.desc.link", lang)),
                         new BotCommand("unlink", translationService.getMessage("command.desc.unlink", lang))
                 )))
@@ -109,6 +110,7 @@ public class TelegramClient extends OkHttpTelegramClient {
                         new BotCommand("meow", translationService.getMessage("command.desc.meow", lang)),
                         new BotCommand("next", translationService.getMessage("command.desc.next", lang)),
                         new BotCommand("import", translationService.getMessage("command.desc.import", lang)),
+                        new BotCommand("mine", translationService.getMessage("command.desc.mine", lang)),
                         new BotCommand("tasks", translationService.getMessage("command.desc.tasks", lang)),
                         new BotCommand("due", translationService.getMessage("command.desc.due", lang)),
                         new BotCommand("me", translationService.getMessage("command.desc.me", lang)),

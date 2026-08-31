@@ -3,6 +3,8 @@ package dev.ua.ikeepcalm.lumios.telegram.utils.markup;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.ClassType;
+import dev.ua.ikeepcalm.lumios.telegram.utils.ElectiveDetector;
+import dev.ua.ikeepcalm.lumios.telegram.utils.ElectivePicker;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetablePagedUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
@@ -13,7 +15,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ClassMarkupUtil {
@@ -110,7 +114,80 @@ public class ClassMarkupUtil {
             }
         }
 
+        if (isElectivePool(classEntries) && chat.getChatId() != null && chat.getChatId() < 0) {
+            keyboard.add(new InlineKeyboardRow(callbackButton(
+                    translationService.getMessage("mine.button.open", chat),
+                    ElectivePicker.FROM_GROUP + chat.getChatId())));
+        }
+
         return message(chat, text, keyboard);
+    }
+
+    /**
+     * A slot holding more than one distinct subject is a pool of electives, so it is worth inviting
+     * readers to say which one is theirs.
+     */
+    private static boolean isElectivePool(List<ClassEntry> classEntries) {
+        Set<String> subjects = new HashSet<>();
+        for (ClassEntry classEntry : classEntries) {
+            subjects.add(ElectiveDetector.subjectKey(classEntry.getName()));
+        }
+        return subjects.size() > 1;
+    }
+
+    /**
+     * A member's own reminder, sent to their private chat and listing only the classes they attend.
+     * Carries the teacher, which the group message has no room for.
+     *
+     * @param minutesAway 0 when the slot is starting now
+     */
+    public static TextMessage createPersonalReminder(List<ClassEntry> classEntries, LumiosChat groupChat,
+                                                     long dmChatId, long minutesAway,
+                                                     TranslationService translationService) {
+        StringBuilder lines = new StringBuilder();
+        for (ClassEntry classEntry : classEntries) {
+            lines.append(determineEmoji(classEntry.getClassType())).append(" ").append(classEntry.getName());
+            String detail = detailLine(classEntry);
+            if (!detail.isEmpty()) {
+                lines.append("\n     ").append(detail);
+            }
+            lines.append("\n");
+        }
+
+        String text = minutesAway <= 0
+                ? translationService.getMessage("class.personal.now", groupChat,
+                        classEntries.getFirst().getStartTime(), lines.toString().trim())
+                : translationService.getMessage("class.personal.soon", groupChat,
+                        String.valueOf(minutesAway), classEntries.getFirst().getStartTime(), lines.toString().trim());
+
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        for (ClassEntry classEntry : classEntries) {
+            if (classEntry.getUrl() != null) {
+                InlineKeyboardButton join = new InlineKeyboardButton("🌐 " + classEntry.getName());
+                join.setUrl(classEntry.getUrl());
+                keyboard.add(new InlineKeyboardRow(join));
+            }
+        }
+
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(dmChatId);
+        textMessage.setText(text);
+        if (!keyboard.isEmpty()) {
+            textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
+        }
+        textMessage.setParseMode(ParseMode.MARKDOWN);
+        return textMessage;
+    }
+
+    private static String detailLine(ClassEntry classEntry) {
+        List<String> parts = new ArrayList<>(2);
+        if (classEntry.getTeacherName() != null && !classEntry.getTeacherName().isBlank()) {
+            parts.add(classEntry.getTeacherName());
+        }
+        if (classEntry.getLocation() != null && !classEntry.getLocation().isBlank()) {
+            parts.add(classEntry.getLocation());
+        }
+        return String.join(" · ", parts);
     }
 
     private static InlineKeyboardButton callbackButton(String label, String callbackData) {
