@@ -14,6 +14,7 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.objects.message.MaybeInaccessibleMessage;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -85,6 +86,28 @@ public class SlotViewRenderer {
         built.setChatId(message.getChatId());
         built.setMessageId(message.getMessageId());
         return built;
+    }
+
+    /**
+     * Replaces an existing view in place, for the scope button.
+     */
+    public void replace(MaybeInaccessibleMessage shown, LumiosChat languageSource, LumiosChat groupChat, Long telegramUserId,
+                        String commandType, Scope scope) {
+        TextMessage built = build(groupChat, languageSource, telegramUserId, commandType, scope);
+
+        EditMessage edit = new EditMessage();
+        if (shown.getChatId() == null) {
+            return;
+        }
+        edit.setChatId(shown.getChatId());
+        if (shown.getMessageId() == null) {
+            return;
+        }
+        edit.setMessageId(shown.getMessageId());
+        edit.setText(built.getText());
+        edit.setParseMode(ParseMode.MARKDOWN);
+        edit.setReplyKeyboard(built.getReplyKeyboard());
+        telegramClient.sendEditMessage(edit);
     }
 
     /**

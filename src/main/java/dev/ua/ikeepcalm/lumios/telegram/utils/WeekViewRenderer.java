@@ -13,6 +13,7 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.objects.message.MaybeInaccessibleMessage;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
@@ -65,6 +66,28 @@ public class WeekViewRenderer {
             return message(message, translationService.getMessage("command.week.not-found", chat), null);
         }
         return message(message, view.text(), view.keyboard());
+    }
+
+    public void replace(MaybeInaccessibleMessage shown, LumiosChat languageSource, LumiosChat groupChat, Long telegramUserId,
+                        int page, Scope scope) {
+        View view = build(groupChat, languageSource, telegramUserId, page, scope);
+        if (view == null) {
+            return;
+        }
+
+        EditMessage edit = new EditMessage();
+        if (shown.getChatId() == null) {
+            return;
+        }
+        edit.setChatId(shown.getChatId());
+        if (shown.getMessageId() == null) {
+            return;
+        }
+        edit.setMessageId(shown.getMessageId());
+        edit.setText(view.text());
+        edit.setParseMode(ParseMode.MARKDOWN);
+        edit.setReplyKeyboard(view.keyboard());
+        telegramClient.sendEditMessage(edit);
     }
 
     public void replace(Message shown, LumiosChat languageSource, LumiosChat groupChat, Long telegramUserId,

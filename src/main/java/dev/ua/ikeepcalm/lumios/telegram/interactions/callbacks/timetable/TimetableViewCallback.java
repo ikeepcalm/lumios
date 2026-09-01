@@ -77,8 +77,13 @@ public class TimetableViewCallback extends ServicesShortcut implements Interacti
         }
     }
 
-    private void render(CallbackQuery callbackQuery, LumiosChat chat, LumiosChat groupChat, Long telegramUserId,
-                        String commandType, int page, Scope scope) {
+    private void render(CallbackQuery callbackQuery, LumiosChat chat, LumiosChat groupChat, Long telegramUserId, String commandType, int page, Scope scope) {
+
+        if (callbackQuery.getMessage() == null) {
+            log.warn("Callback message is null");
+            return;
+        }
+
         telegramClient.sendAnswerCallbackQuery(null, callbackQuery.getId());
         switch (commandType) {
             case "today" -> dayRenderer.replace(callbackQuery.getMessage(), chat, groupChat, telegramUserId,

@@ -14,6 +14,7 @@ import dev.ua.ikeepcalm.lumios.telegram.wrappers.EditMessage;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.objects.message.MaybeInaccessibleMessage;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
@@ -73,6 +74,35 @@ public class DayViewRenderer {
                     translationService.getMessage("command." + commandType + ".not-found", chat), null);
         }
         return message(message, view.text(), view.keyboard());
+    }
+
+    /**
+     * Replaces an existing view in place, for the paging and scope buttons.
+     *
+     * @param page 1-based, clamped to what the view actually has
+     */
+    public void replace(MaybeInaccessibleMessage shown, LumiosChat languageSource, LumiosChat groupChat, Long telegramUserId,
+                        String commandType, LocalDate date, int page, Scope scope) {
+        View view = build(groupChat, languageSource, telegramUserId, commandType, date, page, scope);
+        if (view == null) {
+            return;
+        }
+
+        EditMessage edit = new EditMessage();
+        if (shown.getChatId() == null) {
+            return;
+        }
+
+        edit.setChatId(shown.getChatId());
+        if (shown.getMessageId() == null) {
+            return;
+        }
+
+        edit.setMessageId(shown.getMessageId());
+        edit.setText(view.text());
+        edit.setParseMode(ParseMode.MARKDOWN);
+        edit.setReplyKeyboard(view.keyboard());
+        telegramClient.sendEditMessage(edit);
     }
 
     /**
