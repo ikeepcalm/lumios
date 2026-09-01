@@ -1,7 +1,10 @@
 package dev.ua.ikeepcalm.lumios.database.entities.timetable.personal;
 
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.ReminderChannel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -11,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * A member who has been through the elective picker for one chat.
@@ -27,6 +31,12 @@ import java.time.LocalDateTime;
                 columnNames = {"chatId", "telegramUserId"}))
 public class TimetableMember {
 
+    /**
+     * Used when {@link #digestTime} is null, so the column can stay nullable and a member who never
+     * touched the setting still gets a sensible hour.
+     */
+    public static final LocalTime DEFAULT_DIGEST_TIME = LocalTime.of(7, 0);
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,11 +47,17 @@ public class TimetableMember {
     @Column(nullable = false)
     private Long telegramUserId;
 
-    @Column(nullable = false)
-    private boolean dmRemindersEnabled = true;
+    /**
+     * How they want to be told about a class that is about to start.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private ReminderChannel reminderChannel = ReminderChannel.DM;
 
     /**
-     * Minutes of advance warning for this member. Null falls back to the chat's setting.
+     * Minutes of advance warning for this member. Null falls back to the chat's setting. Only honoured
+     * for the private message: the group announcement is one message shared by everyone, so it can
+     * only fire at the chat's own lead time.
      */
     @Column
     private Integer leadMinutes;
@@ -53,7 +69,23 @@ public class TimetableMember {
     @Column(nullable = false)
     private boolean dmUnavailable = false;
 
+    /**
+     * A single private message each morning listing the member's own classes for the day.
+     */
+    @Column(nullable = false)
+    private boolean digestEnabled = false;
+
+    /**
+     * When to send that digest. Null means {@link #DEFAULT_DIGEST_TIME}.
+     */
+    @Column
+    private LocalTime digestTime;
+
     @Column
     private LocalDateTime reviewedAt;
+
+    public LocalTime digestTimeOrDefault() {
+        return digestTime == null ? DEFAULT_DIGEST_TIME : digestTime;
+    }
 
 }

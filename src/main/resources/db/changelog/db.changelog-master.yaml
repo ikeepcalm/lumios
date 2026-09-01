@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/003-personal-timetable.yaml
   - include:
       file: db/changelog/changes/004-repair-reminder-column.yaml
+  - include:
+      file: db/changelog/changes/005-reminder-channels.yaml

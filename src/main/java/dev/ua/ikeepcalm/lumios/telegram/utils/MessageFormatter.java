@@ -73,6 +73,20 @@ public class MessageFormatter {
         return "[User](tg://user?id=" + userId + ")";
     }
     
+    /**
+     * An inline mention that pings the user whether or not they have a username, for a message sent in
+     * legacy {@code Markdown}.
+     * <p>
+     * A {@code tg://user?id=} link notifies anyone who shares the chat, so unlike {@code @username} it
+     * works for members who never set one. Only the four characters legacy Markdown reads inside a link
+     * label are escaped - running the MarkdownV2 escape over it would leave visible backslashes.
+     */
+    public static String formatMentionLink(String displayName, Long userId) {
+        String label = displayName == null || displayName.isBlank() ? String.valueOf(userId) : displayName.trim();
+        String escaped = label.replaceAll("([_*`\\[\\]])", "\\\\$1");
+        return "[" + escaped + "](tg://user?id=" + userId + ")";
+    }
+
     public static String formatApiErrorMessage(int errorCode, String operation) {
         return switch (errorCode) {
             case 400 -> formatErrorMessage("Invalid request during operation: " + operation);

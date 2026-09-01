@@ -130,9 +130,13 @@ public class SettingsMarkupUtil {
      */
     public static final int[] REMINDER_LEAD_OPTIONS = {0, 5, 10, 15, 30};
 
+    /**
+     * A null column is a chat that predates the setting, not a chat that asked for no warning - the
+     * entity's own default is what it would have been created with.
+     */
     public static int currentLeadMinutes(LumiosChat chat) {
         Integer lead = chat.getReminderLeadMinutes();
-        return lead == null ? 0 : lead;
+        return lead == null ? LumiosChat.DEFAULT_REMINDER_LEAD_MINUTES : lead;
     }
 
     /**

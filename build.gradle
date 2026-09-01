@@ -37,6 +37,12 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
+    // The timetable logic - elective detection, week parity, callback payloads - is pure and worth
+    // covering. These tests deliberately start no Spring context and need no database.
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+
     configurations {
         configureEach {
             exclude group: 'org.slf4j', module: 'slf4j-simple'
@@ -46,6 +52,10 @@ dependencies {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 

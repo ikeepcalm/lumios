@@ -12,6 +12,7 @@ import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import dev.ua.ikeepcalm.lumios.telegram.utils.markup.ClassMarkupUtil;
+import dev.ua.ikeepcalm.lumios.telegram.utils.markup.SettingsMarkupUtil;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -94,8 +95,20 @@ public class ClassNotification {
 
             int announced = 0;
             for (Map.Entry<SlotKey, List<ClassEntry>> slot : groupIntoSlots(upcoming, weekType).entrySet()) {
-                announced += announce(slot.getKey(), slot.getValue(), minute, date) ? 1 : 0;
-                remindMembers(slot.getKey(), slot.getValue(), minute, date);
+                List<ClassEntry> entries = slot.getValue();
+                LumiosChat chat = entries.getFirst().getDayEntry().getTimetableEntry().getChat();
+                long minutesAway = ChronoUnit.MINUTES.between(minute, slot.getKey().startTime());
+
+                // The query looks a full hour ahead, but a reminder can only fall due at the start of a
+                // class or at one of the offered lead times. Every other minute is skipped here rather
+                // than after loading the chat's members - sixty member queries per slot per day would
+                // otherwise buy nothing.
+                if (!isReminderMinute(chat, minutesAway)) {
+                    continue;
+                }
+
+                announced += announce(slot.getKey(), entries, chat, minutesAway, date) ? 1 : 0;
+                remindMembers(slot.getKey(), entries, chat, minutesAway, date);
             }
 
             if (announced > 0) {
@@ -145,10 +158,7 @@ public class ClassNotification {
     /**
      * @return true when a message was sent for this slot
      */
-    private boolean announce(SlotKey slot, List<ClassEntry> entries, LocalTime minute, LocalDate date) {
-        LumiosChat chat = entries.getFirst().getDayEntry().getTimetableEntry().getChat();
-        long minutesAway = ChronoUnit.MINUTES.between(minute, slot.startTime());
-
+    private boolean announce(SlotKey slot, List<ClassEntry> entries, LumiosChat chat, long minutesAway, LocalDate date) {
         Reminder reminder;
         if (minutesAway == 0) {
             reminder = Reminder.STARTING;
@@ -163,14 +173,26 @@ public class ClassNotification {
             return false;
         }
 
+        // Members who chose to be tagged rather than messaged privately get their mention here, on the
+        // line of the elective it belongs to. A single-class slot is shared by definition, so nobody is
+        // tagged on one - the announcement already reaches everyone who attends it.
+        Map<String, List<String>> tags = Map.of();
+        if (entries.size() > 1) {
+            try {
+                tags = personalTimetableSupport.tagsBySubject(chat, entries);
+            } catch (Exception e) {
+                log.error("Could not work out who to tag in chat {}", slot.chatId(), e);
+            }
+        }
+
         try {
             TextMessage message = switch (reminder) {
                 case STARTING -> entries.size() == 1
                         ? ClassMarkupUtil.createNowNotification(entries.getFirst(), chat, translationService)
-                        : ClassMarkupUtil.createMultipleNowNotification(entries, chat, translationService);
+                        : ClassMarkupUtil.createMultipleNowNotification(entries, chat, translationService, tags);
                 case UPCOMING -> entries.size() == 1
                         ? ClassMarkupUtil.createNextNotification(entries.getFirst(), chat, translationService)
-                        : ClassMarkupUtil.createMultipleNextNotification(entries, chat, translationService);
+                        : ClassMarkupUtil.createMultipleNextNotification(entries, chat, translationService, tags);
             };
             notificationCache.put(cacheKey, date);
             telegramClient.sendTextMessage(message);
@@ -183,24 +205,29 @@ public class ClassNotification {
     }
 
     /**
-     * Sends each opted-in member their own reminder, containing only the classes they attend. Members
-     * who never started the bot cannot be messaged; Telegram rejects that outright, so they are
-     * flagged rather than retried for every class.
+     * Sends each member who asked for one their own private reminder, containing only the classes they
+     * attend. Members who never started the bot cannot be messaged; Telegram refuses outright, so they
+     * are flagged rather than retried for every class.
      */
-    private void remindMembers(SlotKey slot, List<ClassEntry> entries, LocalTime minute, LocalDate date) {
-        LumiosChat chat = entries.getFirst().getDayEntry().getTimetableEntry().getChat();
+    private void remindMembers(SlotKey slot, List<ClassEntry> entries, LumiosChat chat, long minutesAway, LocalDate date) {
         List<TimetableMember> members;
+        Map<Long, Set<String>> choices;
         try {
-            members = personalTimetableService.remindableMembers(chat.getChatId());
+            members = personalTimetableService.remindableMembers(chat.getChatId()).stream()
+                    .filter(member -> member.getReminderChannel().sendsDm())
+                    .filter(member -> !member.isDmUnavailable())
+                    .toList();
+            if (members.isEmpty()) {
+                return;
+            }
+            // One query for the whole chat: this method runs every minute for every slot, so asking per
+            // member turns into hundreds of round trips an hour.
+            choices = personalTimetableService.chosenSubjectsByMember(chat.getChatId());
         } catch (Exception e) {
             log.error("Could not load the members of chat {}", chat.getChatId(), e);
             return;
         }
-        if (members.isEmpty()) {
-            return;
-        }
 
-        long minutesAway = ChronoUnit.MINUTES.between(minute, slot.startTime());
         for (TimetableMember member : members) {
             long lead = member.getLeadMinutes() == null ? leadMinutes(chat) : clampLead(member.getLeadMinutes());
             if (minutesAway != 0 && minutesAway != lead) {
@@ -215,7 +242,8 @@ public class ClassNotification {
 
             List<ClassEntry> mine;
             try {
-                mine = personalTimetableSupport.personalClasses(chat.getChatId(), member.getTelegramUserId(), entries);
+                mine = personalTimetableSupport.personalClasses(chat.getChatId(), entries,
+                        choices.getOrDefault(member.getTelegramUserId(), Set.of()));
             } catch (Exception e) {
                 log.error("Could not personalise the slot for member {}", member.getTelegramUserId(), e);
                 continue;
@@ -227,26 +255,46 @@ public class ClassNotification {
             }
 
             notificationCache.put(cacheKey, date);
-            TextMessage message = ClassMarkupUtil.createPersonalReminder(
-                    mine, chat, member.getTelegramUserId(), minutesAway, translationService);
-            if (telegramClient.sendTextMessage(message) == null) {
-                log.info("Member {} is unreachable in private; muting their personal reminders",
+            TextMessage message = ClassMarkupUtil.createPersonalReminder(mine,
+                    personalTimetableSupport.languageChatFor(member.getTelegramUserId(), chat),
+                    member.getTelegramUserId(), minutesAway, translationService);
+            // Only an outright refusal means they are unreachable. A parse error or an exhausted retry
+            // also yields no message, and muting them for that would lose reminders silently.
+            if (telegramClient.trySendTextMessage(message).blocked()) {
+                log.info("Member {} has blocked the bot; muting their personal reminders",
                         member.getTelegramUserId());
                 personalTimetableService.markDmUnavailable(chat.getChatId(), member.getTelegramUserId());
             }
         }
     }
 
+    /**
+     * Whether a reminder can fall due for this chat at this distance from a class: the moment it starts,
+     * the chat's own lead time, or any lead time a member could have chosen for themselves.
+     */
+    private boolean isReminderMinute(LumiosChat chat, long minutesAway) {
+        if (minutesAway == 0 || minutesAway == leadMinutes(chat)) {
+            return true;
+        }
+        for (int option : SettingsMarkupUtil.REMINDER_LEAD_OPTIONS) {
+            if (minutesAway == option) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int clampLead(int minutes) {
         return Math.clamp(minutes, 0, MAX_LEAD_MINUTES);
     }
 
+    /**
+     * A null column belongs to a chat that predates the setting, not one that asked for no warning -
+     * the entity's own default is what it would have been created with.
+     */
     private int leadMinutes(LumiosChat chat) {
         Integer configured = chat.getReminderLeadMinutes();
-        if (configured == null) {
-            return 0;
-        }
-        return clampLead(configured);
+        return clampLead(configured == null ? LumiosChat.DEFAULT_REMINDER_LEAD_MINUTES : configured);
     }
 
     @Scheduled(cron = "0 0 */6 * * *", zone = TimetableClock.ZONE_ID)

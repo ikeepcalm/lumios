@@ -5,12 +5,17 @@ import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.ElectiveChoic
 import dev.ua.ikeepcalm.lumios.database.dal.repositories.timetable.TimetableMemberRepository;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.personal.ElectiveChoice;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.personal.TimetableMember;
+import dev.ua.ikeepcalm.lumios.database.entities.timetable.types.ReminderChannel;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,7 +46,18 @@ public class PersonalTimetableServiceImpl implements PersonalTimetableService {
 
     @Override
     public List<TimetableMember> remindableMembers(Long chatId) {
-        return memberRepository.findByChatIdAndDmRemindersEnabledTrueAndDmUnavailableFalse(chatId);
+        return memberRepository.findByChatIdAndReminderChannelNot(chatId, ReminderChannel.OFF);
+    }
+
+    @Override
+    public List<TimetableMember> digestMembersAt(LocalTime time) {
+        List<TimetableMember> due = new ArrayList<>(
+                memberRepository.findByDigestEnabledTrueAndDmUnavailableFalseAndDigestTime(time));
+        if (TimetableMember.DEFAULT_DIGEST_TIME.equals(time)) {
+            // Anyone who never touched the setting has a null column and falls on the default hour.
+            due.addAll(memberRepository.findByDigestEnabledTrueAndDmUnavailableFalseAndDigestTimeIsNull());
+        }
+        return due;
     }
 
     @Override
@@ -68,6 +84,16 @@ public class PersonalTimetableServiceImpl implements PersonalTimetableService {
         return choiceRepository.findByChatIdAndTelegramUserId(chatId, telegramUserId).stream()
                 .map(ElectiveChoice::getSubjectKey)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<Long, Set<String>> chosenSubjectsByMember(Long chatId) {
+        Map<Long, Set<String>> byMember = new HashMap<>();
+        for (ElectiveChoice choice : choiceRepository.findByChatId(chatId)) {
+            byMember.computeIfAbsent(choice.getTelegramUserId(), id -> new HashSet<>())
+                    .add(choice.getSubjectKey());
+        }
+        return byMember;
     }
 
     @Override

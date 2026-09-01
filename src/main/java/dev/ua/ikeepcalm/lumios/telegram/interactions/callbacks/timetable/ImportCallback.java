@@ -200,7 +200,7 @@ public class ImportCallback extends ServicesShortcut implements Interaction {
         // subject no longer exists would silently filter classes that are now mandatory.
         support.invalidateElectives(chat.getChatId());
         int pruned = personalTimetableService.pruneChoices(
-                chat.getChatId(), ElectiveDetector.electiveSubjects(imported));
+                chat.getChatId(), ElectiveDetector.choiceKeys(imported));
         if (pruned > 0) {
             log.info("Pruned {} elective choice(s) in chat {} after re-import", pruned, chat.getChatId());
         }

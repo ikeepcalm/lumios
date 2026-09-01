@@ -9,6 +9,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetablePagedUtil;
 import dev.ua.ikeepcalm.lumios.telegram.utils.parsers.TimetableParser;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
@@ -18,12 +19,18 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Comparator;
 import java.util.Map;
 
+/**
+ * Paging for timetable keyboards sent before the personal views existed.
+ * <p>
+ * Kept so buttons already on screen at deploy time keep working. New keyboards carry the {@code view#}
+ * family instead, handled by {@link TimetableViewCallback} - the {@code timetable-} payload splits on
+ * {@code -} and so cannot carry the negative group chat id a private-chat view needs.
+ */
 @Component
 @BotCallback(startsWith = "timetable")
 public class TimetableCallback extends ServicesShortcut implements Interaction {
@@ -107,12 +114,14 @@ public class TimetableCallback extends ServicesShortcut implements Interaction {
 
     private List<ClassEntry> getClassesForCommandType(TimetableEntry timetableEntry, String commandType) {
         return switch (commandType) {
+            // Through TimetableClock, not LocalDate.now(): the container has no TZ set, so a bare
+            // call runs in UTC and turns the last page of the day over an hour early.
             case "today" -> {
-                DayOfWeek today = LocalDate.now().getDayOfWeek();
+                DayOfWeek today = TimetableClock.today().getDayOfWeek();
                 yield getClassesForDay(timetableEntry, today);
             }
             case "tomorrow" -> {
-                DayOfWeek tomorrow = LocalDate.now().plusDays(1).getDayOfWeek();
+                DayOfWeek tomorrow = TimetableClock.today().plusDays(1).getDayOfWeek();
                 yield getClassesForDay(timetableEntry, tomorrow);
             }
             default -> new ArrayList<>();

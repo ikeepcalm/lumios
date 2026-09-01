@@ -2,7 +2,6 @@ package dev.ua.ikeepcalm.lumios.telegram.interactions.callbacks.timetable;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
-import dev.ua.ikeepcalm.lumios.database.entities.timetable.personal.TimetableMember;
 import dev.ua.ikeepcalm.lumios.telegram.core.annotations.BotCallback;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.ServicesShortcut;
 import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
@@ -56,7 +55,6 @@ public class MineCallback extends ServicesShortcut implements Interaction {
             }
             case "p" -> page(callbackQuery, groupChat, telegramUserId, parts);
             case "t" -> toggle(callbackQuery, groupChat, telegramUserId, parts);
-            case "r" -> toggleReminders(callbackQuery, groupChat, telegramUserId);
             case "d" -> done(callbackQuery, groupChat);
             default -> {
                 log.warn("Unrecognised elective callback: {}", callbackQuery.getData());
@@ -102,7 +100,7 @@ public class MineCallback extends ServicesShortcut implements Interaction {
         if (subjectKey == null) {
             // The timetable changed under the menu - most likely a re-import.
             telegramClient.sendAnswerCallbackQuery(
-                    translationService.getMessage("mine.subject-gone", groupChat), callbackQuery.getId());
+                    translationService.getMessage("mine.subject-gone", support.languageChatFor(telegramUserId, groupChat)), callbackQuery.getId());
             support.sendMenu(groupChat, telegramUserId, callbackQuery.getMessage().getChatId(),
                     callbackQuery.getMessage().getMessageId());
             return;
@@ -110,26 +108,11 @@ public class MineCallback extends ServicesShortcut implements Interaction {
 
         boolean nowAttending = personalTimetableService.toggleChoice(groupChat.getChatId(), telegramUserId, subjectKey);
         telegramClient.sendAnswerCallbackQuery(translationService.getMessage(
-                nowAttending ? "mine.toast.added" : "mine.toast.removed", groupChat), callbackQuery.getId());
+                nowAttending ? "mine.toast.added" : "mine.toast.removed",
+                support.languageChatFor(telegramUserId, groupChat)), callbackQuery.getId());
 
         support.sendMenu(groupChat, telegramUserId, callbackQuery.getMessage().getChatId(),
                 callbackQuery.getMessage().getMessageId(), page);
-    }
-
-    private void toggleReminders(CallbackQuery callbackQuery, LumiosChat groupChat, Long telegramUserId) {
-        TimetableMember member = personalTimetableService.member(groupChat.getChatId(), telegramUserId);
-        member.setDmRemindersEnabled(!member.isDmRemindersEnabled());
-        // Re-enabling is also the member telling us they are reachable again.
-        if (member.isDmRemindersEnabled()) {
-            member.setDmUnavailable(false);
-        }
-        personalTimetableService.save(member);
-
-        telegramClient.sendAnswerCallbackQuery(translationService.getMessage(
-                member.isDmRemindersEnabled() ? "mine.reminders.on" : "mine.reminders.off", groupChat),
-                callbackQuery.getId());
-        support.sendMenu(groupChat, telegramUserId, callbackQuery.getMessage().getChatId(),
-                callbackQuery.getMessage().getMessageId());
     }
 
     private void done(CallbackQuery callbackQuery, LumiosChat groupChat) {

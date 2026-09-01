@@ -2,7 +2,9 @@ package dev.ua.ikeepcalm.lumios.database.dal.interfaces;
 
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.personal.TimetableMember;
 
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,9 +18,17 @@ public interface PersonalTimetableService {
     TimetableMember member(Long chatId, Long telegramUserId);
 
     /**
-     * Members of this chat who should receive personal reminders.
+     * Members of this chat who want a reminder in any shape - private message, mention in the group,
+     * or both. Callers filter further by {@code getReminderChannel()}, and by {@code isDmUnavailable()}
+     * before sending anything privately.
      */
     List<TimetableMember> remindableMembers(Long chatId);
+
+    /**
+     * Everyone in the chat due a digest at this time, including those who never changed the setting
+     * and so match {@code TimetableMember#DEFAULT_DIGEST_TIME}.
+     */
+    List<TimetableMember> digestMembersAt(LocalTime time);
 
     /**
      * Chats where this member has been through the picker.
@@ -33,6 +43,14 @@ public interface PersonalTimetableService {
     void markDmUnavailable(Long chatId, Long telegramUserId);
 
     Set<String> chosenSubjects(Long chatId, Long telegramUserId);
+
+    /**
+     * Every member's choices in one query, keyed by Telegram user id. The reminder scheduler runs once
+     * a minute over every slot, so asking per member does not scale.
+     *
+     * @return members with no choices recorded are absent from the map
+     */
+    Map<Long, Set<String>> chosenSubjectsByMember(Long chatId);
 
     /**
      * Adds the elective if absent, removes it if present.

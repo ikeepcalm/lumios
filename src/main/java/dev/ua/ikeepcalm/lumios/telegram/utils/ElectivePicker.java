@@ -2,6 +2,7 @@ package dev.ua.ikeepcalm.lumios.telegram.utils;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
 import dev.ua.ikeepcalm.lumios.telegram.utils.ElectiveDetector.Elective;
+import dev.ua.ikeepcalm.lumios.telegram.utils.ElectiveDetector.Occurrence;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -19,7 +20,6 @@ import java.util.Set;
  * <ul>
  *     <li>{@code mine#t#<chatId>#<page>#<shortId>} - toggle one elective, staying on that page</li>
  *     <li>{@code mine#p#<chatId>#<page>} - another page of electives</li>
- *     <li>{@code mine#r#<chatId>} - turn personal reminders on or off</li>
  *     <li>{@code mine#d#<chatId>} - done, close the menu</li>
  *     <li>{@code mine#g#<chatId>} - sent from a group: deliver this menu privately</li>
  *     <li>{@code mine#c#<chatId>} - pick which group to configure</li>
@@ -30,7 +30,6 @@ public final class ElectivePicker {
     public static final String PREFIX = "mine#";
     public static final String TOGGLE = PREFIX + "t#";
     public static final String PAGE = PREFIX + "p#";
-    public static final String REMINDERS = PREFIX + "r#";
     public static final String DONE = PREFIX + "d#";
     public static final String FROM_GROUP = PREFIX + "g#";
     public static final String CHOOSE_CHAT = PREFIX + "c#";
@@ -55,7 +54,7 @@ public final class ElectivePicker {
     }
 
     public static String text(TranslationService translations, LumiosChat chat, String groupName,
-                              List<Elective> electives, Set<String> chosen, boolean remindersEnabled, int page) {
+                              List<Elective> electives, Set<String> chosen, int page) {
         StringBuilder text = new StringBuilder();
         text.append(translations.getMessage("mine.title", chat, groupName));
         text.append("\n\n").append(translations.getMessage("mine.hint", chat));
@@ -67,22 +66,43 @@ public final class ElectivePicker {
             text.append("\n").append(translations.getMessage("mine.page", chat,
                     String.valueOf(page + 1), String.valueOf(pages)));
         }
-        text.append("\n\n").append(remindersEnabled
-                ? translations.getMessage("mine.reminders.on", chat)
-                : translations.getMessage("mine.reminders.off", chat));
+
+        // The buttons only have room for a truncated name, and campus names several electives almost
+        // identically. When each one happens is what actually tells them apart, so it goes in the body.
+        text.append("\n");
+        for (int i = page * PAGE_SIZE; i < Math.min(page * PAGE_SIZE + PAGE_SIZE, electives.size()); i++) {
+            Elective elective = electives.get(i);
+            text.append("\n").append(chosen.contains(elective.choiceKey()) ? "✅ " : "▫️ ")
+                    .append(elective.name());
+            String schedule = schedule(elective, translations, chat);
+            if (!schedule.isEmpty()) {
+                text.append("\n     ").append(schedule);
+            }
+        }
         return text.toString();
     }
 
+    /**
+     * When an elective happens, as {@code Пн 13:30 · Ср 15:20}.
+     */
+    private static String schedule(Elective elective, TranslationService translations, LumiosChat chat) {
+        List<String> parts = new ArrayList<>(elective.occurrences().size());
+        for (Occurrence occurrence : elective.occurrences()) {
+            parts.add(TimetablePagedUtil.getShortDayName(occurrence.day(), translations, chat)
+                      + " " + occurrence.startTime());
+        }
+        return String.join(" · ", parts);
+    }
+
     public static InlineKeyboardMarkup keyboard(TranslationService translations, LumiosChat chat, Long groupChatId,
-                                                List<Elective> electives, Set<String> chosen,
-                                                boolean remindersEnabled, int page) {
+                                                List<Elective> electives, Set<String> chosen, int page) {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
         int from = page * PAGE_SIZE;
         int to = Math.min(from + PAGE_SIZE, electives.size());
         for (int i = from; i < to; i++) {
             Elective elective = electives.get(i);
-            boolean picked = chosen.contains(elective.subjectKey());
+            boolean picked = chosen.contains(elective.choiceKey());
             InlineKeyboardButton button = new InlineKeyboardButton(
                     (picked ? "✅ " : "▫️ ") + shorten(elective.name()));
             button.setCallbackData(TOGGLE + groupChatId + "#" + page + "#" + elective.shortId());
@@ -102,10 +122,9 @@ public final class ElectivePicker {
             keyboard.add(navigation);
         }
 
-        keyboard.add(new InlineKeyboardRow(button(remindersEnabled
-                        ? translations.getMessage("mine.button.reminders_disable", chat)
-                        : translations.getMessage("mine.button.reminders_enable", chat),
-                REMINDERS + groupChatId)));
+        keyboard.add(new InlineKeyboardRow(button(
+                translations.getMessage("mine.button.reminders", chat),
+                ReminderSettingsPicker.OPEN + groupChatId)));
         keyboard.add(new InlineKeyboardRow(button(
                 translations.getMessage("mine.button.done", chat), DONE + groupChatId)));
 
@@ -115,7 +134,7 @@ public final class ElectivePicker {
     private static int countChosen(List<Elective> electives, Set<String> chosen) {
         int count = 0;
         for (Elective elective : electives) {
-            if (chosen.contains(elective.subjectKey())) {
+            if (chosen.contains(elective.choiceKey())) {
                 count++;
             }
         }

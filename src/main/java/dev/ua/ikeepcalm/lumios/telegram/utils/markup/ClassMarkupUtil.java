@@ -14,11 +14,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class ClassMarkupUtil {
 
@@ -37,14 +38,32 @@ public class ClassMarkupUtil {
     }
 
     public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService) {
+        return createMultipleNowNotification(classEntries, chat, translationService, Map.of());
+    }
+
+    /**
+     * @param tags mentions to hang off each class line, keyed by choice key - see
+     *             {@code PersonalTimetableSupport#tagsBySubject}. Empty for a command response; only
+     *             the scheduled announcement tags anybody.
+     */
+    public static TextMessage createMultipleNowNotification(List<ClassEntry> classEntries, LumiosChat chat,
+                                                            TranslationService translationService,
+                                                            Map<String, List<String>> tags) {
         return multiple(classEntries, chat, translationService,
-                translationService.getMessage("class.multiple.now.notification", chat, listClasses(classEntries)));
+                translationService.getMessage("class.multiple.now.notification", chat,
+                        listClasses(classEntries, tags)));
     }
 
     public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, LumiosChat chat, TranslationService translationService) {
+        return createMultipleNextNotification(classEntries, chat, translationService, Map.of());
+    }
+
+    public static TextMessage createMultipleNextNotification(List<ClassEntry> classEntries, LumiosChat chat,
+                                                             TranslationService translationService,
+                                                             Map<String, List<String>> tags) {
         return multiple(classEntries, chat, translationService,
                 translationService.getMessage("class.multiple.next.notification", chat,
-                        classEntries.getFirst().getStartTime(), listClasses(classEntries)));
+                        classEntries.getFirst().getStartTime(), listClasses(classEntries, tags)));
     }
 
     /**
@@ -57,13 +76,28 @@ public class ClassMarkupUtil {
                 translationService.getMessage("class.next.later", chat,
                         TimetablePagedUtil.getDayName(day, translationService, chat),
                         classEntries.getFirst().getStartTime(),
-                        listClasses(classEntries)));
+                        listClasses(classEntries, Map.of())));
     }
 
-    private static String listClasses(List<ClassEntry> classEntries) {
-        return classEntries.stream()
-                .map(classEntry -> determineEmoji(classEntry.getClassType()) + " " + classEntry.getName())
-                .collect(Collectors.joining("\n"));
+    /**
+     * One line per class, each carrying the mentions of the members who asked to be tagged on it. The
+     * mention sits on the class line rather than in a block at the end, so the message says who has
+     * which elective instead of just who is in the room.
+     */
+    private static String listClasses(List<ClassEntry> classEntries, Map<String, List<String>> tags) {
+        boolean subgroup = ElectiveDetector.shapeOf(classEntries).subgroup();
+        StringBuilder lines = new StringBuilder();
+        for (ClassEntry classEntry : classEntries) {
+            if (!lines.isEmpty()) {
+                lines.append("\n");
+            }
+            lines.append(determineEmoji(classEntry.getClassType())).append(" ").append(classEntry.getName());
+            List<String> mentions = tags.get(ElectiveDetector.choiceKey(classEntry, subgroup));
+            if (mentions != null && !mentions.isEmpty()) {
+                lines.append(" — ").append(String.join(" ", mentions));
+            }
+        }
+        return lines.toString();
     }
 
     /**
@@ -124,15 +158,10 @@ public class ClassMarkupUtil {
     }
 
     /**
-     * A slot holding more than one distinct subject is a pool of electives, so it is worth inviting
-     * readers to say which one is theirs.
+     * A slot that offers a choice is worth inviting readers to say which half is theirs.
      */
     private static boolean isElectivePool(List<ClassEntry> classEntries) {
-        Set<String> subjects = new HashSet<>();
-        for (ClassEntry classEntry : classEntries) {
-            subjects.add(ElectiveDetector.subjectKey(classEntry.getName()));
-        }
-        return subjects.size() > 1;
+        return ElectiveDetector.shapeOf(classEntries).offersChoice();
     }
 
     /**
@@ -176,6 +205,57 @@ public class ClassMarkupUtil {
             textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
         }
         textMessage.setParseMode(ParseMode.MARKDOWN);
+        return textMessage;
+    }
+
+    /**
+     * The member's whole day in one private message, sent once each morning.
+     * <p>
+     * The per-class reminders are the noisy part of the feature; a member who wants to know what is
+     * coming without being interrupted five times gets this instead, or as well.
+     *
+     * @param classEntries every class the member attends today, in any order
+     */
+    public static TextMessage createDigest(List<ClassEntry> classEntries, LumiosChat languageSource,
+                                           long dmChatId, TranslationService translationService) {
+        Map<LocalTime, List<ClassEntry>> bySlot = new LinkedHashMap<>();
+        classEntries.stream()
+                .sorted(Comparator.comparing(ClassEntry::getStartTime,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .forEach(classEntry -> bySlot
+                        .computeIfAbsent(classEntry.getStartTime(), time -> new ArrayList<>())
+                        .add(classEntry));
+
+        StringBuilder lines = new StringBuilder();
+        bySlot.forEach((startTime, slot) -> {
+            lines.append("\n*").append(startTime).append("*\n");
+            for (ClassEntry classEntry : slot) {
+                lines.append(determineEmoji(classEntry.getClassType())).append(" ").append(classEntry.getName());
+                String detail = detailLine(classEntry);
+                if (!detail.isEmpty()) {
+                    lines.append("\n     ").append(detail);
+                }
+                lines.append("\n");
+            }
+        });
+
+        TextMessage textMessage = new TextMessage();
+        textMessage.setChatId(dmChatId);
+        textMessage.setText(translationService.getMessage("digest.title", languageSource,
+                String.valueOf(classEntries.size())) + "\n" + lines.toString().stripTrailing());
+        textMessage.setParseMode(ParseMode.MARKDOWN);
+
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+        for (ClassEntry classEntry : classEntries) {
+            if (classEntry.getUrl() != null) {
+                InlineKeyboardButton join = new InlineKeyboardButton("🌐 " + classEntry.getName());
+                join.setUrl(classEntry.getUrl());
+                keyboard.add(new InlineKeyboardRow(join));
+            }
+        }
+        if (!keyboard.isEmpty()) {
+            textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
+        }
         return textMessage;
     }
 
