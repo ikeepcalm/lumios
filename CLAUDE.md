@@ -36,6 +36,11 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 - **Task Tracker**: Track deadlines and tasks with `/task` and `/due`.
 - **Reverence System**: A social "respect" system where users gain/lose points based on message reactions.
 - **AI Assistant**: Conversational capabilities powered by Gemini and OpenAI.
+- **Schedule Mini App**: `/editor` links to the read-only timetable Mini App with
+  `https://t.me/<bot>/<app>?startapp=<chatId>`. It must be a plain URL button - Telegram rejects
+  `web_app` buttons outside private chats, so `startapp` is the only way the group id reaches the
+  app. The frontend reads it from `Telegram.WebApp.initDataUnsafe.start_param` and sends it as the
+  `chatId` header.
 - **Personal timetables**: A group timetable imported from campus is a superset - it contains every
   elective (факультатив) on offer. `ElectiveDetector` finds elective pools structurally (any time
   slot holding more than one distinct subject), members pick theirs with `/mine`, and personal
@@ -90,4 +95,10 @@ The application requires several environment variables defined in `.env` (see `.
 - **Translations:** Add every key to both `messages.properties` and `messages_en.properties`. A
   message that takes `{0}` arguments is run through `MessageFormat`, so a literal apostrophe in it
   must be doubled (`''`) or it disappears.
+- **Web API auth:** `AuthenticationService` accepts either the `rest.api.header` API key or a
+  Telegram `initData` string in `X-Telegram-Init-Data`. The initData path is deliberately limited to
+  `GET /timetables/retrieve`: its signature proves the caller is a real Telegram user and that
+  `start_param` was not altered in transit, but *not* that they belong to that chat - anyone can
+  craft a startapp link for a chat id they know. Widening it to a write endpoint needs a membership
+  check first (`LumiosUser` has a row per user-chat pair).
 - **Persistence:** Use the provided `Service` interfaces (e.g., `UserService`, `ChatService`) instead of accessing repositories directly in handlers.
