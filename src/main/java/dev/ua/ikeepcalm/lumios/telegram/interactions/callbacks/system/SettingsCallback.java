@@ -79,6 +79,8 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
             chat.setLanguage("en");
         } else if (data.equals("settings-lang-uk")) {
             chat.setLanguage("uk");
+        } else if (data.equals("settings-lang-zh")) {
+            chat.setLanguage("zh");
         }
         
         if (data.equals("settings-nickname")) {

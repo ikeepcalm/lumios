@@ -308,7 +308,10 @@ public class Gemini {
         }
 
         boolean isEn = (chat != null && "en".equals(chat.getLanguage()));
-        String promptInstruction = isEn ?
+        boolean isZh = (chat != null && "zh".equals(chat.getLanguage()));
+        String promptInstruction;
+        if (isEn) {
+            promptInstruction =
                 """
                 As a professional summarizer, create a concise and comprehensive summary of the provided conversation in group chat, while adhering to these guidelines:
                     1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
@@ -317,7 +320,20 @@ public class Gemini {
                     4. Format the summary in paragraph form for easy understanding.
                     5. Summary should be divided into paragraphs, each covering a different aspect of the conversation including names or tags of the participants.
                 By following this optimized prompt, you will generate an effective summary that encapsulates the essence of the given text in a clear, concise, and reader-friendly manner.
-                """ :
+                """;
+        } else if (isZh) {
+            promptInstruction =
+                """
+                作为一名专业的总结者，请为提供的群聊对话创建一个简明且全面的总结，并遵循以下指南：
+                    1. 制作一个详尽、深入且复杂的总结，同时保持清晰和简练。
+                    2. 整合主要观点和关键信息，去除无关冗余的话，专注于核心内容。
+                    3. 严格依赖提供的文本，不要包含外部信息。
+                    4. 采用段落形式排版，以便于理解。
+                    5. 总结应分为若干段落，每段涵盖对话的不同方面，并包括参与者的姓名或标签。
+                遵循此优化提示，您将生成一份有效的总结，以清晰、简明且易于阅读的方式概括给定文本的实质。
+                """;
+        } else {
+            promptInstruction =
                 """
                 Як професійний сумаризатор, створіть стислий та вичерпний підсумок наданої розмови у груповому чаті, дотримуючись наступних вказівок:
                     1. Створіть підсумок, який є деталізованим, ретельним, глибоким та комплексним, водночас зберігаючи ясність та лаконічність.
@@ -327,6 +343,7 @@ public class Gemini {
                     5. Підсумок має бути розділений на абзаци, кожен з яких охоплює окремий аспект розмови, включаючи імена або теги учасників.
                 Дотримуючись цього оптимізованого запиту, ви створите ефективний підсумок, який чітко, лаконічно та зручно для читача передає суть наданого тексту.
                 """;
+        }
 
         String prompt = promptInstruction + ":\n" + messagesToSummarize;
 
@@ -409,9 +426,15 @@ public class Gemini {
         JSONArray systemParts = new JSONArray();
         JSONObject systemPart = new JSONObject();
         boolean isEn = (chat != null && "en".equals(chat.getLanguage()));
-        String langInstruction = isEn ?
-                "Your preferred language is English. If using custom text formatting, use Markdown syntax. If meeting any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\)." :
-                "You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).";
+        boolean isZh = (chat != null && "zh".equals(chat.getLanguage()));
+        String langInstruction;
+        if (isEn) {
+            langInstruction = "Your preferred language is English. If using custom text formatting, use Markdown syntax. If meeting any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).";
+        } else if (isZh) {
+            langInstruction = "您的偏好语言是中文。如果使用自定义文本格式，请使用 Markdown 语法。如果遇到被识别为 Markdown 语法但实际上并非用于格式化的符号，请用反斜杠 (\\) 进行转义。";
+        } else {
+            langInstruction = "You preferred language is Ukrainian. If use custom text formatting, use Markdown syntax. If meet any symbols recognized as Markdown syntax, but not actually used in formatting, escape them with a backslash (\\).";
+        }
         systemPart.put("text", langInstruction);
         systemParts.put(systemPart);
         systemInstruction.put("parts", systemParts);
@@ -439,7 +462,8 @@ public class Gemini {
         LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
         DayOfWeek currentDayOfWeek = currentDate.getDayOfWeek();
         String currentDateTime = currentDate + " " + currentTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-        String dayName = currentDayOfWeek.getDisplayName(TextStyle.FULL, isEn ? Locale.ENGLISH : new Locale("uk", "UA"));
+        Locale locale = chat != null ? Locale.forLanguageTag(chat.getLanguage()) : new Locale("uk", "UA");
+        String dayName = currentDayOfWeek.getDisplayName(TextStyle.FULL, locale);
 
         prompt.append("=== CURRENT DATE & TIME ===\n");
         prompt.append(currentDateTime).append(" (").append(dayName).append(")\n");
@@ -498,6 +522,10 @@ public class Gemini {
             prompt.append("   - For class/meeting URLs, use format: [Link to class](URL)\n");
             prompt.append("   - NEVER use the URL itself as link text\n");
             prompt.append("   - Good: [Link](https://meet.google.com/abc)\n");
+        } else if (chat != null && "zh".equals(chat.getLanguage())) {
+            prompt.append("   - For class/meeting URLs, use format: [课程链接](URL)\n");
+            prompt.append("   - NEVER use the URL itself as link text\n");
+            prompt.append("   - Good: [链接](https://meet.google.com/abc)\n");
         } else {
             prompt.append("   - For class/meeting URLs, use format: [Посилання на пару](URL)\n");
             prompt.append("   - NEVER use the URL itself as link text\n");
@@ -533,9 +561,11 @@ public class Gemini {
 
         prompt.append("5. LANGUAGE:\n");
         if (isEn) {
-            prompt.append("   - Respond in English unless the user explicitly writes in Ukrainian\n");
+            prompt.append("   - Respond in English unless the user explicitly writes in Ukrainian or Chinese\n");
+        } else if (chat != null && "zh".equals(chat.getLanguage())) {
+            prompt.append("   - Respond in Chinese unless the user explicitly writes in English or Ukrainian\n");
         } else {
-            prompt.append("   - Respond in Ukrainian unless the user writes in English\n");
+            prompt.append("   - Respond in Ukrainian unless the user writes in English or Chinese\n");
         }
         prompt.append("   - Be natural and conversational\n\n");
 

@@ -85,7 +85,14 @@ public class TruthOrDareQuery implements InlineQuery {
     }
 
     private String getTruthOrDare(String lang) {
-        String fileName = "en".equals(lang) ? "truthOrDare_en.json" : "truthOrDare.json";
+        String fileName;
+        if ("en".equals(lang)) {
+            fileName = "truthOrDare_en.json";
+        } else if ("zh".equals(lang)) {
+            fileName = "truthOrDare_zh.json";
+        } else {
+            fileName = "truthOrDare.json";
+        }
         try (var is = getClass().getClassLoader().getResourceAsStream("truth-or-dare/" + fileName)) {
             if (is == null) {
                 return translationService.getMessage("inline.truth_or_dare.empty_db", lang);
