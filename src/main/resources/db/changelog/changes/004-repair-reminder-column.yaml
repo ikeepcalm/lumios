@@ -1,0 +1,48 @@
+databaseChangeLog:
+  # Repairs deployments that ran changeset 002 while it still named the column `reminderLeadMinutes`.
+  #
+  # Spring Boot maps LumiosChat.reminderLeadMinutes to `reminder_lead_minutes`, so the camelCase
+  # column was never read or written by anything. Changeset 002 stays recorded as run on those
+  # databases and will not re-execute, so the correct column has to be added here instead.
+  - changeSet:
+      id: 004-add-correct-reminder-lead-minutes
+      author: lumios
+      comment: Add chats.reminder_lead_minutes where changeset 002 created the camelCase name
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: chats.reminder_lead_minutes already present; nothing to add.
+        - not:
+            - columnExists:
+                tableName: chats
+                columnName: reminder_lead_minutes
+      changes:
+        - addColumn:
+            tableName: chats
+            columns:
+              - column:
+                  name: reminder_lead_minutes
+                  type: int
+                  defaultValueNumeric: 10
+                  constraints:
+                    nullable: true
+      rollback:
+        - dropColumn:
+            tableName: chats
+            columnName: reminder_lead_minutes
+
+  - changeSet:
+      id: 004-drop-stray-camelcase-column
+      author: lumios
+      comment: Remove the unused reminderLeadMinutes column left by the first revision of 002
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: No stray reminderLeadMinutes column; nothing to drop.
+        - columnExists:
+            tableName: chats
+            columnName: reminderLeadMinutes
+      changes:
+        - dropColumn:
+            tableName: chats
+            columnName: reminderLeadMinutes
+      rollback:
+        - empty

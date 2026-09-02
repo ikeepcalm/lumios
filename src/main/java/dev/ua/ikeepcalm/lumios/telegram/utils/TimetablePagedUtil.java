@@ -76,10 +76,14 @@ public class TimetablePagedUtil {
      * @param commandType Type of command (today, tomorrow, week)
      * @return InlineKeyboardMarkup with navigation and class buttons
      */
-    public static InlineKeyboardMarkup buildTimetableKeyboard(int page, int maxPage, List<ClassEntry> classes, String commandType) {
+    /**
+     * One row per class - a link to join it, or a prompt to attach one. Split out from
+     * {@link #buildTimetableKeyboard} so the personal views can reuse the buttons while supplying their
+     * own navigation, which has to carry the group and the scope the plain {@code timetable-} payload
+     * has no room for.
+     */
+    public static List<InlineKeyboardRow> buildClassButtons(List<ClassEntry> classes) {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
-
-        // Add class buttons (each class gets its own row for better readability)
         for (ClassEntry classEntry : classes) {
             String emoji = TimetableParser.parseClassEmoji(classEntry.getClassType());
             String buttonText = emoji + " " + truncateClassName(classEntry.getName());
@@ -98,6 +102,11 @@ public class TimetablePagedUtil {
             row.add(button);
             keyboard.add(row);
         }
+        return keyboard;
+    }
+
+    public static InlineKeyboardMarkup buildTimetableKeyboard(int page, int maxPage, List<ClassEntry> classes, String commandType) {
+        List<InlineKeyboardRow> keyboard = buildClassButtons(classes);
 
         // Add navigation buttons if multiple pages
         if (maxPage > 1) {
@@ -179,7 +188,7 @@ public class TimetablePagedUtil {
             return 1;
         }
 
-        LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
+        LocalTime currentTime = TimetableClock.now();
         List<String> timeSlots = new ArrayList<>(groupedByTime.keySet());
 
         // Find the current or next time slot
@@ -221,6 +230,22 @@ public class TimetablePagedUtil {
             case FRIDAY -> translationService.getMessage("day.friday", chat);
             case SATURDAY -> translationService.getMessage("day.saturday", chat);
             case SUNDAY -> translationService.getMessage("day.sunday", chat);
+        };
+    }
+
+    /**
+     * Two- or three-letter form, for places where a full day name would crowd the line out - the
+     * schedule hint beside each elective in the picker, for instance.
+     */
+    public static String getShortDayName(DayOfWeek day, TranslationService translationService, LumiosChat chat) {
+        return switch (day) {
+            case MONDAY -> translationService.getMessage("day.short.monday", chat);
+            case TUESDAY -> translationService.getMessage("day.short.tuesday", chat);
+            case WEDNESDAY -> translationService.getMessage("day.short.wednesday", chat);
+            case THURSDAY -> translationService.getMessage("day.short.thursday", chat);
+            case FRIDAY -> translationService.getMessage("day.short.friday", chat);
+            case SATURDAY -> translationService.getMessage("day.short.saturday", chat);
+            case SUNDAY -> translationService.getMessage("day.short.sunday", chat);
         };
     }
 

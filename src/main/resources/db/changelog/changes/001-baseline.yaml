@@ -1,0 +1,33 @@
+databaseChangeLog:
+  # Establishes the schema that existed before Liquibase was introduced.
+  #
+  # On an empty database this creates everything. On a deployment whose schema was built by
+  # Hibernate's ddl-auto=update, the `chats` table already exists, so the changeset is recorded
+  # as ran without executing any DDL - existing data is never touched.
+  #
+  # validCheckSum is ANY because this changeset shipped once with camelCase identifiers, which do
+  # not exist in a Spring Boot schema (it applies CamelCaseToUnderscoresNamingStrategy). Correcting
+  # the SQL changes the checksum, and deployments that already recorded the broken version must not
+  # fail validation over it - they never executed it, since `chats` was already present.
+  - changeSet:
+      id: 001-baseline
+      author: lumios
+      comment: Pre-Liquibase schema, generated from the JPA entity model
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: >-
+            Existing schema detected (table `chats` present); baseline marked as ran without
+            executing DDL.
+        - not:
+            - tableExists:
+                tableName: chats
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/001-baseline.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            endDelimiter: ;
+            stripComments: false
+      rollback:
+        - empty

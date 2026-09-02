@@ -39,6 +39,15 @@ public class SettingsCallback extends ServicesShortcut implements Interaction {
             chat.setPlainTimetableEnabled(false);
         }
 
+        if (data.startsWith("settings-reminder-lead-")) {
+            try {
+                chat.setReminderLeadMinutes(Integer.parseInt(data.substring("settings-reminder-lead-".length())));
+            } catch (NumberFormatException e) {
+                telegramClient.sendAnswerCallbackQuery(
+                        translationService.getMessage("settings.reminder.invalid", chat), message.getId());
+            }
+        }
+
         if (data.equals("settings-dice-enable")) {
             chat.setDiceEnabled(true);
         } else if (data.equals("settings-dice-disable")) {

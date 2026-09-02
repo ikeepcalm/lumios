@@ -18,6 +18,12 @@ import java.util.Set;
 @Table(name = "chats")
 public class LumiosChat {
 
+    /**
+     * Matches the column default applied by migration 002, so a chat created after the migration
+     * gets the same advance reminder as one that existed before it.
+     */
+    public static final int DEFAULT_REMINDER_LEAD_MINUTES = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,6 +54,13 @@ public class LumiosChat {
 
     @Column
     private AiModel aiModel;
+
+    /**
+     * Minutes before a class that the chat gets an advance reminder. 0 leaves only the
+     * "class is starting now" message. Nullable so existing rows keep the column default.
+     */
+    @Column
+    private Integer reminderLeadMinutes = DEFAULT_REMINDER_LEAD_MINUTES;
 
     @Column(columnDefinition = "integer default 2")
     private int summaryLimit;

@@ -81,6 +81,12 @@ public class TelegramClient extends OkHttpTelegramClient {
                         new BotCommand("stats", translationService.getMessage("command.desc.stats", lang)),
                         new BotCommand("gamble", translationService.getMessage("command.desc.gamble", lang)),
                         new BotCommand("wheel", translationService.getMessage("command.desc.wheel", lang)),
+                        new BotCommand("mine", translationService.getMessage("command.desc.mine", lang)),
+                        new BotCommand("reminders", translationService.getMessage("command.desc.reminders", lang)),
+                        new BotCommand("today", translationService.getMessage("command.desc.today", lang)),
+                        new BotCommand("tomorrow", translationService.getMessage("command.desc.tomorrow", lang)),
+                        new BotCommand("week", translationService.getMessage("command.desc.week", lang)),
+                        new BotCommand("next", translationService.getMessage("command.desc.next", lang)),
                         new BotCommand("link", translationService.getMessage("command.desc.link", lang)),
                         new BotCommand("unlink", translationService.getMessage("command.desc.unlink", lang))
                 )))
@@ -109,6 +115,8 @@ public class TelegramClient extends OkHttpTelegramClient {
                         new BotCommand("meow", translationService.getMessage("command.desc.meow", lang)),
                         new BotCommand("next", translationService.getMessage("command.desc.next", lang)),
                         new BotCommand("import", translationService.getMessage("command.desc.import", lang)),
+                        new BotCommand("mine", translationService.getMessage("command.desc.mine", lang)),
+                        new BotCommand("reminders", translationService.getMessage("command.desc.reminders", lang)),
                         new BotCommand("tasks", translationService.getMessage("command.desc.tasks", lang)),
                         new BotCommand("due", translationService.getMessage("command.desc.due", lang)),
                         new BotCommand("me", translationService.getMessage("command.desc.me", lang)),
@@ -333,6 +341,17 @@ public class TelegramClient extends OkHttpTelegramClient {
     }
 
     public Message sendTextMessage(TextMessage textMessage) {
+        return trySendTextMessage(textMessage).message();
+    }
+
+    /**
+     * Sends a message and says why it failed, rather than only that it did.
+     * <p>
+     * A null {@code message} alone cannot be read as "the user blocked the bot": a parse error, a bad
+     * request or three exhausted retries produce the same null. Callers that mute a user on refusal -
+     * the reminder scheduler and the morning digest - need the code to tell a real 403 from a hiccup.
+     */
+    public SendResult trySendTextMessage(TextMessage textMessage) {
         // Check if message needs to be chunked
         if (textMessage.getText() != null && textMessage.getText().length() > 4096) {
             return sendChunkedMessage(textMessage);
@@ -346,7 +365,18 @@ public class TelegramClient extends OkHttpTelegramClient {
         return sendTextMessageWithRetry(textMessage, 3);
     }
 
-    private Message sendChunkedMessage(TextMessage textMessage) {
+    /**
+     * @param message   the message Telegram accepted, or null when nothing got through
+     * @param errorCode the last API error code seen, or null when there was no API error
+     */
+    public record SendResult(Message message, Integer errorCode) {
+
+        public boolean blocked() {
+            return errorCode != null && errorCode == 403;
+        }
+    }
+
+    private SendResult sendChunkedMessage(TextMessage textMessage) {
         LumiosChat chat = null;
         try {
             chat = chatService.findByChatId(textMessage.getChatId());
@@ -355,7 +385,7 @@ public class TelegramClient extends OkHttpTelegramClient {
         List<String> chunks = MessageFormatter.chunkMessage(textMessage.getText(), textMessage.getParseMode(), translationService, chat);
         log.info("Splitting long message into {} chunks for chat {}", chunks.size(), textMessage.getChatId());
 
-        Message lastSentMessage = null;
+        SendResult lastResult = new SendResult(null, null);
         for (int i = 0; i < chunks.size(); i++) {
             TextMessage chunkMessage = new TextMessage();
             chunkMessage.setChatId(textMessage.getChatId());
@@ -372,9 +402,9 @@ public class TelegramClient extends OkHttpTelegramClient {
                 chunkMessage.setMessageId(textMessage.getMessageId());
             }
 
-            lastSentMessage = sendTextMessageWithRetry(chunkMessage, 3);
+            lastResult = sendTextMessageWithRetry(chunkMessage, 3);
 
-            if (lastSentMessage == null) {
+            if (lastResult.message() == null) {
                 log.error("Failed to send chunk {} of {} for chat {}", i + 1, chunks.size(), textMessage.getChatId());
                 break;
             }
@@ -390,11 +420,12 @@ public class TelegramClient extends OkHttpTelegramClient {
             }
         }
 
-        return lastSentMessage;
+        return lastResult;
     }
 
-    private Message sendTextMessageWithRetry(TextMessage textMessage, int maxRetries) {
+    private SendResult sendTextMessageWithRetry(TextMessage textMessage, int maxRetries) {
         int currentRetry = 0;
+        Integer lastErrorCode = null;
         String originalParseMode = textMessage.getParseMode();
         String originalText = textMessage.getText(); // Keep original text for fallback
 
@@ -409,10 +440,11 @@ public class TelegramClient extends OkHttpTelegramClient {
                         .build());
 
                 recordMessageSent(textMessage, sentMessage);
-                return sentMessage;
+                return new SendResult(sentMessage, null);
 
             } catch (TelegramApiFailedException e) {
                 currentRetry++;
+                lastErrorCode = e.getErrorCode();
                 log.warn("Attempt {} failed for chat {}: {}", currentRetry, textMessage.getChatId(), e.getMessage());
 
                 if (!handleApiError(e, textMessage, currentRetry)) {
@@ -436,7 +468,7 @@ public class TelegramClient extends OkHttpTelegramClient {
 
         textMessage.setParseMode(originalParseMode);
         textMessage.setText(originalText);
-        return handleFallbackMessage(textMessage);
+        return new SendResult(handleFallbackMessage(textMessage), lastErrorCode);
     }
     
     private boolean handleApiError(TelegramApiFailedException e, TextMessage textMessage, int retryAttempt) {
@@ -496,7 +528,20 @@ public class TelegramClient extends OkHttpTelegramClient {
         }
     }
     
+    /**
+     * Forgets a chat the bot can no longer post in.
+     * <p>
+     * Never applied to a private chat. There the chat id is the user's own id, and deleting that row
+     * takes their {@code LumiosUser} rows with it by cascade - so one member blocking the bot would
+     * erase their reverence, their credits and their elective choices. A user who blocks the bot is
+     * unreachable, which is what {@code TimetableMember.dmUnavailable} records; it is not a reason to
+     * throw their history away.
+     */
     private void cleanupInvalidChat(Long chatId) {
+        if (chatId != null && chatId > 0) {
+            log.info("Chat {} is a private chat; keeping its row despite the refusal", chatId);
+            return;
+        }
         try {
             LumiosChat chat = chatService.findByChatId(chatId);
 

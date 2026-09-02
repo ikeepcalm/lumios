@@ -25,6 +25,19 @@ public class ClassEntry {
     @Column
     private String url;
 
+    /**
+     * Lecturer as campus reports them. Also the only thing distinguishing two entries of the same
+     * subject in one slot, i.e. a subgroup split.
+     */
+    @Column
+    private String teacherName;
+
+    /**
+     * Room, when campus supplies one. Null throughout for groups taught online.
+     */
+    @Column
+    private String location;
+
     @Column
     @Enumerated(EnumType.STRING)
     private ClassType classType;

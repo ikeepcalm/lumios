@@ -1,0 +1,102 @@
+databaseChangeLog:
+  # Per-member delivery choice replaces the on/off boolean added by 003. A member can now be told
+  # privately, by a mention on the announcement the group already gets, by both, or not at all.
+  #
+  # The column is added with a default of 'DM' so existing rows land on the behaviour they had, and
+  # only the ones that had reminders switched off are moved to 'OFF' afterwards. The old boolean is
+  # dropped by its own changeset, so a run that dies halfway leaves a database that still works.
+  - changeSet:
+      id: 005-timetable-members-reminder-channel
+      author: lumios
+      comment: Per-member reminder delivery channel
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: timetable_members.reminder_channel already present; nothing to add.
+        - not:
+            - columnExists:
+                tableName: timetable_members
+                columnName: reminder_channel
+      changes:
+        - addColumn:
+            tableName: timetable_members
+            columns:
+              - column:
+                  name: reminder_channel
+                  type: varchar(16)
+                  defaultValue: DM
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropColumn:
+            tableName: timetable_members
+            columnName: reminder_channel
+
+  - changeSet:
+      id: 005-backfill-reminder-channel
+      author: lumios
+      comment: Carry dm_reminders_enabled=false over to the OFF channel
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: dm_reminders_enabled is already gone; the backfill has nothing to read.
+        - columnExists:
+            tableName: timetable_members
+            columnName: dm_reminders_enabled
+      changes:
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              update timetable_members
+                 set reminder_channel = 'OFF'
+               where dm_reminders_enabled = 0
+      rollback:
+        - empty
+
+  - changeSet:
+      id: 005-drop-dm-reminders-enabled
+      author: lumios
+      comment: Remove the boolean superseded by reminder_channel
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: dm_reminders_enabled already dropped; nothing to do.
+        - columnExists:
+            tableName: timetable_members
+            columnName: dm_reminders_enabled
+      changes:
+        - dropColumn:
+            tableName: timetable_members
+            columnName: dm_reminders_enabled
+      rollback:
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              alter table timetable_members
+                  add column dm_reminders_enabled bit not null default 1
+
+  # A single private message each morning listing only the member's own classes. `bit` and `time(6)`
+  # are what Hibernate would have generated for a boolean and a LocalTime, and nothing validates the
+  # schema at startup, so the types are written out by hand to match.
+  - changeSet:
+      id: 005-timetable-members-digest
+      author: lumios
+      comment: Opt-in morning digest, with the hour it should arrive
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: timetable_members.digest_enabled already present; nothing to add.
+        - not:
+            - columnExists:
+                tableName: timetable_members
+                columnName: digest_enabled
+      changes:
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              alter table timetable_members
+                  add column digest_enabled bit not null default 0,
+                  add column digest_time time(6) null
+      rollback:
+        - dropColumn:
+            tableName: timetable_members
+            columnName: digest_enabled
+        - dropColumn:
+            tableName: timetable_members
+            columnName: digest_time

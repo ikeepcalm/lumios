@@ -1,0 +1,114 @@
+databaseChangeLog:
+  # Identifiers here are the snake_case ones Spring Boot's CamelCaseToUnderscoresNamingStrategy
+  # produces - `class_entries`, `chat_id`, and so on. An earlier revision of this file used the
+  # camelCase entity and field names verbatim, which match no table in a running deployment.
+
+  # Teacher and room come down from campus on every class but were previously discarded. They are
+  # what distinguishes two entries of the same subject in one slot (a subgroup split), and they make
+  # a personal reminder actually useful ("who and where").
+  - changeSet:
+      id: 003-class-entries-teacher-location
+      author: lumios
+      comment: Keep the lecturer and location supplied by the campus feed
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: class_entries.teacher_name already present; nothing to do.
+        - not:
+            - columnExists:
+                tableName: class_entries
+                columnName: teacher_name
+      changes:
+        - addColumn:
+            tableName: class_entries
+            columns:
+              - column:
+                  name: teacher_name
+                  type: varchar(255)
+              - column:
+                  name: location
+                  type: varchar(255)
+      rollback:
+        - dropColumn:
+            tableName: class_entries
+            columnName: teacher_name
+        - dropColumn:
+            tableName: class_entries
+            columnName: location
+
+  # One row per member who has been through the elective picker. Its presence is what marks a member
+  # as opted in to personal reminders.
+  - changeSet:
+      id: 003-timetable-members
+      author: lumios
+      comment: Per-member personal reminder settings
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: timetable_members already present; nothing to do.
+        - not:
+            - tableExists:
+                tableName: timetable_members
+      changes:
+        # Raw SQL so the column types match what Hibernate would have generated exactly - notably
+        # `bit` for booleans, since nothing validates the schema at startup any more.
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create table timetable_members (
+                  id bigint not null auto_increment,
+                  chat_id bigint not null,
+                  dm_reminders_enabled bit not null,
+                  dm_unavailable bit not null,
+                  lead_minutes integer,
+                  reviewed_at datetime(6),
+                  telegram_user_id bigint not null,
+                  primary key (id)
+              ) engine=InnoDB
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              alter table timetable_members
+                  add constraint uk_timetable_members_chat_user unique (chat_id, telegram_user_id)
+      rollback:
+        - dropTable:
+            tableName: timetable_members
+
+  # A member's chosen electives, keyed on the subject rather than on a class row, because /import
+  # deletes and recreates every class row.
+  - changeSet:
+      id: 003-elective-choices
+      author: lumios
+      comment: Electives each member attends
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: elective_choices already present; nothing to do.
+        - not:
+            - tableExists:
+                tableName: elective_choices
+      changes:
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create table elective_choices (
+                  id bigint not null auto_increment,
+                  chat_id bigint not null,
+                  subject_key varchar(255) not null,
+                  telegram_user_id bigint not null,
+                  primary key (id)
+              ) engine=InnoDB
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              alter table elective_choices
+                  add constraint uk_elective_choices_chat_user_subject
+                  unique (chat_id, telegram_user_id, subject_key)
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create index idx_elective_choices_chat_user
+                  on elective_choices (chat_id, telegram_user_id)
+      rollback:
+        - dropTable:
+            tableName: elective_choices
