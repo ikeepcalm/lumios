@@ -8,6 +8,7 @@ import dev.ua.ikeepcalm.lumios.telegram.core.shortcuts.interfaces.Interaction;
 import dev.ua.ikeepcalm.lumios.telegram.wrappers.TextMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -18,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@BotCommand(command = "editor")
-public class EditorCommand extends ServicesShortcut implements Interaction {
+@BotCommand(command = "app", aliases = {"editor"})
+public class AppCommand extends ServicesShortcut implements Interaction {
 
     @Value("${telegram.bot.username}")
     private String botUsername;
@@ -32,17 +33,18 @@ public class EditorCommand extends ServicesShortcut implements Interaction {
         Message message = update.getMessage();
         TextMessage textMessage = new TextMessage();
         textMessage.setChatId(message.getChatId());
-        textMessage.setText(translationService.getMessage("command.editor.text", chat));
+        textMessage.setParseMode(ParseMode.MARKDOWN);
+        textMessage.setText(translationService.getMessage("command.app.text", chat));
         textMessage.setMessageId(message.getMessageId());
 
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
         InlineKeyboardRow firstRow = new InlineKeyboardRow();
-        InlineKeyboardButton notify = new InlineKeyboardButton(translationService.getMessage("command.editor.button", chat));
-        notify.setUrl(miniAppLink(message.getChatId()));
-        firstRow.add(notify);
+        InlineKeyboardButton button = new InlineKeyboardButton(translationService.getMessage("command.app.button", chat));
+        button.setUrl(miniAppLink(message.getChatId()));
+        firstRow.add(button);
         keyboard.add(firstRow);
         textMessage.setReplyKeyboard(new InlineKeyboardMarkup(keyboard));
-        sendMessage(textMessage, message);
+        telegramClient.sendTextMessage(textMessage);
     }
 
     /**
@@ -58,4 +60,3 @@ public class EditorCommand extends ServicesShortcut implements Interaction {
         return chatId < 0 ? link + "?startapp=" + chatId : link;
     }
 }
-
