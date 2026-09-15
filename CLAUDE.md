@@ -35,8 +35,7 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 - **Timetable**: Integration with a web-based editor to track and notify about classes/events. Commands: `/today`, `/tomorrow`, `/week`, `/now`, `/next`.
 - **Task Tracker**: Track deadlines and tasks with `/task` and `/due`.
 - **Reverence System**: A social "respect" system where users gain/lose points based on message reactions.
-- **AI Assistant**: Conversational capabilities powered by Gemini and OpenAI.
-- **Schedule Mini App**: `/editor` links to the read-only timetable Mini App with
+- **Schedule Mini App**: `/app` (aliased as `/editor`) links to the timetable Mini App with
   `https://t.me/<bot>/<app>?startapp=<chatId>`. It must be a plain URL button - Telegram rejects
   `web_app` buttons outside private chats, so `startapp` is the only way the group id reaches the
   app. The frontend reads it from `Telegram.WebApp.initDataUnsafe.start_param` and sends it as the
