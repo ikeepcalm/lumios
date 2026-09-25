@@ -9,7 +9,7 @@ group = 'dev.ua.ikeepcalm'
 version = '2.0.1'
 description = 'lumios.dev backend application'
 
-String springVersion = '3.3.0'
+String springVersion = '3.5.6'
 String telegramApiVersion = '9.0.0'
 String lombokVersion = '1.18.42'
 
@@ -36,7 +36,7 @@ dependencies {
     implementation "org.telegram:telegrambots-client:$telegramApiVersion"
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
 
     implementation 'org.json:json:20250107'
