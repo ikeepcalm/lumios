@@ -86,5 +86,13 @@ The application requires several environment variables defined in `.env` (see `.
 ## Development Conventions
 - **Handlers:** New bot features should be implemented as `@Component` classes in the `interactions` package, implementing the `Interaction` interface and inheriting from `ServicesShortcut`.
 - **Annotations:** Use the appropriate `@BotCommand`, `@BotCallback`, or `@BotReaction` annotation to route updates.
-- **Formatting:** Use `MessageFormatter` and `MarkdownV2Sanitizer` to ensure Telegram messages are correctly escaped and formatted.
+- **Formatting:** `TelegramClient` runs `MarkdownV2Sanitizer` over every `MARKDOWNV2` message on the way
+  out, so a handler writes normal MarkdownV2 and does not sanitize by hand. The sanitizer is a parser:
+  it keeps well-formed emphasis, code, links and spoilers, escapes everything else, folds LLM habits
+  (`**bold**`, `### heading`, `-` bullets) onto what Telegram has, and is idempotent. Two rules follow
+  from that. Escape any dynamic value you splice into your own markup - `MessageFormatter.escapeMarkdown`
+  - because otherwise a subject name containing `_` becomes an entity. And never "fix" the sanitizer by
+  escaping everything: Telegram refuses malformed MarkdownV2 and `handleApiError` then resends with no
+  parse mode, so over-escaping and under-escaping look identical to the reader - literal asterisks -
+  and that is what the old implementation did to every AI reply the bot sent.
 - **Persistence:** Use the provided `Service` interfaces (e.g., `UserService`, `ChatService`) instead of accessing repositories directly in handlers.

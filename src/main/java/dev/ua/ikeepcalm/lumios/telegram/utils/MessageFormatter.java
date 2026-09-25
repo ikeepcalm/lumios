@@ -188,8 +188,13 @@ public class MessageFormatter {
     /**
      * Sanitizes a chunk based on parse mode
      */
+    /**
+     * Legacy {@code Markdown} is deliberately left alone: it does not understand a {@code \.} escape
+     * and would render the backslash, so running the MarkdownV2 sanitizer over it made those messages
+     * worse rather than safer.
+     */
     private static String sanitizeChunk(String chunk, String parseMode) {
-        if (ParseMode.MARKDOWN.equals(parseMode) || ParseMode.MARKDOWNV2.equals(parseMode)) {
+        if (ParseMode.MARKDOWNV2.equals(parseMode)) {
             return sanitizeMarkdownV2(chunk);
         }
         return chunk;

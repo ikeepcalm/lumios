@@ -115,6 +115,18 @@ class WorkloadReporterTest {
     }
 
     @Test
+    @DisplayName("survives the sanitizer the send path runs over every message")
+    void survivesTheSendPath() {
+        // TelegramClient sanitizes every MarkdownV2 message on the way out. That pass used to escape
+        // this layout's own asterisks, so the group saw *Subject* spelled out. Nothing may change here.
+        String rendered = render("""
+                {"items":[{"subject":"Software security 2.0","due":"2026-09-30","note":"finish lab 1","priority":"HIGH"}]}""");
+
+        assertThat(MarkdownV2Sanitizer.sanitize(rendered)).isEqualTo(rendered);
+        assertThat(rendered).contains("*Software security 2\\.0*");
+    }
+
+    @Test
     @DisplayName("a deadline the model mangled is shown as written rather than dropped")
     void keepsAnUnparseableDeadline() {
         String text = render("""

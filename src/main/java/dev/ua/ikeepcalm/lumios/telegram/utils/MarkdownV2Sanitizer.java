@@ -1,255 +1,315 @@
 package dev.ua.ikeepcalm.lumios.telegram.utils;
 
-import lombok.extern.slf4j.Slf4j;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-@Slf4j
-
-/*
-  Sanitizes text for Telegram MarkdownV2 format.
-  MarkdownV2 requires escaping these characters outside of code/pre entities:
-  _ * [ ] ( ) ~ ` > # + - = | { } . !
+/**
+ * Turns text into valid Telegram MarkdownV2, keeping the formatting that is already there.
+ * <p>
+ * Telegram refuses a message whose MarkdownV2 is malformed, and {@code TelegramClient} then resends it
+ * with no parse mode at all - so one stray character costs the whole message its formatting. Escaping
+ * everything avoids the refusal but throws the formatting away just as thoroughly: that is what the
+ * previous implementation did, which is why nothing the bot sent ever rendered bold.
+ * <p>
+ * So this is a parser rather than a set of replacements. Well-formed emphasis, code, links and
+ * spoilers are recognised and re-emitted as MarkdownV2 entities; every other special character is
+ * escaped. A delimiter with no partner is escaped too, which is the whole trick - it is exactly the
+ * unmatched ones that make Telegram refuse the message.
+ * <p>
+ * It is also idempotent: running it over its own output changes nothing, because {@code \x} is read
+ * back as a literal and re-escaped. Messages that pass through both the chunker and the send path get
+ * sanitized twice, so that matters.
+ * <p>
+ * Along the way the dialects an LLM writes by default are folded into the one Telegram understands:
+ * {@code **bold**} becomes {@code *bold*}, a {@code ###} heading becomes a bold line, and a
+ * {@code -} list marker becomes a bullet - Telegram has no heading or list syntax at all.
  */
-public class MarkdownV2Sanitizer {
-
-    // Patterns to identify code blocks, inline code, and markdown links
-    private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("```[\\s\\S]*?```", Pattern.DOTALL);
-    private static final Pattern INLINE_CODE_PATTERN = Pattern.compile("`[^`\n]+?`");
-    private static final Pattern MARKDOWN_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^)]+)\\)");
-
-    // Characters that must be escaped in MarkdownV2 (outside code blocks)
-    private static final String CHARS_TO_ESCAPE = "_*[]()~`>#+-=|{}.!";
+public final class MarkdownV2Sanitizer {
 
     /**
-     * Sanitizes AI-generated text for MarkdownV2.
-     * Preserves code blocks and inline code, escapes special characters everywhere else.
+     * Everything MarkdownV2 reserves. Any of these left unescaped outside an entity is a parse error.
      */
+    private static final String SPECIALS = "_*[]()~`>#+-=|{}.!";
+
+    /**
+     * How far a delimiter may look for its partner. An opening {@code *} in a long message would
+     * otherwise scan to the end of the text for every candidate, and a stray one in a wall of prose
+     * would swallow the rest of it into bold.
+     */
+    private static final int MAX_SPAN = 2000;
+
+    private MarkdownV2Sanitizer() {
+    }
+
     public static String sanitize(String text) {
         if (text == null || text.isEmpty()) {
             return text;
         }
+        String normalised = foldLlmDialect(text);
+        StringBuilder out = new StringBuilder(normalised.length() + 64);
+        parse(normalised, 0, normalised.length(), out);
+        return out.toString();
+    }
 
-        String originalText = text;
+    /**
+     * Rewrites the Markdown an LLM reaches for into what Telegram actually has. Lines inside a fenced
+     * code block are left exactly as they are.
+     */
+    private static String foldLlmDialect(String text) {
+        String[] lines = text.split("\n", -1);
+        StringBuilder folded = new StringBuilder(text.length());
+        boolean inFence = false;
 
-        // First, remove any pre-existing escape sequences that the AI might have added
-        text = removePreExistingEscapes(text);
-
-        // Then, fix any unclosed code blocks
-        text = fixUncloseCodeBlocks(text);
-
-        // Strategy: Replace code blocks with placeholders, escape special chars, then restore
-        StringBuilder result = new StringBuilder();
-        int lastEnd = 0;
-
-        // Find all code blocks, inline code, and markdown links
-        Matcher codeBlockMatcher = CODE_BLOCK_PATTERN.matcher(text);
-        Matcher inlineCodeMatcher = INLINE_CODE_PATTERN.matcher(text);
-        Matcher linkMatcher = MARKDOWN_LINK_PATTERN.matcher(text);
-
-        // Combine into a list of protected regions
-        java.util.List<Region> protectedRegions = new java.util.ArrayList<>();
-
-        while (codeBlockMatcher.find()) {
-            protectedRegions.add(new Region(codeBlockMatcher.start(), codeBlockMatcher.end(), codeBlockMatcher.group()));
-        }
-
-        while (inlineCodeMatcher.find()) {
-            protectedRegions.add(new Region(inlineCodeMatcher.start(), inlineCodeMatcher.end(), inlineCodeMatcher.group()));
-        }
-
-        // Handle markdown links specially
-        while (linkMatcher.find()) {
-            String linkText = linkMatcher.group(1);
-            String linkUrl = linkMatcher.group(2);
-
-            // Escape link text normally, escape only ) and \ in URL
-            String escapedLinkText = escapeMarkdownV2(linkText);
-            String escapedUrl = escapeLinkUrl(linkUrl);
-            String formattedLink = "[" + escapedLinkText + "](" + escapedUrl + ")";
-
-            protectedRegions.add(new Region(linkMatcher.start(), linkMatcher.end(), formattedLink));
-        }
-
-        // Sort regions by start position
-        protectedRegions.sort((a, b) -> Integer.compare(a.start, b.start));
-
-        // Remove overlapping regions (code blocks take precedence)
-        protectedRegions = removeOverlaps(protectedRegions);
-
-        // Process text: escape chars outside protected regions, keep protected regions as-is
-        for (Region region : protectedRegions) {
-            // Process text before this region
-            if (region.start > lastEnd) {
-                String beforeRegion = text.substring(lastEnd, region.start);
-                result.append(escapeMarkdownV2(beforeRegion));
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (line.trim().startsWith("```")) {
+                inFence = !inFence;
+            } else if (!inFence) {
+                line = foldHeading(line);
+                line = foldBullet(line);
             }
-            // Add the protected region as-is
-            result.append(region.content);
-            lastEnd = region.end;
-        }
-
-        // Process remaining text after last region
-        if (lastEnd < text.length()) {
-            String afterRegions = text.substring(lastEnd);
-            result.append(escapeMarkdownV2(afterRegions));
-        }
-
-        String sanitized = result.toString();
-
-        return sanitized;
-    }
-
-    /**
-     * Removes pre-existing escape sequences that might have been added by the AI.
-     * We want to start fresh and apply our own escaping.
-     */
-    private static String removePreExistingEscapes(String text) {
-        // Remove backslash-escaped special chars outside of code blocks
-        // We'll re-escape them properly afterwards
-        // Pattern: backslash followed by any of the special MarkdownV2 chars
-
-        // First, temporarily protect code blocks
-        java.util.List<String> codeBlocks = new java.util.ArrayList<>();
-        Matcher codeBlockMatcher = CODE_BLOCK_PATTERN.matcher(text);
-        StringBuilder sb = new StringBuilder();
-        int codeBlockIndex = 0;
-
-        while (codeBlockMatcher.find()) {
-            codeBlocks.add(codeBlockMatcher.group());
-            codeBlockMatcher.appendReplacement(sb, "§§§CODEBLOCK" + codeBlockIndex + "§§§");
-            codeBlockIndex++;
-        }
-        codeBlockMatcher.appendTail(sb);
-        text = sb.toString();
-
-        // Protect inline code
-        java.util.List<String> inlineCodes = new java.util.ArrayList<>();
-        Matcher inlineCodeMatcher = INLINE_CODE_PATTERN.matcher(text);
-        sb = new StringBuilder();
-        int inlineCodeIndex = 0;
-
-        while (inlineCodeMatcher.find()) {
-            inlineCodes.add(inlineCodeMatcher.group());
-            inlineCodeMatcher.appendReplacement(sb, "§§§INLINE" + inlineCodeIndex + "§§§");
-            inlineCodeIndex++;
-        }
-        inlineCodeMatcher.appendTail(sb);
-        text = sb.toString();
-
-        // Now remove escape sequences from the non-code parts
-        text = text.replaceAll("\\\\([_*\\[\\]()~`>#+=|{}.!-])", "$1");
-
-        // Restore inline code
-        for (int i = 0; i < inlineCodes.size(); i++) {
-            text = text.replace("§§§INLINE" + i + "§§§", inlineCodes.get(i));
-        }
-
-        // Restore code blocks
-        for (int i = 0; i < codeBlocks.size(); i++) {
-            text = text.replace("§§§CODEBLOCK" + i + "§§§", codeBlocks.get(i));
-        }
-
-        return text;
-    }
-
-    /**
-     * Escapes special MarkdownV2 characters in plain text (not in code blocks)
-     */
-    private static String escapeMarkdownV2(String text) {
-        StringBuilder escaped = new StringBuilder();
-        for (char c : text.toCharArray()) {
-            if (CHARS_TO_ESCAPE.indexOf(c) >= 0) {
-                escaped.append('\\');
+            folded.append(line);
+            if (i < lines.length - 1) {
+                folded.append('\n');
             }
-            escaped.append(c);
         }
-        return escaped.toString();
+        return folded.toString();
     }
 
     /**
-     * Escapes only ) and \ in URLs (as per Telegram MarkdownV2 spec for link URLs)
+     * {@code ## Heading} becomes a bold line. Telegram has no headings, and left alone the hashes are
+     * escaped and shown, which is worse than nothing.
      */
-    private static String escapeLinkUrl(String url) {
-        return url.replace("\\", "\\\\").replace(")", "\\)");
+    private static String foldHeading(String line) {
+        int i = 0;
+        while (i < line.length() && (line.charAt(i) == ' ' || line.charAt(i) == '\t')) {
+            i++;
+        }
+        int hashes = 0;
+        while (i + hashes < line.length() && line.charAt(i + hashes) == '#') {
+            hashes++;
+        }
+        if (hashes == 0 || hashes > 6 || i + hashes >= line.length() || line.charAt(i + hashes) != ' ') {
+            return line;
+        }
+        String title = line.substring(i + hashes).trim();
+        return title.isEmpty() ? line : line.substring(0, i) + "*" + title + "*";
     }
 
     /**
-     * Fixes unclosed code blocks by adding closing markers
+     * A leading {@code -}, {@code *} or {@code +} is a list marker, not emphasis. Turning it into a
+     * bullet both reads better and keeps the parser from mistaking it for an opening delimiter.
      */
-    private static String fixUncloseCodeBlocks(String text) {
-        // Count triple backticks
-        int tripleBacktickCount = countOccurrences(text, "```");
-        if (tripleBacktickCount % 2 != 0) {
-            text += "\n```";
+    private static String foldBullet(String line) {
+        int i = 0;
+        while (i < line.length() && (line.charAt(i) == ' ' || line.charAt(i) == '\t')) {
+            i++;
         }
-
-        // Count single backticks (excluding those in triple backticks)
-        String withoutCodeBlocks = text.replaceAll("```[\\s\\S]*?```", "");
-        int singleBacktickCount = countOccurrences(withoutCodeBlocks, "`");
-        if (singleBacktickCount % 2 != 0) {
-            text += "`";
+        if (i >= line.length() || "-*+".indexOf(line.charAt(i)) < 0) {
+            return line;
         }
-
-        return text;
+        if (i + 1 >= line.length() || line.charAt(i + 1) != ' ') {
+            return line;
+        }
+        return line.substring(0, i) + "•" + line.substring(i + 1);
     }
 
-    /**
-     * Counts occurrences of a substring
-     */
-    private static int countOccurrences(String text, String substring) {
-        int count = 0;
-        int index = 0;
-        while ((index = text.indexOf(substring, index)) != -1) {
-            count++;
-            index += substring.length();
-        }
-        return count;
-    }
-
-    /**
-     * Removes overlapping regions (keeps the first one)
-     */
-    private static java.util.List<Region> removeOverlaps(java.util.List<Region> regions) {
-        if (regions.isEmpty()) {
-            return regions;
-        }
-
-        java.util.List<Region> result = new java.util.ArrayList<>();
-        Region current = regions.getFirst();
-
-        for (int i = 1; i < regions.size(); i++) {
-            Region next = regions.get(i);
-            if (next.start >= current.end) {
-                // No overlap, add current and move to next
-                result.add(current);
-                current = next;
-            } else {
-                // Overlap, extend current if needed
-                if (next.end > current.end) {
-                    current = new Region(current.start, next.end,
-                        current.content + next.content.substring(current.end - next.start));
+    private static void parse(String s, int from, int to, StringBuilder out) {
+        int i = from;
+        while (i < to) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '\\' -> i = literal(s, i, to, out);
+                case '`' -> i = code(s, i, to, out);
+                case '[' -> i = link(s, i, to, out);
+                case '*', '_', '~' -> i = emphasis(s, i, to, from, out);
+                case '|' -> i = spoiler(s, i, to, out);
+                default -> {
+                    escapeInto(c, out);
+                    i++;
                 }
             }
         }
-        result.add(current);
-
-        return result;
     }
 
     /**
-     * Represents a protected region (code block or inline code)
+     * An escape the author already wrote. Kept as the literal it stands for, which is what makes the
+     * whole pass idempotent.
      */
-    private static class Region {
-        final int start;
-        final int end;
-        final String content;
-
-        Region(int start, int end, String content) {
-            this.start = start;
-            this.end = end;
-            this.content = content;
+    private static int literal(String s, int i, int to, StringBuilder out) {
+        if (i + 1 < to && SPECIALS.indexOf(s.charAt(i + 1)) >= 0) {
+            out.append('\\').append(s.charAt(i + 1));
+            return i + 2;
         }
+        out.append("\\\\");
+        return i + 1;
+    }
+
+    private static int code(String s, int i, int to, StringBuilder out) {
+        if (s.startsWith("```", i)) {
+            int close = s.indexOf("```", i + 3);
+            // An unterminated fence is closed here rather than escaped: the content is almost always
+            // code, and showing it as code beats showing it as escaped punctuation.
+            int end = (close < 0 || close >= to) ? to : close;
+            out.append("```").append(escapeCodeContent(s.substring(i + 3, end))).append("```");
+            return (close < 0 || close >= to) ? to : close + 3;
+        }
+
+        int close = -1;
+        for (int j = i + 1; j < to; j++) {
+            char c = s.charAt(j);
+            if (c == '\n') {
+                break;
+            }
+            if (c == '`') {
+                close = j;
+                break;
+            }
+        }
+        if (close < 0 || close == i + 1) {
+            out.append("\\`");
+            return i + 1;
+        }
+        out.append('`').append(escapeCodeContent(s.substring(i + 1, close))).append('`');
+        return close + 1;
+    }
+
+    private static int link(String s, int i, int to, StringBuilder out) {
+        int label = find(s, i + 1, to, ']');
+        if (label < 0 || label + 1 >= to || s.charAt(label + 1) != '(') {
+            out.append("\\[");
+            return i + 1;
+        }
+        int url = find(s, label + 2, to, ')');
+        if (url < 0) {
+            out.append("\\[");
+            return i + 1;
+        }
+        out.append('[');
+        parse(s, i + 1, label, out);
+        out.append("](").append(escapeUrl(s.substring(label + 2, url))).append(')');
+        return url + 1;
+    }
+
+    /**
+     * Emphasis, if the delimiter has a partner; otherwise one escaped character and on with the scan.
+     *
+     * @param from where the current span began, so the boundary test does not read outside it
+     */
+    private static int emphasis(String s, int i, int to, int from, StringBuilder out) {
+        char marker = s.charAt(i);
+        int run = (i + 1 < to && s.charAt(i + 1) == marker) ? 2 : 1;
+        int contentStart = i + run;
+
+        int close = findRun(s, contentStart, to, marker, run);
+        if (close < 0 || close == contentStart) {
+            escapeInto(marker, out);
+            return i + 1;
+        }
+
+        // `snake_case` and `3*4*5` are not emphasis. A single delimiter has to sit on a word boundary,
+        // the way every other Markdown implementation decides the same question.
+        if (run == 1 && (isWordChar(charAt(s, i - 1, from, to)) || isWordChar(charAt(s, close + 1, from, to)))) {
+            escapeInto(marker, out);
+            return i + 1;
+        }
+
+        String tag = tagFor(marker, run);
+        out.append(tag);
+        parse(s, contentStart, close, out);
+        out.append(tag);
+        return close + run;
+    }
+
+    /**
+     * MarkdownV2 spells bold {@code *}, italic {@code _}, underline {@code __} and strikethrough
+     * {@code ~}. The doubled forms an LLM writes for bold and strikethrough collapse onto those.
+     */
+    private static String tagFor(char marker, int run) {
+        if (marker == '_') {
+            return run == 2 ? "__" : "_";
+        }
+        return String.valueOf(marker);
+    }
+
+    private static int spoiler(String s, int i, int to, StringBuilder out) {
+        if (i + 1 >= to || s.charAt(i + 1) != '|') {
+            out.append("\\|");
+            return i + 1;
+        }
+        int close = findRun(s, i + 2, to, '|', 2);
+        if (close < 0 || close == i + 2) {
+            out.append("\\|");
+            return i + 1;
+        }
+        out.append("||");
+        parse(s, i + 2, close, out);
+        out.append("||");
+        return close + 2;
+    }
+
+    /**
+     * The next unescaped run of exactly {@code run} markers, within {@link #MAX_SPAN}. A longer run is
+     * not a closer: {@code ***} ends a {@code **} span and leaves a literal behind, which Telegram
+     * would reject, so it is skipped and the delimiter ends up escaped instead.
+     */
+    private static int findRun(String s, int from, int to, char marker, int run) {
+        int limit = Math.min(to, from + MAX_SPAN);
+        for (int j = from; j < limit; j++) {
+            char c = s.charAt(j);
+            if (c == '\\') {
+                j++;
+                continue;
+            }
+            if (c != marker) {
+                continue;
+            }
+            int length = 0;
+            while (j + length < to && s.charAt(j + length) == marker) {
+                length++;
+            }
+            if (length == run) {
+                return j;
+            }
+            j += length - 1;
+        }
+        return -1;
+    }
+
+    private static int find(String s, int from, int to, char target) {
+        int limit = Math.min(to, from + MAX_SPAN);
+        for (int j = from; j < limit; j++) {
+            char c = s.charAt(j);
+            if (c == '\\') {
+                j++;
+            } else if (c == target) {
+                return j;
+            }
+        }
+        return -1;
+    }
+
+    private static char charAt(String s, int index, int from, int to) {
+        return (index < from || index >= to) ? ' ' : s.charAt(index);
+    }
+
+    private static boolean isWordChar(char c) {
+        return Character.isLetterOrDigit(c);
+    }
+
+    private static void escapeInto(char c, StringBuilder out) {
+        if (SPECIALS.indexOf(c) >= 0) {
+            out.append('\\');
+        }
+        out.append(c);
+    }
+
+    /**
+     * Inside a code entity only the backslash and the backtick need escaping - everything else is
+     * shown as written, which is the entire point of code.
+     */
+    private static String escapeCodeContent(String content) {
+        return content.replace("\\", "\\\\").replace("`", "\\`");
+    }
+
+    private static String escapeUrl(String url) {
+        return url.replace("\\", "\\\\").replace(")", "\\)");
     }
 }
