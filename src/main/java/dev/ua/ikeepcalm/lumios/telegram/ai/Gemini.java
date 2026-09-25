@@ -350,9 +350,18 @@ public class Gemini {
      * @param systemInstruction how the model should answer; the language rules live here
      */
     public CompletableFuture<String> getSingleResponse(String prompt, String systemInstruction, LumiosChat chat) {
+        return getSingleResponse(prompt, systemInstruction, chat, false);
+    }
+
+    /**
+     * @param json ask for {@code application/json} back. Worth it whenever the caller renders the
+     *             answer itself: a model left to format its own reply writes whatever Markdown dialect
+     *             it feels like, and Telegram rejects most of them.
+     */
+    public CompletableFuture<String> getSingleResponse(String prompt, String systemInstruction, LumiosChat chat, boolean json) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return execute(createPayload(prompt, systemInstruction), chat, "single response");
+                return execute(createPayload(prompt, systemInstruction, json), chat, "single response");
             } catch (Exception e) {
                 log.error("Failed to get a single response from Gemini", e);
                 throw new RuntimeException("Failed to get a single response from Gemini", e);
@@ -418,7 +427,7 @@ public class Gemini {
         throw new RuntimeException("All models and API keys failed for " + what, lastException);
     }
 
-    private JSONObject createPayload(String prompt, String systemInstructionText) {
+    private JSONObject createPayload(String prompt, String systemInstructionText, boolean json) {
         JSONObject jsonPayload = new JSONObject();
 
         JSONObject textPart = new JSONObject();
@@ -440,6 +449,11 @@ public class Gemini {
         genConfig.put("maxOutputTokens", 4096);
         genConfig.put("topP", 0.9);
         genConfig.put("topK", 40);
+        // Honoured by the Gemini models; the Gemma fallback ignores it and answers in a code fence
+        // instead, so callers still have to unwrap before parsing.
+        if (json) {
+            genConfig.put("responseMimeType", "application/json");
+        }
         jsonPayload.put("generationConfig", genConfig);
 
         return jsonPayload;

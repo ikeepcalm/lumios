@@ -1,17 +1,17 @@
 # GEMINI.md - Project Context: Lumios
 
 ## Project Overview
-Lumios is a sophisticated Telegram bot and backend application built with **Spring Boot 3**. It serves as a multi-functional assistant for group chats and private users, offering features like queue management, timetable tracking, task scheduling, and an AI-driven assistant.
+Lumios is a sophisticated Telegram bot and backend application built with **Spring Boot 3**. It serves as a multi-functional assistant for group chats and private users, offering features like queue management, timetable tracking, workload estimates, and an AI-driven assistant.
 
 ### Main Technologies
-- **Framework:** Spring Boot 3.3.0 libraries on Java 25
+- **Framework:** Spring Boot 3.5.6 (Java 25)
 - **Telegram API:** `telegrambots-longpolling` (version 9.0.0)
 - **Database:** MariaDB/MySQL with Spring Data JPA
 - **AI Integrations:** Google Gemini and OpenAI
 - **Security:** Spring Security
 - **Caching:** Caffeine
 - **Documentation:** SpringDoc OpenAPI (Swagger)
-- **Build Tool:** Gradle 9 (wrapper), Spring Boot Gradle plugin 3.5.6
+- **Build Tool:** Gradle 9 (wrapper)
 
 ## Architecture and Structure
 
@@ -33,10 +33,16 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 ## Features
 - **Queue Management**: `/queue`, `/mixed` commands to manage ordered lists of users.
 - **Timetable**: Integration with a web-based editor to track and notify about classes/events. Commands: `/today`, `/tomorrow`, `/week`, `/now`, `/next`.
-- **Workload estimate**: `/due` feeds the caller's own timetable for this week and the next to Gemini
-  and asks what they probably have to prepare. There is no stored task list any more - the
-  hand-written one went unused, and the shape of the fortnight (a lab has to be finished before the
-  class it is defended at, a lecture needs nothing) carries most of the answer on its own.
+- **Workload estimate**: `/due` feeds the caller's own timetable for the rest of this week and all
+  of the next to Gemini and asks what they probably have to prepare. There is no stored task list any
+  more - the hand-written one went unused, and the shape of the fortnight (a lab has to be finished
+  before the class it is defended at) carries most of the answer on its own. Three things about it are
+  deliberate: lectures never reach the model, since nothing is prepared for them; the model is asked
+  for JSON and `WorkloadReporter` renders the message itself, because an LLM left to format its own
+  reply writes Markdown Telegram rejects (the client then retries with no parse mode, which is how raw
+  `**asterisks**` reach the group); and answers are cached per member for 15 minutes, keyed on the day
+  and on their elective choices, so `/due /due /due` costs one request and re-picking electives busts
+  the key by itself.
 - **Reverence System**: A social "respect" system where users gain/lose points based on message reactions.
 - **AI Assistant**: Conversational capabilities powered by Gemini and OpenAI.
 
@@ -48,16 +54,17 @@ Lumios is a sophisticated Telegram bot and backend application built with **Spri
 - **Tests:** `./gradlew test` (Note: Ensure database and environment variables are configured).
 
 ### Build setup - things that look wrong but are not
-The toolchain is Java 25 on Gradle 9, and three of the pieces below exist only because of that. None
+The toolchain is Java 25 on Gradle 9, and every item below exists only because of that. None
 of them should be "tidied up" back to the obvious form.
 - **No `io.spring.dependency-management` plugin.** It mutates configuration attributes lazily and
   cannot run on Gradle 9 at all (`cannot mutate the dependency attributes of configuration
   ':compileOnly'`). The `platform("org.springframework.boot:spring-boot-dependencies")` dependency
   manages exactly the same versions and is Spring's own documented replacement.
-- **The Spring Boot Gradle plugin (3.5.6) is ahead of the Spring Boot libraries (3.3.0).** 3.3.0's
-  `bootJar` calls `CopyProcessingSpec.getDirMode()`, which Gradle 9 removed. The plugin only lays out
-  the jar, so the skew is safe. Upgrading the libraries is a separate job - springdoc 2.4.0 does not
-  go past Spring Framework 6.1.
+- **Spring Boot 3.5.6 is a floor, not a preference.** Two independent reasons: 3.3.0's `bootJar`
+  calls `CopyProcessingSpec.getDirMode()`, which Gradle 9 removed; and Spring Framework 6.1 bundles
+  an ASM that cannot read class file major version 69, so it fails component scanning on Java 25
+  bytecode with `Unsupported class file major version 69` at startup - a build-time green light and
+  a runtime crash. springdoc had to move to 2.8.x with it; 2.4.0 does not go past Spring Framework 6.1.
 - **No `thin-launcher` plugin.** It is unmaintained and its `thinPom` task uses `JavaPluginConvention`,
   gone in Gradle 9. `bootJar` now produces an ordinary fat jar, which is what the container wants
   anyway - it no longer resolves dependencies over the network at startup.
