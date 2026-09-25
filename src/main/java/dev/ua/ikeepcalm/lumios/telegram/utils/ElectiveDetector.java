@@ -168,18 +168,27 @@ public final class ElectiveDetector {
      * Keeps the classes of one slot that a member actually attends: everything shared, plus the
      * optional ones they picked.
      * <p>
-     * A member who has decided nothing about this slot yet keeps seeing all of it. Showing every
-     * option to someone mid-way through the picker is mildly noisy; showing them an empty slot, or
-     * silently dropping the class they are about to miss, is worse.
+     * An elective pool is genuinely optional, so a member who has picked their electives and none of
+     * this pool's does not attend this hour: the slot is dropped, and a day made only of such slots
+     * correctly reads as having no classes. Only a member who has picked nothing anywhere still sees
+     * the whole pool - they are mid-way through the picker, and hiding everything would leave them
+     * staring at an empty week.
+     * <p>
+     * A subgroup split is not optional in the same way: everybody attends one of its halves. A member
+     * who never said which keeps seeing both, which is noisy but never hides a class they are due at.
      *
      * @param slotClasses classes sharing one start time - what {@link #shapeOf} needs to read the slot
      * @param choiceKeys  every optional key of the chat, from {@link #choiceKeys}
-     * @param chosen      the keys this member has picked
+     * @param chosen      every key this member has picked, across the whole chat
      */
     public static List<ClassEntry> personalise(List<ClassEntry> slotClasses, Set<String> choiceKeys, Set<String> chosen) {
         SlotShape shape = shapeOf(slotClasses);
-        boolean undecided = shape.offersChoice() && slotClasses.stream()
-                .noneMatch(classEntry -> chosen.contains(choiceKey(classEntry, shape.subgroup())));
+        boolean undecided = switch (shape) {
+            case SHARED -> false;
+            case SUBGROUP_SPLIT -> slotClasses.stream()
+                    .noneMatch(classEntry -> chosen.contains(choiceKey(classEntry, true)));
+            case ELECTIVE_POOL -> chosen.isEmpty();
+        };
 
         List<ClassEntry> mine = new ArrayList<>(slotClasses.size());
         Set<String> seen = new LinkedHashSet<>();

@@ -54,7 +54,6 @@ public class SecurityConfig {
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .requestMatchers("/timetables/**").permitAll()
                         .requestMatchers("/queues/**").permitAll()
-                        .requestMatchers("/tasks/**").permitAll()
                         .requestMatchers("/records/**").permitAll()
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()

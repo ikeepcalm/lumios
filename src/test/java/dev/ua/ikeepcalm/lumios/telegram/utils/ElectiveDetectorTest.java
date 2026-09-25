@@ -210,6 +210,18 @@ class ElectiveDetectorTest {
         }
 
         @Test
+        @DisplayName("empties a pool the member picked nothing from once they have picked elsewhere")
+        void decidedMemberSeesNoneOfAPoolTheySkipped() {
+            // The day is full of options and none of them are theirs, so the day has no classes for
+            // them - showing the whole pool instead was answering somebody else's question.
+            ClassEntry law = lecture("Права і свободи людини", SECOND);
+            Set<String> keys = Set.of("графіка", "мережі", "права і свободи людини");
+
+            assertThat(ElectiveDetector.personalise(List.of(graphics, networks, law), keys,
+                    Set.of("моделювання"))).isEmpty();
+        }
+
+        @Test
         @DisplayName("hides an elective they did not pick even when it sits alone in its slot")
         void hidesLoneOccurrenceOfUnchosenElective() {
             // The lab of an elective often has a slot to itself. It is still not theirs.

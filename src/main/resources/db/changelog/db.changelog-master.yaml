@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changes/004-repair-reminder-column.yaml
   - include:
       file: db/changelog/changes/005-reminder-channels.yaml
+  - include:
+      file: db/changelog/changes/006-drop-due-tasks.yaml

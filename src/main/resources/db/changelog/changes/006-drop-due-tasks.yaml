@@ -1,0 +1,63 @@
+databaseChangeLog:
+  # The hand-written task tracker (/task, /tasks, /view_<id> and the REST endpoints behind them) is
+  # gone: nobody filled it in, and /due now estimates the fortnight's work from the timetable instead.
+  # Its table goes with it, so nothing is left holding a foreign key to `chats` that no code reads.
+  #
+  # The foreign key is dropped first, by its own changeset: dropping a constrained table works on
+  # MariaDB but not on every engine, and a run that dies between the two leaves a database that still
+  # starts.
+  - changeSet:
+      id: 006-drop-due-tasks-fk
+      author: lumios
+      comment: Release due_tasks' reference to chats
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: due_tasks is already gone, or never had the constraint; nothing to drop.
+        - and:
+            - tableExists:
+                tableName: due_tasks
+            - foreignKeyConstraintExists:
+                foreignKeyTableName: due_tasks
+                foreignKeyName: FK3iy8odrvwq3jkcrgu35g0q2tf
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: due_tasks
+            constraintName: FK3iy8odrvwq3jkcrgu35g0q2tf
+      rollback:
+        - addForeignKeyConstraint:
+            baseTableName: due_tasks
+            baseColumnNames: chat_id
+            constraintName: FK3iy8odrvwq3jkcrgu35g0q2tf
+            referencedTableName: chats
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 006-drop-due-tasks
+      author: lumios
+      comment: Remove the table behind the retired task tracker
+      preConditions:
+        - onFail: MARK_RAN
+        - onFailMessage: due_tasks already dropped; nothing to do.
+        - tableExists:
+            tableName: due_tasks
+      changes:
+        - dropTable:
+            tableName: due_tasks
+      rollback:
+        - sql:
+            endDelimiter: ;
+            sql: >-
+              create table due_tasks (
+                  id bigint not null auto_increment,
+                  attachment varchar(255),
+                  author bigint,
+                  description varchar(255),
+                  due_date date,
+                  due_time time(6),
+                  scope tinyint check (scope between 0 and 2),
+                  state tinyint check (state between 0 and 7),
+                  task_name varchar(255),
+                  url varchar(2048),
+                  chat_id bigint,
+                  primary key (id)
+              ) engine=InnoDB

@@ -5,11 +5,11 @@ import dev.ua.ikeepcalm.lumios.database.dal.interfaces.RecordService;
 import dev.ua.ikeepcalm.lumios.database.dal.interfaces.TimetableService;
 import dev.ua.ikeepcalm.lumios.database.entities.records.MessageRecord;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosChat;
-import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.LumiosUser;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.ClassEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.DayEntry;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
+import dev.ua.ikeepcalm.lumios.telegram.utils.TranslationService;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -19,10 +19,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -50,11 +53,12 @@ public class Gemini {
 
     // Models to try in order (fallback on 429 rate limit errors)
     private static final String[] GEMINI_MODELS = {
-        "gemini-3.1-flash-lite",
-        "gemini-2.5-flash-lite",
-        "gemini-2.5-flash",
-        "gemini-3-flash",
-        "gemma-3-27b-it"
+            "gemini-3.5-flash-lite",
+            "gemini-3.1-flash-lite",
+            "gemini-2.5-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-3-flash",
+            "gemma-3-27b-it"
     };
 
     public Gemini(GeminiConversationService conversationService, RecordService recordService, TimetableService timetableService, ChatService chatService, TranslationService translationService) {
@@ -99,7 +103,7 @@ public class Gemini {
         String imageKey = null;
         if (imageData != null && imageData.length > 0) {
             if (imageData.length > MAX_IMAGE_SIZE) {
-                log.warn("Image size exceeds limit of {}KB, resizing would be better", MAX_IMAGE_SIZE/1024);
+                log.warn("Image size exceeds limit of {}KB, resizing would be better", MAX_IMAGE_SIZE / 1024);
             }
 
             if (imageCache.size() >= MAX_CACHE_ENTRIES) {
@@ -125,13 +129,7 @@ public class Gemini {
                         try {
                             JSONObject jsonPayload = getJsonObject(inputText, chatId, finalImageKey, replyToMessageId, user, chat, needsTimetableContext);
 
-                            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
-                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                            connection.setRequestMethod("POST");
-                            connection.setRequestProperty("Content-Type", "application/json");
-                            connection.setDoOutput(true);
-                            connection.setConnectTimeout(30000);
-                            connection.setReadTimeout(30000);
+                            HttpURLConnection connection = getConnection(model, key);
 
                             try (OutputStream os = connection.getOutputStream()) {
                                 os.write(jsonPayload.toString().getBytes());
@@ -184,6 +182,18 @@ public class Gemini {
                 }
             }
         }, executorService);
+    }
+
+    @NotNull
+    private static HttpURLConnection getConnection(String model, String key) throws IOException {
+        URL url = URI.create("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key).toURL();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+        connection.setConnectTimeout(30000);
+        connection.setReadTimeout(30000);
+        return connection;
     }
 
 
@@ -295,7 +305,7 @@ public class Gemini {
 
         StringBuilder messagesToSummarize = new StringBuilder();
         for (MessageRecord message : userMessages) {
-            if ( message.getText().contains("MEDIA") || message.getText().contains("lumios")) {
+            if (message.getText().contains("MEDIA") || message.getText().contains("lumios")) {
                 continue;
             }
 
@@ -307,46 +317,66 @@ public class Gemini {
             messagesToSummarize.append(fullName).append(": ").append(message.getText()).append("\n");
         }
 
-        boolean isEn = (chat != null && "en".equals(chat.getLanguage()));
+        boolean isEn = "en".equals(chat.getLanguage());
         String promptInstruction = isEn ?
                 """
-                As a professional summarizer, create a concise and comprehensive summary of the provided conversation in group chat, while adhering to these guidelines:
-                    1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
-                    2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
-                    3. Rely strictly on the provided text, without including external information.
-                    4. Format the summary in paragraph form for easy understanding.
-                    5. Summary should be divided into paragraphs, each covering a different aspect of the conversation including names or tags of the participants.
-                By following this optimized prompt, you will generate an effective summary that encapsulates the essence of the given text in a clear, concise, and reader-friendly manner.
-                """ :
+                        As a professional summarizer, create a concise and comprehensive summary of the provided conversation in group chat, while adhering to these guidelines:
+                            1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness.
+                            2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects.
+                            3. Rely strictly on the provided text, without including external information.
+                            4. Format the summary in paragraph form for easy understanding.
+                            5. Summary should be divided into paragraphs, each covering a different aspect of the conversation including names or tags of the participants.
+                        By following this optimized prompt, you will generate an effective summary that encapsulates the essence of the given text in a clear, concise, and reader-friendly manner.
+                        """ :
                 """
-                Як професійний сумаризатор, створіть стислий та вичерпний підсумок наданої розмови у груповому чаті, дотримуючись наступних вказівок:
-                    1. Створіть підсумок, який є деталізованим, ретельним, глибоким та комплексним, водночас зберігаючи ясність та лаконічність.
-                    2. Включайте головні ідеї та важливу інформацію, відкидаючи зайві слова та зосереджуючись на критичних аспектах.
-                    3. Покладайтеся виключно на наданий текст розмови, без залучення зовнішньої інформації.
-                    4. Сформатуйте підсумок у вигляді абзаців для легкого сприйняття.
-                    5. Підсумок має бути розділений на абзаци, кожен з яких охоплює окремий аспект розмови, включаючи імена або теги учасників.
-                Дотримуючись цього оптимізованого запиту, ви створите ефективний підсумок, який чітко, лаконічно та зручно для читача передає суть наданого тексту.
-                """;
+                        Як професійний сумаризатор, створіть стислий та вичерпний підсумок наданої розмови у груповому чаті, дотримуючись наступних вказівок:
+                            1. Створіть підсумок, який є деталізованим, ретельним, глибоким та комплексним, водночас зберігаючи ясність та лаконічність.
+                            2. Включайте головні ідеї та важливу інформацію, відкидаючи зайві слова та зосереджуючись на критичних аспектах.
+                            3. Покладайтеся виключно на наданий текст розмови, без залучення зовнішньої інформації.
+                            4. Сформатуйте підсумок у вигляді абзаців для легкого сприйняття.
+                            5. Підсумок має бути розділений на абзаци, кожен з яких охоплює окремий аспект розмови, включаючи імена або теги учасників.
+                        Дотримуючись цього оптимізованого запиту, ви створите ефективний підсумок, який чітко, лаконічно та зручно для читача передає суть наданого тексту.
+                        """;
 
         String prompt = promptInstruction + ":\n" + messagesToSummarize;
 
-        JSONObject jsonPayload = createSummaryPayload(prompt, chat);
+        return execute(createSummaryPayload(prompt, chat), chat, "summary");
+    }
+
+    /**
+     * One prompt, one answer, with no chat history attached - for the features that assemble their own
+     * context and want nothing else folded in.
+     *
+     * @param systemInstruction how the model should answer; the language rules live here
+     */
+    public CompletableFuture<String> getSingleResponse(String prompt, String systemInstruction, LumiosChat chat) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return execute(createPayload(prompt, systemInstruction), chat, "single response");
+            } catch (Exception e) {
+                log.error("Failed to get a single response from Gemini", e);
+                throw new RuntimeException("Failed to get a single response from Gemini", e);
+            }
+        }, executorService);
+    }
+
+    /**
+     * Sends a payload, walking the model and key lists until one of them answers. A 429 or any other
+     * failure moves on to the next key, then to the next model.
+     *
+     * @param what what is being generated, for the logs
+     */
+    private String execute(JSONObject jsonPayload, LumiosChat chat, String what) {
         Exception lastException = null;
 
         // Try each model in order
         for (String model : GEMINI_MODELS) {
             for (String key : apiKey) {
                 try {
-                    URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(30000);
-                    connection.setReadTimeout(30000);
+                    HttpURLConnection connection = getConnection(model, key);
 
                     try (OutputStream os = connection.getOutputStream()) {
-                        os.write(jsonPayload.toString().getBytes());
+                        os.write(jsonPayload.toString().getBytes(StandardCharsets.UTF_8));
                         os.flush();
                     }
 
@@ -354,38 +384,65 @@ public class Gemini {
 
                     // Check for rate limit error
                     if (responseCode == 429) {
-                        log.warn("Rate limit (429) for summary with model {}, trying next option", model);
+                        log.warn("Rate limit (429) for {} with model {}, trying next option", what, model);
                         lastException = new RuntimeException("Rate limit reached for model " + model);
                         continue;
                     }
 
                     // Check for other HTTP errors
                     if (responseCode >= 400) {
-                        log.error("HTTP error {} for summary with model {}", responseCode, model);
+                        log.error("HTTP error {} for {} with model {}", responseCode, what, model);
                         lastException = new RuntimeException("HTTP error " + responseCode);
                         continue;
                     }
 
                     StringBuilder response = new StringBuilder();
-                    try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
                         String inputLine;
                         while ((inputLine = in.readLine()) != null) {
                             response.append(inputLine);
                         }
                     }
 
-                    log.info("Successfully generated summary with model {}", model);
+                    log.info("Successfully generated {} with model {}", what, model);
                     return extractTextFromResponse(response.toString(), chat);
 
                 } catch (Exception e) {
-                    log.error("Failed to get summary with model {} and key: {}", model, key.substring(0, Math.min(8, key.length())) + "...", e);
+                    log.error("Failed to get {} with model {} and key: {}", what, model, key.substring(0, Math.min(8, key.length())) + "...", e);
                     lastException = e;
                 }
             }
-            log.warn("All API keys failed for summary with model {}, trying next model", model);
+            log.warn("All API keys failed for {} with model {}, trying next model", what, model);
         }
 
-        throw new RuntimeException("All models and API keys failed for summary generation", lastException);
+        throw new RuntimeException("All models and API keys failed for " + what, lastException);
+    }
+
+    private JSONObject createPayload(String prompt, String systemInstructionText) {
+        JSONObject jsonPayload = new JSONObject();
+
+        JSONObject textPart = new JSONObject();
+        textPart.put("text", prompt);
+        JSONObject userMessage = new JSONObject();
+        userMessage.put("role", "user");
+        userMessage.put("parts", new JSONArray().put(textPart));
+        jsonPayload.put("contents", new JSONArray().put(userMessage));
+
+        JSONObject systemPart = new JSONObject();
+        systemPart.put("text", systemInstructionText);
+        JSONObject systemInstruction = new JSONObject();
+        systemInstruction.put("role", "user");
+        systemInstruction.put("parts", new JSONArray().put(systemPart));
+        jsonPayload.put("systemInstruction", systemInstruction);
+
+        JSONObject genConfig = new JSONObject();
+        genConfig.put("temperature", 0.4);
+        genConfig.put("maxOutputTokens", 4096);
+        genConfig.put("topP", 0.9);
+        genConfig.put("topK", 40);
+        jsonPayload.put("generationConfig", genConfig);
+
+        return jsonPayload;
     }
 
     private JSONObject createSummaryPayload(String prompt, LumiosChat chat) {
@@ -562,8 +619,8 @@ public class Gemini {
 
             // Get current week's timetable with eagerly loaded days and classes
             TimetableEntry timetable = timetableService.findByChatIdAndWeekTypeWithDays(
-                chat.getChatId(),
-                WeekValidator.determineWeekDay()
+                    chat.getChatId(),
+                    WeekValidator.determineWeekDay()
             );
 
             LocalTime currentTime = LocalTime.now(ZoneId.of("Europe/Kiev"));
@@ -592,7 +649,7 @@ public class Gemini {
 
             for (ClassEntry classEntry : todaysClasses) {
                 if (currentTime.isAfter(classEntry.getStartTime()) &&
-                    currentTime.isBefore(classEntry.getEndTime())) {
+                        currentTime.isBefore(classEntry.getEndTime())) {
                     currentClass = classEntry;
                 } else if (currentTime.isBefore(classEntry.getStartTime())) {
                     if (nextClass == null) {
@@ -603,9 +660,9 @@ public class Gemini {
 
             if (currentClass != null) {
                 context.append("CURRENT CLASS (").append(currentClass.getStartTime())
-                       .append("-").append(currentClass.getEndTime()).append("):\n");
+                        .append("-").append(currentClass.getEndTime()).append("):\n");
                 context.append("  ").append(currentClass.getName())
-                       .append(" (").append(currentClass.getClassType()).append(")\n");
+                        .append(" (").append(currentClass.getClassType()).append(")\n");
                 if (currentClass.getUrl() != null && !currentClass.getUrl().isEmpty()) {
                     context.append("  URL: ").append(currentClass.getUrl()).append("\n");
                 }
@@ -613,9 +670,9 @@ public class Gemini {
 
             if (nextClass != null) {
                 context.append("NEXT CLASS (").append(nextClass.getStartTime())
-                       .append("-").append(nextClass.getEndTime()).append("):\n");
+                        .append("-").append(nextClass.getEndTime()).append("):\n");
                 context.append("  ").append(nextClass.getName())
-                       .append(" (").append(nextClass.getClassType()).append(")\n");
+                        .append(" (").append(nextClass.getClassType()).append(")\n");
                 if (nextClass.getUrl() != null && !nextClass.getUrl().isEmpty()) {
                     context.append("  URL: ").append(nextClass.getUrl()).append("\n");
                 }
@@ -625,9 +682,9 @@ public class Gemini {
             context.append("\nAll classes today:\n");
             for (ClassEntry classEntry : todaysClasses) {
                 context.append("  ").append(classEntry.getStartTime())
-                       .append("-").append(classEntry.getEndTime())
-                       .append(" ").append(classEntry.getName())
-                       .append(" (").append(classEntry.getClassType()).append(")");
+                        .append("-").append(classEntry.getEndTime())
+                        .append(" ").append(classEntry.getName())
+                        .append(" (").append(classEntry.getClassType()).append(")");
                 if (classEntry.getUrl() != null && !classEntry.getUrl().isEmpty()) {
                     context.append(" - URL: ").append(classEntry.getUrl());
                 }

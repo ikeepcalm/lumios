@@ -12,6 +12,7 @@ import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableClock;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableViewSupport;
 import dev.ua.ikeepcalm.lumios.telegram.utils.TimetableViewSupport.Scope;
 import dev.ua.ikeepcalm.lumios.telegram.utils.WeekViewRenderer;
+import dev.ua.ikeepcalm.lumios.telegram.utils.WorkloadReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,13 +37,16 @@ public class TimetableViewCallback extends ServicesShortcut implements Interacti
     private final DayViewRenderer dayRenderer;
     private final SlotViewRenderer slotRenderer;
     private final WeekViewRenderer weekRenderer;
+    private final WorkloadReporter reporter;
 
     public TimetableViewCallback(PersonalTimetableSupport support, DayViewRenderer dayRenderer,
-                                 SlotViewRenderer slotRenderer, WeekViewRenderer weekRenderer) {
+                                 SlotViewRenderer slotRenderer, WeekViewRenderer weekRenderer,
+                                 WorkloadReporter reporter) {
         this.support = support;
         this.dayRenderer = dayRenderer;
         this.slotRenderer = slotRenderer;
         this.weekRenderer = weekRenderer;
+        this.reporter = reporter;
     }
 
     @Override
@@ -86,6 +90,9 @@ public class TimetableViewCallback extends ServicesShortcut implements Interacti
 
         telegramClient.sendAnswerCallbackQuery(null, callbackQuery.getId());
         switch (commandType) {
+            // Not a view that can be paged or re-scoped: the answer is written fresh each time, so the
+            // chooser is simply followed by a new message rather than replaced in place.
+            case "due" -> reporter.report(callbackQuery.getMessage().getChatId(), groupChat, chat, telegramUserId);
             case "today" -> dayRenderer.replace(callbackQuery.getMessage(), chat, groupChat, telegramUserId,
                     commandType, TimetableClock.today(), page, scope);
             case "tomorrow" -> dayRenderer.replace(callbackQuery.getMessage(), chat, groupChat, telegramUserId,

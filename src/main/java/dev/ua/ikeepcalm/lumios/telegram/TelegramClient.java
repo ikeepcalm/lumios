@@ -75,7 +75,6 @@ public class TelegramClient extends OkHttpTelegramClient {
         return SetMyCommands.builder()
                 .commands(new ArrayList<>(List.of(
                         new BotCommand("help", translationService.getMessage("command.desc.help", lang)),
-                        new BotCommand("tasks", translationService.getMessage("command.desc.tasks", lang)),
                         new BotCommand("due", translationService.getMessage("command.desc.due", lang)),
                         new BotCommand("me", translationService.getMessage("command.desc.me", lang)),
                         new BotCommand("stats", translationService.getMessage("command.desc.stats", lang)),
@@ -118,7 +117,6 @@ public class TelegramClient extends OkHttpTelegramClient {
                         new BotCommand("import", translationService.getMessage("command.desc.import", lang)),
                         new BotCommand("mine", translationService.getMessage("command.desc.mine", lang)),
                         new BotCommand("reminders", translationService.getMessage("command.desc.reminders", lang)),
-                        new BotCommand("tasks", translationService.getMessage("command.desc.tasks", lang)),
                         new BotCommand("due", translationService.getMessage("command.desc.due", lang)),
                         new BotCommand("me", translationService.getMessage("command.desc.me", lang)),
                         new BotCommand("stats", translationService.getMessage("command.desc.stats", lang)),

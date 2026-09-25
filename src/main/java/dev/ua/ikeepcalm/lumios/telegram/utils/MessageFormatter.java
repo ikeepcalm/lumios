@@ -10,13 +10,11 @@ public class MessageFormatter {
 
     private static final int MAX_MESSAGE_LENGTH = 4096;
     
-    public static final String BOT_NAME = "Lumios";
     public static final String SUCCESS_EMOJI = "✅";
     public static final String ERROR_EMOJI = "❌";
     public static final String WARNING_EMOJI = "⚠️";
     public static final String INFO_EMOJI = "ℹ️";
-    public static final String LOADING_EMOJI = "⏳";
-    
+
     public static String escapeMarkdown(String text) {
         if (text == null) return null;
         return text.replaceAll("([_*\\[\\]()~`>#+\\-=|{}.!])", "\\\\$1");
@@ -38,39 +36,16 @@ public class MessageFormatter {
         return INFO_EMOJI + " " + message;
     }
     
-    public static String formatLoadingMessage(String message) {
-        return LOADING_EMOJI + " " + message;
-    }
-    
     public static String formatBoldText(String text) {
         return "*" + escapeMarkdown(text) + "*";
     }
-    
-    public static String formatItalicText(String text) {
-        return "_" + escapeMarkdown(text) + "_";
-    }
-    
-    public static String formatCodeText(String text) {
-        return "`" + text + "`";
-    }
-    
-    public static String formatCodeBlock(String text, String language) {
-        return "```" + (language != null ? language : "") + "\n" + text + "\n```";
-    }
-    
+
     public static String formatTitle(String title) {
         return ">>> " + formatBoldText(title) + " <<<\n\n";
     }
     
     public static String formatQueueEntry(int id, String name, String username) {
         return String.format("ID: %d - %s (@%s)\n", id, name, username);
-    }
-    
-    public static String formatUserMention(String username, Long userId) {
-        if (username != null && !username.isEmpty()) {
-            return "@" + username;
-        }
-        return "[User](tg://user?id=" + userId + ")";
     }
     
     /**
@@ -87,22 +62,6 @@ public class MessageFormatter {
         return "[" + escaped + "](tg://user?id=" + userId + ")";
     }
 
-    public static String formatApiErrorMessage(int errorCode, String operation) {
-        return switch (errorCode) {
-            case 400 -> formatErrorMessage("Invalid request during operation: " + operation);
-            case 401 -> formatErrorMessage("Invalid bot token");
-            case 403 -> formatErrorMessage("Bot does not have permission to perform this action");
-            case 404 -> formatErrorMessage("Resource not found");
-            case 429 -> formatWarningMessage("Too many requests. Please try again later");
-            case 500 -> formatErrorMessage("Internal Telegram server error");
-            default -> formatErrorMessage("API Error: " + errorCode + " during " + operation);
-        };
-    }
-    
-    public static String formatHelpSection(String sectionTitle, String content) {
-        return "\n" + formatBoldText(sectionTitle) + "\n" + content;
-    }
-    
     public static String getDefaultParseMode() {
         return ParseMode.MARKDOWNV2;
     }

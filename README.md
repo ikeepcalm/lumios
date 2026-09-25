@@ -6,7 +6,7 @@
 # Lumios
 
 Lumios is a Telegram bot designed to streamline study management. It offers features such as queue management, ratings,
-statistics, tasks, timetable, and notifications. Lumios is built with pure Java, TelegramBots and Spring Framework.
+statistics, timetable, and notifications. Lumios is built with pure Java, TelegramBots and Spring Framework.
 
 ---
 
@@ -38,10 +38,10 @@ statistics, tasks, timetable, and notifications. Lumios is built with pure Java,
     * Check your own reputation statistics
     * Based on telegram built-in reactions
       <br><br>
-* Tasks (dynamic list of tasks due on some day)
-    * Add task to the task list
-    * Edit task in the task list
-    * Show the formatted task list
+* Workload estimate (/due)
+    * Reads your own classes for this week and the next
+    * Asks Gemini what you probably have to prepare
+    * Prioritises labs and seminars over lectures
       <br><br>
 * Timetable (flexible timetable for the chat)
     * Create informative timetable for the week

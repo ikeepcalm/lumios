@@ -45,7 +45,6 @@ public class UpdateConsumer implements LongPollingSingleThreadUpdateConsumer {
     private static final int MAX_REQUESTS_PER_INTERVAL = 5;
 
     private final Cache<Long, UserActivity> userActivityCache;
-    public static final HashMap<Long, Long> waitingTasks = new HashMap<>();
     public static final HashMap<Long, Long> waitingLinks = new HashMap<>();
 
     private final List<Interaction> commandHandlers;

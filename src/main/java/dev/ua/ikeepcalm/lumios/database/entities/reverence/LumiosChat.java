@@ -2,7 +2,6 @@ package dev.ua.ikeepcalm.lumios.database.entities.reverence;
 
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.shots.ChatShot;
 import dev.ua.ikeepcalm.lumios.database.entities.reverence.source.AiModel;
-import dev.ua.ikeepcalm.lumios.database.entities.tasks.DueTask;
 import dev.ua.ikeepcalm.lumios.database.entities.timetable.TimetableEntry;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -80,9 +79,6 @@ public class LumiosChat {
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<LumiosUser> users;
-
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DueTask> tasks;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimetableEntry> timetables;
