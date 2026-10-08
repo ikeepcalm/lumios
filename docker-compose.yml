@@ -70,7 +70,11 @@ services:
 
 volumes:
   mariadb_data:
-    driver: local
+    # external, pinned to the volume the hand-rolled `lumios` compose project
+    # created. Coolify provisions a volume of its own otherwise, and the 244MB
+    # of existing bot data would be silently orphaned behind an empty database.
+    external: true
+    name: lumios_mariadb_data
 
 networks:
   lumios-network:
