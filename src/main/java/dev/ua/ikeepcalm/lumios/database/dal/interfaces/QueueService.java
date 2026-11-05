@@ -18,6 +18,8 @@ public interface QueueService {
 
     List<MixedQueue> findAllMixedByChatId(long chatId);
 
+    List<MixedQueue> findAllMixed();
+
     @Transactional
     void save(MixedQueue mixedQueue);
 

@@ -31,10 +31,8 @@ public class QueueUpdateUtil {
         editMessage.setMessageId(simpleQueue.getMessageId());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(">>> ").append(simpleQueue.getAlias()).append(" <<<\n\n");
-        int id = 1;
-        for (MixedUser iteMixedUser : simpleQueue.getContents()) {
-            stringBuilder.append("ID: ").append(id).append(" - ").append(iteMixedUser.getName()).append(" (@").append(iteMixedUser.getUsername()).append(")\n");
-            ++id;
+        for (MixedUser iteMixedUser : simpleQueue.getContents().stream().sorted(MixedUser.BY_NAME).toList()) {
+            stringBuilder.append("• ").append(iteMixedUser.getName()).append(" (@").append(iteMixedUser.getUsername()).append(")\n");
         }
         editMessage.setText(stringBuilder.toString());
         editMessage.setReplyKeyboard(QueueMarkupUtil.createMarkup(simpleQueue));

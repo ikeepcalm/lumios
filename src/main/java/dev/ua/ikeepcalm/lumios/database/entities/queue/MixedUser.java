@@ -5,10 +5,15 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Comparator;
+
 @Getter
 @Setter
 @Entity(name = "mixedUsers")
 public class MixedUser {
+
+    // before the shuffle, join order would read as a place in line that the shuffle then "takes away"
+    public static final Comparator<MixedUser> BY_NAME = Comparator.comparing(MixedUser::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
 
     @Id
     @Column

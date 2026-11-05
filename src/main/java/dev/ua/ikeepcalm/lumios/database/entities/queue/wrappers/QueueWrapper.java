@@ -82,7 +82,7 @@ public class QueueWrapper {
         queueWrapper.setId(queue.getId());
         queueWrapper.setChatId(queue.getChatId());
         queueWrapper.setMixed(true);
-        for (MixedUser user : queue.getContents()) {
+        for (MixedUser user : queue.getContents().stream().sorted(MixedUser.BY_NAME).toList()) {
             queueWrapper.getContents().add(UserWrapper.wrapUsers(user));
         }
         return queueWrapper;

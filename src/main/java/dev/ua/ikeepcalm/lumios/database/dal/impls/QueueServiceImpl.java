@@ -13,6 +13,7 @@ import dev.ua.ikeepcalm.lumios.database.exceptions.NoSuchEntityException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +50,13 @@ public class QueueServiceImpl implements QueueService {
     @Override
     public List<MixedQueue> findAllMixedByChatId(long chatId) {
         return mixedQueueRepository.findAllByChatId(chatId);
+    }
+
+    @Override
+    public List<MixedQueue> findAllMixed() {
+        List<MixedQueue> queues = new ArrayList<>();
+        mixedQueueRepository.findAll().forEach(queues::add);
+        return queues;
     }
 
     @Override
